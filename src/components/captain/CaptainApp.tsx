@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { CaptainLoginForm } from './CaptainLoginForm';
 import { CaptainRegistrationForm } from './CaptainRegistrationForm';
 import { CaptainDashboard } from './CaptainDashboard';
 import { CaptainKycTab } from './CaptainKycTab';
@@ -8,6 +9,7 @@ import { LayoutGrid, Star, ShieldCheck, UserPlus } from 'lucide-react';
 
 export const CaptainApp: React.FC = () => {
   const { captainTab, setCaptainTab, setActiveCaptainId, currentCaptain, t } = useApp();
+  const [newCaptainPhone, setNewCaptainPhone] = useState<string | null>(null);
 
   const TABS: { id: typeof captainTab; label: string; icon: React.ElementType }[] = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutGrid },
@@ -27,7 +29,11 @@ export const CaptainApp: React.FC = () => {
       </div>
 
       {!currentCaptain ? (
-        <CaptainRegistrationForm />
+        newCaptainPhone ? (
+          <CaptainRegistrationForm verifiedPhone={newCaptainPhone} />
+        ) : (
+          <CaptainLoginForm onNewCaptain={setNewCaptainPhone} />
+        )
       ) : (
         <>
           <div className="max-w-2xl mx-auto px-4 sm:px-6 pt-4 flex items-center space-x-2 overflow-x-auto custom-scrollbar">
@@ -50,11 +56,14 @@ export const CaptainApp: React.FC = () => {
               );
             })}
             <button
-              onClick={() => setActiveCaptainId(null)}
+              onClick={() => {
+                setActiveCaptainId(null);
+                setNewCaptainPhone(null);
+              }}
               className="shrink-0 flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-white text-orange-600 border border-orange-200 hover:bg-orange-50 ml-auto"
             >
               <UserPlus className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">New Captain</span>
+              <span className="hidden sm:inline">Switch Captain</span>
             </button>
           </div>
 

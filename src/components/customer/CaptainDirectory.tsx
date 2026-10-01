@@ -47,23 +47,17 @@ export const CaptainDirectory: React.FC<{ onOpenProfile: (captain: Captain) => v
           </span>
         </div>
 
-        <div className="flex items-center space-x-2.5 overflow-x-auto custom-scrollbar pb-2">
+        <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-3">
           <button
             onClick={() => setSelectedCatId('all')}
-            className={`shrink-0 flex items-center gap-2 pl-1.5 pr-4 py-1.5 rounded-full text-xs font-bold transition-all ${
-              selectedCatId === 'all'
-                ? 'bg-blue-600 text-white shadow-md ring-2 ring-blue-200'
-                : 'bg-white text-slate-700 border border-slate-200 hover:border-blue-300 shadow-xs'
+            className={`flex flex-col items-center gap-1.5 p-2.5 rounded-2xl transition-all ${
+              selectedCatId === 'all' ? 'bg-blue-50 ring-2 ring-blue-500' : 'bg-white border border-slate-200 hover:border-blue-300'
             }`}
           >
-            <span
-              className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                selectedCatId === 'all' ? 'bg-white/20 text-white' : 'bg-gradient-to-br from-slate-500 to-slate-700 text-white'
-              }`}
-            >
-              <Users className="w-4 h-4" />
+            <span className="w-14 h-14 rounded-2xl flex items-center justify-center bg-gradient-to-br from-slate-500 to-slate-700 text-white shadow-sm">
+              <Users className="w-6 h-6" />
             </span>
-            <span>All</span>
+            <span className="text-xs font-bold text-slate-800 text-center leading-tight">All</span>
           </button>
 
           {activeCategories.map((cat) => {
@@ -73,20 +67,14 @@ export const CaptainDirectory: React.FC<{ onOpenProfile: (captain: Captain) => v
               <button
                 key={cat.id}
                 onClick={() => setSelectedCatId(cat.id)}
-                className={`shrink-0 flex items-center gap-2 pl-1.5 pr-4 py-1.5 rounded-full text-xs font-bold transition-all ${
-                  isSelected
-                    ? 'bg-blue-600 text-white shadow-md ring-2 ring-blue-200'
-                    : 'bg-white text-slate-700 border border-slate-200 hover:border-blue-300 shadow-xs'
+                className={`flex flex-col items-center gap-1.5 p-2.5 rounded-2xl transition-all ${
+                  isSelected ? 'bg-blue-50 ring-2 ring-blue-500' : 'bg-white border border-slate-200 hover:border-blue-300'
                 }`}
               >
-                <span
-                  className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                    isSelected ? 'bg-white/20 text-white' : `bg-gradient-to-br ${cat.color} text-white`
-                  }`}
-                >
-                  <IconComponent className="w-4 h-4" />
+                <span className={`w-14 h-14 rounded-2xl flex items-center justify-center bg-gradient-to-br ${cat.color} text-white shadow-sm`}>
+                  <IconComponent className="w-6 h-6" />
                 </span>
-                <span>{cat.title}</span>
+                <span className="text-xs font-bold text-slate-800 text-center leading-tight">{cat.title}</span>
               </button>
             );
           })}

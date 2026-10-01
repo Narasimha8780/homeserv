@@ -5,6 +5,7 @@ const captainSchema = new mongoose.Schema(
     _id: { type: String },
     name: { type: String, required: true },
     phone: { type: String, required: true },
+    phoneNormalized: { type: String, required: true, index: true },
     whatsapp: { type: String, required: true },
     avatar: { type: String, required: true },
     cityId: { type: String, required: true },
@@ -31,6 +32,7 @@ captainSchema.set('toJSON', {
   transform: (_doc, ret) => {
     ret.id = ret._id;
     delete ret._id;
+    delete ret.phoneNormalized;
   },
 });
 

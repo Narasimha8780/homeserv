@@ -31,32 +31,37 @@ export const CustomerApp: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#F5F7FA] pb-20 sm:pb-6">
-      {customerTab === 'home' && <CustomerHeader onOpenCityModal={() => setCityModalOpen(true)} />}
+      <div className="sm:flex sm:max-w-7xl sm:mx-auto">
+        {/* Left sidebar — desktop/tablet only; phones keep the bottom tab bar */}
+        <aside className="hidden sm:flex sm:flex-col sm:w-52 sm:shrink-0 sm:pt-6 sm:pl-4 sm:pr-2 sm:sticky sm:top-16 sm:self-start sm:gap-1.5">
+          {TABS.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = customerTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setCustomerTab(tab.id)}
+                className={`flex items-center space-x-2.5 px-4 py-2.5 rounded-xl text-sm font-bold transition-all text-left ${
+                  isActive ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:border-blue-300'
+                }`}
+              >
+                <Icon className="w-4 h-4 shrink-0" />
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
+        </aside>
 
-      <div className="hidden sm:flex max-w-5xl mx-auto px-4 sm:px-6 pt-4 items-center space-x-2">
-        {TABS.map((tab) => {
-          const Icon = tab.icon;
-          const isActive = customerTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setCustomerTab(tab.id)}
-              className={`flex items-center space-x-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                isActive ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:border-blue-300'
-              }`}
-            >
-              <Icon className="w-3.5 h-3.5" />
-              <span>{tab.label}</span>
-            </button>
-          );
-        })}
+        <div className="min-w-0 flex-1">
+          {customerTab === 'home' && <CustomerHeader onOpenCityModal={() => setCityModalOpen(true)} />}
+
+          <main>
+            {customerTab === 'home' && <CaptainDirectory onOpenProfile={handleOpenProfile} />}
+            {customerTab === 'favorites' && <CustomerFavoritesTab onOpenProfile={handleOpenProfile} />}
+            {customerTab === 'more' && <CustomerMoreTab onBecomeCaptain={() => setRole('captain')} />}
+          </main>
+        </div>
       </div>
-
-      <main>
-        {customerTab === 'home' && <CaptainDirectory onOpenProfile={handleOpenProfile} />}
-        {customerTab === 'favorites' && <CustomerFavoritesTab onOpenProfile={handleOpenProfile} />}
-        {customerTab === 'more' && <CustomerMoreTab onBecomeCaptain={() => setRole('captain')} />}
-      </main>
 
       <nav className="sm:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-slate-200 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] flex items-center justify-around px-2 py-1.5">
         {TABS.map((tab) => {

@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { Captain } from '../models/Captain.js';
+import { normalizePhone } from '../utils/phone.js';
 
 export const captainsRouter = Router();
 
@@ -23,6 +24,7 @@ captainsRouter.post('/', async (req, res) => {
     _id: id,
     name,
     phone,
+    phoneNormalized: normalizePhone(phone),
     whatsapp,
     avatar,
     cityId,

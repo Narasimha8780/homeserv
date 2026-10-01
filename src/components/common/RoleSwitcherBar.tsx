@@ -4,7 +4,12 @@ import type { AppLanguage } from '../../types';
 import { Smartphone, Wrench, ShieldCheck, Globe, RotateCcw, MapPin } from 'lucide-react';
 
 export const RoleSwitcherBar: React.FC<{ onOpenCityModal: () => void }> = ({ onOpenCityModal }) => {
-  const { role, setRole, language, setLanguage, selectedCity, resetToDefault, currentCaptain } = useApp();
+  const { role, setRole, setCustomerTab, language, setLanguage, selectedCity, resetToDefault, currentCaptain } = useApp();
+
+  const goHome = () => {
+    setRole('customer');
+    setCustomerTab('home');
+  };
 
   const languages: { code: AppLanguage; label: string }[] = [
     { code: 'en', label: 'English' },
@@ -19,12 +24,12 @@ export const RoleSwitcherBar: React.FC<{ onOpenCityModal: () => void }> = ({ onO
     <header className="sticky top-0 z-50 bg-[#0D47A1] text-white shadow-md border-b border-blue-900">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 py-2 flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center space-x-3">
-          <div className="flex items-center space-x-2">
+          <button onClick={goHome} className="flex items-center space-x-2 hover:opacity-80 transition-opacity" title="Go to home">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-orange-500 to-amber-400 flex items-center justify-center font-bold text-white shadow-sm">
               HS
             </div>
             <span className="font-extrabold text-lg tracking-tight">HomeServ</span>
-          </div>
+          </button>
 
           <button
             onClick={onOpenCityModal}

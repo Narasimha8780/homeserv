@@ -5,6 +5,7 @@ import { Category } from './models/Category.js';
 import { Captain } from './models/Captain.js';
 import { Review } from './models/Review.js';
 import { INDIA_CITIES } from './data/indiaCities.js';
+import { normalizePhone } from './utils/phone.js';
 import mongoose from 'mongoose';
 
 function slugify(str) {
@@ -106,7 +107,9 @@ async function seed() {
 
   await City.insertMany(withMongoId(CITIES));
   await Category.insertMany(withMongoId(CATEGORIES));
-  await Captain.insertMany(withMongoId(CAPTAINS));
+  await Captain.insertMany(
+    withMongoId(CAPTAINS).map((c) => ({ ...c, phoneNormalized: normalizePhone(c.phone) }))
+  );
   await Review.insertMany(withMongoId(REVIEWS));
 
   console.log(`Seeded ${CITIES.length} cities, ${CATEGORIES.length} categories, ${CAPTAINS.length} captains, ${REVIEWS.length} reviews.`);

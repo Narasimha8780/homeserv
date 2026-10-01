@@ -66,6 +66,8 @@ interface AppContextType {
   submitReview: (captainId: string, customerName: string, rating: number, comment: string) => Promise<void>;
 
   registerCaptain: (input: CaptainRegistrationInput) => Promise<Captain>;
+  sendOtp: (phone: string) => Promise<{ mockOtp?: string }>;
+  verifyOtp: (phone: string, code: string) => Promise<Captain | null>;
   updateCaptainProfile: (id: string, updates: Partial<Captain>) => void;
   toggleAvailability: (id: string) => void;
 
@@ -223,6 +225,23 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return captain;
   };
 
+  const sendOtp = async (phone: string): Promise<{ mockOtp?: string }> => {
+    return api.post<{ success: boolean; mockOtp?: string }>('/auth/send-otp', { phone });
+  };
+
+  const verifyOtp = async (phone: string, code: string): Promise<Captain | null> => {
+    const { captain } = await api.post<{ verified: boolean; captain: Captain | null }>('/auth/verify-otp', {
+      phone,
+      code,
+    });
+    if (captain) {
+      soundFx.playSuccess();
+      setCaptains((prev) => (prev.some((c) => c.id === captain.id) ? prev : [captain, ...prev]));
+      setActiveCaptainId(captain.id);
+    }
+    return captain;
+  };
+
   const updateCaptainProfile = (id: string, updates: Partial<Captain>) => {
     soundFx.playTap();
     setCaptains((prev) => prev.map((c) => (c.id === id ? { ...c, ...updates } : c)));
@@ -311,6 +330,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         recordProfileView,
         submitReview,
         registerCaptain,
+        sendOtp,
+        verifyOtp,
         updateCaptainProfile,
         toggleAvailability,
         approveCaptainKyc,

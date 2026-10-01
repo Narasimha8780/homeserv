@@ -6,11 +6,11 @@ import { UserPlus, Check } from 'lucide-react';
 
 const LANGUAGE_OPTIONS = ['Hindi', 'English', 'Tamil', 'Telugu', 'Marathi', 'Bengali', 'Urdu', 'Marwari'];
 
-export const CaptainRegistrationForm: React.FC = () => {
+export const CaptainRegistrationForm: React.FC<{ verifiedPhone?: string }> = ({ verifiedPhone }) => {
   const { allCities, categories, registerCaptain, setCaptainTab } = useApp();
 
   const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
+  const [phone, setPhone] = useState(verifiedPhone || '');
   const [sameAsPhoneForWhatsapp, setSameAsPhoneForWhatsapp] = useState(true);
   const [whatsapp, setWhatsapp] = useState('');
   const [selectedCity, setSelectedCity] = useState<City | null>(allCities[0] || null);
@@ -93,11 +93,17 @@ export const CaptainRegistrationForm: React.FC = () => {
               <label className="text-xs font-bold text-slate-700 block mb-1">Phone Number</label>
               <input
                 required
+                readOnly={!!verifiedPhone}
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="+91 98XXX XXXXX"
-                className="w-full text-sm p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-1 focus:ring-orange-500"
+                className={`w-full text-sm p-2.5 border rounded-xl focus:ring-1 focus:ring-orange-500 ${
+                  verifiedPhone
+                    ? 'bg-emerald-50 border-emerald-200 text-emerald-800 font-semibold'
+                    : 'bg-slate-50 border-slate-300 focus:bg-white'
+                }`}
               />
+              {verifiedPhone && <span className="text-[11px] text-emerald-600 font-semibold">✓ Verified via OTP</span>}
             </div>
           </div>
 
