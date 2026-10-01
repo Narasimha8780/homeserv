@@ -13,17 +13,27 @@ export const ReviewModal: React.FC<{
   const [rating, setRating] = useState<number>(5);
   const [hoverRating, setHoverRating] = useState<number>(0);
   const [comment, setComment] = useState('');
+  const [isSubmitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (!isOpen || !captain) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !comment.trim()) return;
-    submitReview(captain.id, name, rating, comment);
-    setName('');
-    setComment('');
-    setRating(5);
-    onClose();
+    if (!name.trim() || !comment.trim() || isSubmitting) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      await submitReview(captain.id, name, rating, comment);
+      setName('');
+      setComment('');
+      setRating(5);
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to submit review');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -87,11 +97,14 @@ export const ReviewModal: React.FC<{
             />
           </div>
 
+          {error && <p className="text-xs text-rose-600 font-semibold text-center">{error}</p>}
+
           <button
             type="submit"
-            className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-extrabold text-sm rounded-2xl shadow-lg transition-transform active:scale-95"
+            disabled={isSubmitting}
+            className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-extrabold text-sm rounded-2xl shadow-lg transition-transform active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {t('submitReview')}
+            {isSubmitting ? 'Submitting...' : t('submitReview')}
           </button>
         </form>
       </div>

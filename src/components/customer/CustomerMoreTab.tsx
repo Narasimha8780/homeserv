@@ -85,7 +85,7 @@ export const CustomerMoreTab: React.FC<{ onBecomeCaptain: () => void }> = ({ onB
         className="w-full flex items-center justify-center space-x-2 py-3 rounded-2xl border border-slate-200 text-slate-600 font-bold text-xs bg-white hover:bg-slate-50 transition-colors"
       >
         <RotateCcw className="w-4 h-4" />
-        <span>Reset Demo Data</span>
+        <span>Reset Language &amp; Favorites</span>
       </button>
 
       <div className="flex items-center justify-center space-x-1.5 text-[10px] text-slate-400 pt-2">

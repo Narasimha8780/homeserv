@@ -86,7 +86,7 @@ export const RoleSwitcherBar: React.FC<{ onOpenCityModal: () => void }> = ({ onO
 
           <button
             onClick={resetToDefault}
-            title="Reset Demo Data"
+            title="Reset Language & Favorites"
             className="p-1.5 bg-blue-950/60 hover:bg-red-900/60 text-blue-200 hover:text-white rounded-lg border border-blue-800 transition-colors"
           >
             <RotateCcw className="w-3.5 h-3.5" />

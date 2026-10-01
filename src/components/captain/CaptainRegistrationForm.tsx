@@ -12,13 +12,15 @@ export const CaptainRegistrationForm: React.FC = () => {
   const [phone, setPhone] = useState('');
   const [sameAsPhoneForWhatsapp, setSameAsPhoneForWhatsapp] = useState(true);
   const [whatsapp, setWhatsapp] = useState('');
-  const [cityId, setCityId] = useState(allCities[0].id);
+  const [cityId, setCityId] = useState(allCities[0]?.id || '');
   const [areasInput, setAreasInput] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<ServiceCategoryId[]>([]);
   const [experienceYears, setExperienceYears] = useState('2');
   const [bio, setBio] = useState('');
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>(['Hindi']);
   const [startingPrice, setStartingPrice] = useState('');
+  const [isSubmitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const toggleCategory = (id: ServiceCategoryId) => {
     setSelectedCategories((prev) => (prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]));
@@ -30,27 +32,35 @@ export const CaptainRegistrationForm: React.FC = () => {
 
   const digitsOnly = (v: string) => v.replace(/\D/g, '');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !phone.trim() || selectedCategories.length === 0 || !areasInput.trim()) return;
+    if (!name.trim() || !phone.trim() || selectedCategories.length === 0 || !areasInput.trim() || isSubmitting) return;
 
     const cleanPhoneDigits = digitsOnly(phone);
     const waNumber = sameAsPhoneForWhatsapp ? `91${cleanPhoneDigits.slice(-10)}` : digitsOnly(whatsapp);
 
-    registerCaptain({
-      name: name.trim(),
-      phone: phone.trim(),
-      whatsapp: waNumber,
-      avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name.trim())}&background=1A73E8&color=fff&size=200&bold=true`,
-      cityId,
-      areas: areasInput.split(',').map((a) => a.trim()).filter(Boolean),
-      categories: selectedCategories,
-      experienceYears: Number(experienceYears) || 0,
-      bio: bio.trim() || 'Experienced local professional ready to help with your requirements.',
-      languages: selectedLanguages,
-      startingPrice: startingPrice ? Number(startingPrice) : undefined,
-    });
-    setCaptainTab('kyc');
+    setSubmitting(true);
+    setError(null);
+    try {
+      await registerCaptain({
+        name: name.trim(),
+        phone: phone.trim(),
+        whatsapp: waNumber,
+        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name.trim())}&background=1A73E8&color=fff&size=200&bold=true`,
+        cityId,
+        areas: areasInput.split(',').map((a) => a.trim()).filter(Boolean),
+        categories: selectedCategories,
+        experienceYears: Number(experienceYears) || 0,
+        bio: bio.trim() || 'Experienced local professional ready to help with your requirements.',
+        languages: selectedLanguages,
+        startingPrice: startingPrice ? Number(startingPrice) : undefined,
+      });
+      setCaptainTab('kyc');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to register. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -212,12 +222,15 @@ export const CaptainRegistrationForm: React.FC = () => {
             />
           </div>
 
+          {error && <p className="text-xs text-rose-600 font-semibold text-center">{error}</p>}
+
           <button
             type="submit"
-            className="w-full flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-black text-sm rounded-2xl shadow-lg transition-transform active:scale-95"
+            disabled={isSubmitting}
+            className="w-full flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-black text-sm rounded-2xl shadow-lg transition-transform active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
           >
             <Check className="w-4 h-4" />
-            <span>Submit for Verification</span>
+            <span>{isSubmitting ? 'Submitting...' : 'Submit for Verification'}</span>
           </button>
           <p className="text-[11px] text-slate-400 text-center">
             After submitting, an ID document (Aadhaar) is required before your profile goes live to customers.

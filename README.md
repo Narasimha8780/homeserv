@@ -8,12 +8,36 @@ HomeServ does not handle bookings or payments. Customers browse verified local p
 - **Captain** — register for free, manage your profile and availability, see profile views & contact clicks, view reviews
 - **Admin** *(internal, secondary)* — approve new Captain ID verifications, manage categories
 
-## Running the web app
+## Architecture
 
+- `src/` — React + Vite + Tailwind frontend (web and Android)
+- `server/` — Express + Mongoose API backend
+- MongoDB — all cities, categories, captains and reviews are stored here (not in the frontend anymore). Favorites and language preference stay in the browser's `localStorage` since they're per-device, not shared data.
+
+## Running the app (local MongoDB)
+
+Requires MongoDB running locally (`brew services start mongodb-community`, or just run `mongod` — this project was set up assuming it's already running on the default `mongodb://127.0.0.1:27017`).
+
+**1. Install dependencies and seed the database** (first time only, or whenever you want to reset to sample data):
 ```
 npm install
+npm run server:install
+npm run server:seed
+```
+
+**2. Start the backend API** (in one terminal):
+```
+npm run server:dev
+```
+Runs on `http://localhost:4000`. Configuration is in `server/.env` (`MONGODB_URI`, `PORT`).
+
+**3. Start the frontend** (in another terminal):
+```
 npm run dev
 ```
+Runs on `http://localhost:5173` and talks to the API at the URL in `.env` (`VITE_API_URL`, defaults to `http://localhost:4000/api`).
+
+Note for Android: the Android app runs inside a device/emulator, where `localhost` refers to the device itself, not your computer. To test API calls from the Android app, point `VITE_API_URL` at your machine's LAN IP (or `10.0.2.2` for the Android emulator specifically) before running `npm run android:build`.
 
 ## Building the Android app
 
@@ -33,6 +57,10 @@ Other useful scripts:
 
 - `npm run android:sync` — rebuild the web app and copy it into the Android project (run this after any UI change, before rebuilding the APK)
 - `npm run android:open` — open the native project in Android Studio
+
+## Deploying to the cloud (Google Cloud Run)
+
+See [DEPLOY.md](DEPLOY.md) for the full guide: MongoDB on a Compute Engine VM, the backend and frontend each as a Cloud Run service, and a `Dockerfile` + `cloudbuild-web.yaml` already set up for both in this repo.
 
 ## Publishing to the Play Store
 

@@ -11,7 +11,10 @@
     "android:sync": "npm run build && npx cap sync android",
     "android:build": "npm run android:sync && cd android && ./gradlew assembleDebug",
     "android:release": "npm run android:sync && cd android && ./gradlew bundleRelease",
-    "android:open": "npx cap open android"
+    "android:open": "npx cap open android",
+    "server:install": "cd server && npm install",
+    "server:dev": "cd server && npm run dev",
+    "server:seed": "cd server && npm run seed"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.2",

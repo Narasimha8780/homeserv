@@ -7,9 +7,8 @@ import type {
   ServiceCategoryId,
   Captain,
   Review,
-  KycStatus,
 } from '../types';
-import { CITIES, SERVICE_CATEGORIES, CAPTAINS, REVIEWS } from '../data/seedData';
+import { api } from '../utils/api';
 import { translations } from '../i18n/translations';
 import { soundFx } from '../utils/audio';
 
@@ -52,6 +51,9 @@ interface AppContextType {
   reviews: Review[];
   favorites: string[];
 
+  isLoading: boolean;
+  loadError: string | null;
+
   activeCaptainId: string | null;
   setActiveCaptainId: (id: string | null) => void;
   currentCaptain: Captain | null;
@@ -60,9 +62,9 @@ interface AppContextType {
   isFavorite: (captainId: string) => boolean;
   recordContactClick: (captainId: string) => void;
   recordProfileView: (captainId: string) => void;
-  submitReview: (captainId: string, customerName: string, rating: number, comment: string) => void;
+  submitReview: (captainId: string, customerName: string, rating: number, comment: string) => Promise<void>;
 
-  registerCaptain: (input: CaptainRegistrationInput) => Captain;
+  registerCaptain: (input: CaptainRegistrationInput) => Promise<Captain>;
   updateCaptainProfile: (id: string, updates: Partial<Captain>) => void;
   toggleAvailability: (id: string) => void;
 
@@ -76,7 +78,7 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-const LOCAL_STORAGE_KEY = 'homeserv_directory_v1';
+const PREFS_KEY = 'homeserv_prefs_v1';
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [role, setRole] = useState<AppRole>('customer');
@@ -85,25 +87,26 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [captainTab, setCaptainTab] = useState<'dashboard' | 'reviews' | 'kyc'>('dashboard');
   const [adminTab, setAdminTab] = useState<'overview' | 'kyc' | 'categories'>('overview');
 
-  const [allCities] = useState<City[]>(CITIES);
-  const [selectedCity, setSelectedCity] = useState<City>(CITIES[0]);
+  const [allCities, setAllCities] = useState<City[]>([]);
+  const [selectedCityId, setSelectedCityId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
 
-  const [categories, setCategories] = useState<ServiceCategory[]>(SERVICE_CATEGORIES);
-  const [captains, setCaptains] = useState<Captain[]>(CAPTAINS);
-  const [reviews, setReviews] = useState<Review[]>(REVIEWS);
+  const [categories, setCategories] = useState<ServiceCategory[]>([]);
+  const [captains, setCaptains] = useState<Captain[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const [activeCaptainId, setActiveCaptainId] = useState<string | null>('cap-ravi');
 
+  // Load device-local preferences (favorites, language are per-device, not stored in Mongo)
   useEffect(() => {
     try {
-      const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+      const saved = localStorage.getItem(PREFS_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed.captains) setCaptains(parsed.captains);
-        if (parsed.categories) setCategories(parsed.categories);
-        if (parsed.reviews) setReviews(parsed.reviews);
         if (parsed.favorites) setFavorites(parsed.favorites);
         if (parsed.language) setLanguage(parsed.language);
       }
@@ -114,14 +117,45 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   useEffect(() => {
     try {
-      localStorage.setItem(
-        LOCAL_STORAGE_KEY,
-        JSON.stringify({ captains, categories, reviews, favorites, language })
-      );
+      localStorage.setItem(PREFS_KEY, JSON.stringify({ favorites, language }));
     } catch {
       // ignore
     }
-  }, [captains, categories, reviews, favorites, language]);
+  }, [favorites, language]);
+
+  // Load all data from the API on startup
+  const loadAll = async () => {
+    setIsLoading(true);
+    setLoadError(null);
+    try {
+      const [citiesRes, categoriesRes, captainsRes, reviewsRes] = await Promise.all([
+        api.get<City[]>('/cities'),
+        api.get<ServiceCategory[]>('/categories'),
+        api.get<Captain[]>('/captains'),
+        api.get<Review[]>('/reviews'),
+      ]);
+      setAllCities(citiesRes);
+      setCategories(categoriesRes);
+      setCaptains(captainsRes);
+      setReviews(reviewsRes);
+      setSelectedCityId((prev) => prev || citiesRes[0]?.id || null);
+    } catch (err) {
+      setLoadError(err instanceof Error ? err.message : 'Failed to load data');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const selectedCity = useMemo(
+    () => allCities.find((c) => c.id === selectedCityId) || allCities[0],
+    [allCities, selectedCityId]
+  );
+  const setSelectedCity = (city: City) => setSelectedCityId(city.id);
 
   const currentCaptain = useMemo(
     () => captains.find((c) => c.id === activeCaptainId) || null,
@@ -146,106 +180,81 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setCaptains((prev) =>
       prev.map((c) => (c.id === captainId ? { ...c, contactClicks: c.contactClicks + 1 } : c))
     );
+    api.patch(`/captains/${captainId}/contact`, {}).catch(() => {});
   };
 
   const recordProfileView = (captainId: string) => {
     setCaptains((prev) =>
       prev.map((c) => (c.id === captainId ? { ...c, profileViews: c.profileViews + 1 } : c))
     );
+    api.patch(`/captains/${captainId}/view`, {}).catch(() => {});
   };
 
-  const submitReview = (captainId: string, customerName: string, rating: number, comment: string) => {
-    soundFx.playSuccess();
-    const newReview: Review = {
-      id: `rev-${Date.now()}`,
+  const submitReview = async (captainId: string, customerName: string, rating: number, comment: string) => {
+    const { review, captain } = await api.post<{ review: Review; captain: Captain }>('/reviews', {
       captainId,
-      customerName: customerName.trim() || 'Anonymous',
+      customerName,
       rating,
-      comment: comment.trim(),
-      date: new Date().toISOString().split('T')[0],
-    };
-    setReviews((prev) => [newReview, ...prev]);
-    setCaptains((prev) =>
-      prev.map((c) => {
-        if (c.id !== captainId) return c;
-        const newCount = c.reviewCount + 1;
-        const newRating = Number(((c.rating * c.reviewCount + rating) / newCount).toFixed(2));
-        return { ...c, rating: newRating, reviewCount: newCount };
-      })
-    );
+      comment,
+    });
+    soundFx.playSuccess();
+    setReviews((prev) => [review, ...prev]);
+    setCaptains((prev) => prev.map((c) => (c.id === captainId ? captain : c)));
   };
 
-  const registerCaptain = (input: CaptainRegistrationInput): Captain => {
+  const registerCaptain = async (input: CaptainRegistrationInput): Promise<Captain> => {
+    const captain = await api.post<Captain>('/captains', input);
     soundFx.playSuccess();
-    const newCaptain: Captain = {
-      id: `cap-${Date.now()}`,
-      name: input.name,
-      phone: input.phone,
-      whatsapp: input.whatsapp,
-      avatar: input.avatar,
-      cityId: input.cityId,
-      areas: input.areas,
-      categories: input.categories,
-      experienceYears: input.experienceYears,
-      bio: input.bio,
-      languages: input.languages,
-      startingPrice: input.startingPrice,
-      rating: 0,
-      reviewCount: 0,
-      isAvailable: true,
-      kycStatus: 'pending' as KycStatus,
-      aadhaarMasked: 'XXXX-XXXX-' + Math.floor(1000 + Math.random() * 8999),
-      profileViews: 0,
-      contactClicks: 0,
-      createdAt: new Date().toISOString(),
-    };
-    setCaptains((prev) => [newCaptain, ...prev]);
-    setActiveCaptainId(newCaptain.id);
-    return newCaptain;
+    setCaptains((prev) => [captain, ...prev]);
+    setActiveCaptainId(captain.id);
+    return captain;
   };
 
   const updateCaptainProfile = (id: string, updates: Partial<Captain>) => {
     soundFx.playTap();
     setCaptains((prev) => prev.map((c) => (c.id === id ? { ...c, ...updates } : c)));
+    api.patch(`/captains/${id}`, updates).catch(() => {});
   };
 
   const toggleAvailability = (id: string) => {
     soundFx.playTap();
-    setCaptains((prev) => prev.map((c) => (c.id === id ? { ...c, isAvailable: !c.isAvailable } : c)));
+    const current = captains.find((c) => c.id === id);
+    if (!current) return;
+    const isAvailable = !current.isAvailable;
+    setCaptains((prev) => prev.map((c) => (c.id === id ? { ...c, isAvailable } : c)));
+    api.patch(`/captains/${id}`, { isAvailable }).catch(() => {});
   };
 
   const approveCaptainKyc = (id: string) => {
     soundFx.playSuccess();
     setCaptains((prev) => prev.map((c) => (c.id === id ? { ...c, kycStatus: 'verified' } : c)));
+    api.patch(`/captains/${id}`, { kycStatus: 'verified' }).catch(() => {});
   };
 
   const rejectCaptainKyc = (id: string) => {
     soundFx.playTap();
     setCaptains((prev) => prev.map((c) => (c.id === id ? { ...c, kycStatus: 'rejected' } : c)));
+    api.patch(`/captains/${id}`, { kycStatus: 'rejected' }).catch(() => {});
   };
 
   const toggleCategoryActive = (id: ServiceCategoryId) => {
     soundFx.playTap();
     setCategories((prev) => prev.map((c) => (c.id === id ? { ...c, isActive: !c.isActive } : c)));
+    api.patch(`/categories/${id}/toggle`, {}).catch(() => {});
   };
 
-  const addCategory = (title: string, iconName: string) => {
+  const addCategory = async (title: string, iconName: string) => {
+    const category = await api.post<ServiceCategory>('/categories', { title, iconName });
     soundFx.playSuccess();
-    const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-') as ServiceCategoryId;
-    setCategories((prev) => [
-      ...prev,
-      { id, title, iconName, tagline: 'New category', color: 'from-slate-500 to-slate-700', isActive: true },
-    ]);
+    setCategories((prev) => [...prev, category]);
   };
 
   const resetToDefault = () => {
-    localStorage.removeItem(LOCAL_STORAGE_KEY);
-    setCaptains(CAPTAINS);
-    setCategories(SERVICE_CATEGORIES);
-    setReviews(REVIEWS);
+    localStorage.removeItem(PREFS_KEY);
     setFavorites([]);
     setLanguage('en');
     setActiveCaptainId('cap-ravi');
+    loadAll();
   };
 
   return (
@@ -271,6 +280,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         captains,
         reviews,
         favorites,
+        isLoading,
+        loadError,
         activeCaptainId,
         setActiveCaptainId,
         currentCaptain,
