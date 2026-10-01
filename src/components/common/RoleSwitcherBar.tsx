@@ -4,11 +4,12 @@ import type { AppLanguage } from '../../types';
 import { Smartphone, Wrench, Globe, RotateCcw, MapPin, ChevronDown } from 'lucide-react';
 
 export const RoleSwitcherBar: React.FC<{ onOpenCityModal: () => void }> = ({ onOpenCityModal }) => {
-  const { role, setRole, setCustomerTab, language, setLanguage, selectedCity, resetToDefault, currentCaptain } = useApp();
+  const { role, setRole, setCustomerTab, setSelectedCategoryId, language, setLanguage, selectedCity, resetToDefault, currentCaptain } = useApp();
 
   const goHome = () => {
     setRole('customer');
     setCustomerTab('home');
+    setSelectedCategoryId(null);
   };
 
   const languages: { code: AppLanguage; label: string }[] = [

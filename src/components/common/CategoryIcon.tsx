@@ -17,9 +17,10 @@ export const CategoryIcon: React.FC<{
   iconClassName?: string;
 }> = ({ categoryId, title, iconName, colorClass, className = 'w-16 h-16', iconClassName = 'w-7 h-7' }) => {
   const [failed, setFailed] = useState(false);
+  const url = getCategoryIconUrl(categoryId);
   const Fallback = FALLBACK_ICONS[iconName] || Briefcase;
 
-  if (failed) {
+  if (failed || !url) {
     return (
       <span className={`${className} rounded-2xl bg-gradient-to-br ${colorClass} text-white flex items-center justify-center shadow-premium shrink-0`}>
         <Fallback className={iconClassName} />
@@ -28,7 +29,7 @@ export const CategoryIcon: React.FC<{
   }
   return (
     <img
-      src={getCategoryIconUrl(categoryId)}
+      src={url}
       alt={title}
       onError={() => setFailed(true)}
       className={`${className} object-contain shrink-0 mix-blend-multiply`}

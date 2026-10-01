@@ -36,6 +36,8 @@ interface AppContextType {
 
   customerTab: 'home' | 'favorites' | 'more';
   setCustomerTab: (tab: 'home' | 'favorites' | 'more') => void;
+  selectedCategoryId: string | null;
+  setSelectedCategoryId: (id: string | null) => void;
   captainTab: 'dashboard' | 'reviews' | 'kyc';
   setCaptainTab: (tab: 'dashboard' | 'reviews' | 'kyc') => void;
   adminTab: 'overview' | 'kyc' | 'categories' | 'cities';
@@ -94,6 +96,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [role, setRole] = useState<AppRole>('customer');
   const [language, setLanguage] = useState<AppLanguage>('en');
   const [customerTab, setCustomerTab] = useState<'home' | 'favorites' | 'more'>('home');
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [captainTab, setCaptainTab] = useState<'dashboard' | 'reviews' | 'kyc'>('dashboard');
   const [adminTab, setAdminTab] = useState<'overview' | 'kyc' | 'categories' | 'cities'>('overview');
 
@@ -338,6 +341,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         t,
         customerTab,
         setCustomerTab,
+        selectedCategoryId,
+        setSelectedCategoryId,
         captainTab,
         setCaptainTab,
         adminTab,

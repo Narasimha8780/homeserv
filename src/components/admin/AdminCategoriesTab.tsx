@@ -1,39 +1,12 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { getCategoryIconUrl } from '../../utils/categoryIcons';
+import { CategoryIcon } from '../common/CategoryIcon';
 import { Fan, Zap, Wrench, Car, Hammer, Paintbrush, Tv, ShieldAlert, Power, Plus, Users } from 'lucide-react';
 
 const FALLBACK_ICONS: Record<string, React.ElementType> = {
   Fan, Zap, Wrench, Car, Hammer, Paintbrush, Tv, ShieldAlert,
 };
 const ICON_CHOICES = Object.keys(FALLBACK_ICONS);
-
-// New categories an admin creates on the fly won't have a generated icon image yet,
-// so fall back to a plain lucide icon if the image 404s.
-const CategoryIconTile: React.FC<{ categoryId: string; iconName: string; colorClass: string }> = ({
-  categoryId,
-  iconName,
-  colorClass,
-}) => {
-  const [imgFailed, setImgFailed] = useState(false);
-  const FallbackIcon = FALLBACK_ICONS[iconName] || Wrench;
-
-  if (imgFailed) {
-    return (
-      <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${colorClass} text-white flex items-center justify-center shrink-0`}>
-        <FallbackIcon className="w-4 h-4" />
-      </div>
-    );
-  }
-  return (
-    <img
-      src={getCategoryIconUrl(categoryId)}
-      alt={iconName}
-      onError={() => setImgFailed(true)}
-      className="w-10 h-10 rounded-xl object-contain shrink-0"
-    />
-  );
-};
 
 export const AdminCategoriesTab: React.FC = () => {
   const { categories, captains, toggleCategoryActive, addCategory } = useApp();
@@ -82,7 +55,7 @@ export const AdminCategoriesTab: React.FC = () => {
           return (
             <div key={cat.id} className={`p-4 flex items-center justify-between gap-3 ${!cat.isActive ? 'opacity-50' : ''}`}>
               <div className="flex items-center gap-3">
-                <CategoryIconTile categoryId={cat.id} iconName={cat.iconName} colorClass={cat.color} />
+                <CategoryIcon categoryId={cat.id} title={cat.title} iconName={cat.iconName} colorClass={cat.color} className="w-10 h-10" iconClassName="w-4 h-4" />
                 <div>
                   <h3 className="text-sm font-bold text-slate-900">{cat.title}</h3>
                   <p className="text-[11px] text-slate-500">{cat.tagline}</p>

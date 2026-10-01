@@ -12,7 +12,7 @@ import { CustomerAuthGate } from './CustomerAuthGate';
 import { Home, Heart, Menu } from 'lucide-react';
 
 export const CustomerApp: React.FC = () => {
-  const { customerTab, setCustomerTab, setSearchQuery, setRole, currentCustomer, t } = useApp();
+  const { customerTab, setCustomerTab, setSearchQuery, setRole, currentCustomer, selectedCategoryId, setSelectedCategoryId, t } = useApp();
 
   const [isCityModalOpen, setCityModalOpen] = useState(false);
   const [selectedCaptain, setSelectedCaptain] = useState<Captain | null>(null);
@@ -43,7 +43,10 @@ export const CustomerApp: React.FC = () => {
             return (
               <button
                 key={tab.id}
-                onClick={() => setCustomerTab(tab.id)}
+                onClick={() => {
+                  setCustomerTab(tab.id);
+                  if (tab.id === 'home') setSelectedCategoryId(null);
+                }}
                 className={`flex items-center space-x-2.5 px-4 py-2.5 rounded-xl text-sm font-bold transition-all text-left ${
                   isActive ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:border-blue-300'
                 }`}
@@ -56,7 +59,7 @@ export const CustomerApp: React.FC = () => {
         </aside>
 
         <div className="min-w-0 flex-1">
-          {customerTab === 'home' && <CustomerHeader onOpenCityModal={() => setCityModalOpen(true)} />}
+          {customerTab === 'home' && !selectedCategoryId && <CustomerHeader onOpenCityModal={() => setCityModalOpen(true)} />}
 
           <main>
             {customerTab === 'home' && <CaptainDirectory onOpenProfile={handleOpenProfile} />}
@@ -76,6 +79,7 @@ export const CustomerApp: React.FC = () => {
               onClick={() => {
                 setCustomerTab(tab.id);
                 setSearchQuery('');
+                if (tab.id === 'home') setSelectedCategoryId(null);
               }}
               className={`flex flex-col items-center justify-center space-y-0.5 px-4 py-1.5 rounded-xl min-w-[64px] transition-colors ${
                 isActive ? 'text-blue-600' : 'text-slate-400'
