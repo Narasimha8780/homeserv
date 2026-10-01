@@ -2,11 +2,8 @@ import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import type { Captain } from '../../types';
 import { CaptainCard } from './CaptainCard';
-import { Zap, Wrench, Car, Hammer, Paintbrush, Fan, Tv, ShieldAlert, Users } from 'lucide-react';
-
-const CATEGORY_ICONS: Record<string, React.ElementType> = {
-  Zap, Wrench, Car, Hammer, Paintbrush, Fan, Tv, ShieldAlert,
-};
+import { getCategoryIconUrl, ALL_CATEGORIES_ICON_URL } from '../../utils/categoryIcons';
+import { Users } from 'lucide-react';
 
 export const CaptainDirectory: React.FC<{ onOpenProfile: (captain: Captain) => void }> = ({ onOpenProfile }) => {
   const { categories, captains, searchQuery, selectedCity, t } = useApp();
@@ -54,14 +51,11 @@ export const CaptainDirectory: React.FC<{ onOpenProfile: (captain: Captain) => v
               selectedCatId === 'all' ? 'bg-blue-50 ring-2 ring-blue-500' : 'bg-white border border-slate-200 hover:border-blue-300'
             }`}
           >
-            <span className="w-14 h-14 rounded-2xl flex items-center justify-center bg-gradient-to-br from-slate-500 to-slate-700 text-white shadow-sm">
-              <Users className="w-6 h-6" />
-            </span>
+            <img src={ALL_CATEGORIES_ICON_URL} alt="All" className="w-16 h-16 object-contain" />
             <span className="text-xs font-bold text-slate-800 text-center leading-tight">All</span>
           </button>
 
           {activeCategories.map((cat) => {
-            const IconComponent = CATEGORY_ICONS[cat.iconName] || Wrench;
             const isSelected = selectedCatId === cat.id;
             return (
               <button
@@ -71,9 +65,7 @@ export const CaptainDirectory: React.FC<{ onOpenProfile: (captain: Captain) => v
                   isSelected ? 'bg-blue-50 ring-2 ring-blue-500' : 'bg-white border border-slate-200 hover:border-blue-300'
                 }`}
               >
-                <span className={`w-14 h-14 rounded-2xl flex items-center justify-center bg-gradient-to-br ${cat.color} text-white shadow-sm`}>
-                  <IconComponent className="w-6 h-6" />
-                </span>
+                <img src={getCategoryIconUrl(cat.id)} alt={cat.title} className="w-16 h-16 object-contain" />
                 <span className="text-xs font-bold text-slate-800 text-center leading-tight">{cat.title}</span>
               </button>
             );

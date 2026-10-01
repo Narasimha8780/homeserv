@@ -1,27 +1,8 @@
 import React from 'react';
 import type { Captain, ServiceCategory } from '../../types';
 import { useApp } from '../../context/AppContext';
-import {
-  Star,
-  MapPin,
-  ShieldCheck,
-  Phone,
-  MessageCircle,
-  Heart,
-  Clock,
-  Zap,
-  Wrench,
-  Car,
-  Hammer,
-  Paintbrush,
-  Fan,
-  Tv,
-  ShieldAlert,
-} from 'lucide-react';
-
-const CATEGORY_ICONS: Record<string, React.ElementType> = {
-  Zap, Wrench, Car, Hammer, Paintbrush, Fan, Tv, ShieldAlert,
-};
+import { getCategoryIconUrl } from '../../utils/categoryIcons';
+import { Star, MapPin, ShieldCheck, Phone, MessageCircle, Heart, Clock } from 'lucide-react';
 
 export const CaptainCard: React.FC<{
   captain: Captain;
@@ -32,7 +13,6 @@ export const CaptainCard: React.FC<{
   const favorite = isFavorite(captain.id);
 
   const primaryCategory = categories.find((c) => c.id === captain.categories[0]);
-  const PrimaryIcon = CATEGORY_ICONS[primaryCategory?.iconName || ''] || Wrench;
 
   const categoryTitles = captain.categories
     .map((id) => categories.find((c) => c.id === id)?.title)
@@ -62,11 +42,11 @@ export const CaptainCard: React.FC<{
             className="w-16 h-16 rounded-2xl object-cover border border-slate-200"
           />
           {primaryCategory && (
-            <span
-              className={`absolute -bottom-1.5 -right-1.5 w-6 h-6 rounded-full bg-gradient-to-br ${primaryCategory.color} text-white flex items-center justify-center border-2 border-white shadow-sm`}
-            >
-              <PrimaryIcon className="w-3 h-3" />
-            </span>
+            <img
+              src={getCategoryIconUrl(primaryCategory.id)}
+              alt={primaryCategory.title}
+              className="absolute -bottom-1.5 -right-1.5 w-6 h-6 rounded-full border-2 border-white shadow-sm object-cover"
+            />
           )}
         </div>
         <div className="flex-1 min-w-0">
