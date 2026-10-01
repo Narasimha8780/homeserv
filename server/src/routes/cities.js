@@ -31,7 +31,7 @@ citiesRouter.post('/', async (req, res) => {
       name: name.trim(),
       state: state.trim(),
       population: 'N/A',
-      tier: 'Semi-Urban',
+      tier: 'Tier 3',
       isActive: true,
       order: (last?.order || 0) + 1,
     });

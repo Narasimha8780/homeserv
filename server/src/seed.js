@@ -11,6 +11,14 @@ function slugify(str) {
   return str.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 }
 
+// Rough population bands by tier — the official city list only classifies tiers, not
+// exact population figures, so this is a readable placeholder rather than precise data.
+const POPULATION_BY_TIER = {
+  'Tier 1': '5M+',
+  'Tier 2': '0.5M - 2M',
+  'Tier 3': '<0.5M',
+};
+
 function buildCities() {
   // Jaipur, Rajasthan first (matches the app's long-standing default city); everything
   // else keeps its original relative order from INDIA_CITIES (stable sort).
@@ -24,7 +32,7 @@ function buildCities() {
     id: `${slugify(c.name)}-${slugify(c.state)}`,
     name: c.name,
     state: c.state,
-    population: c.population,
+    population: c.population || POPULATION_BY_TIER[c.tier] || 'N/A',
     tier: c.tier,
     isActive: true,
     order: idx + 1,

@@ -4,7 +4,7 @@ export const translations: Record<AppLanguage, Record<string, string>> = {
   en: {
     appName: 'HomeServ',
     tagline: 'Find trusted local plumbers, electricians, drivers & more',
-    tierTag: 'A free local services directory for Tier 1, 2 & Semi-Urban India',
+    tierTag: 'A free local services directory for all of India — Tier 1, 2 & 3 cities',
     selectCity: 'Select Your City',
     detectLocation: 'Detect My City (GPS)',
     searchPlaceholder: 'Search electrician, plumber, driver...',
