@@ -1,7 +1,7 @@
 import React from 'react';
 import type { Captain, ServiceCategory } from '../../types';
 import { useApp } from '../../context/AppContext';
-import { getCategoryIconUrl } from '../../utils/categoryIcons';
+import { CategoryIcon } from '../common/CategoryIcon';
 import { Star, MapPin, ShieldCheck, Phone, MessageCircle, Heart, Clock } from 'lucide-react';
 
 export const CaptainCard: React.FC<{
@@ -42,11 +42,9 @@ export const CaptainCard: React.FC<{
             className="w-16 h-16 rounded-2xl object-cover border-2 border-white shadow-premium ring-1 ring-slate-200/80 transition-transform duration-200 group-hover:scale-[1.03]"
           />
           {primaryCategory && (
-            <img
-              src={getCategoryIconUrl(primaryCategory.id)}
-              alt={primaryCategory.title}
-              className="absolute -bottom-1.5 -right-1.5 w-6 h-6 rounded-full border-2 border-white shadow-sm object-cover"
-            />
+            <span className="absolute -bottom-1.5 -right-1.5 rounded-full border-2 border-white shadow-sm overflow-hidden bg-white">
+              <CategoryIcon categoryId={primaryCategory.id} title={primaryCategory.title} iconName={primaryCategory.iconName} colorClass={primaryCategory.color} className="w-6 h-6" iconClassName="w-3 h-3" />
+            </span>
           )}
         </div>
         <div className="flex-1 min-w-0">

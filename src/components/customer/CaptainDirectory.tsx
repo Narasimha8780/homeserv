@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import type { Captain } from '../../types';
 import { CaptainCard } from './CaptainCard';
-import { getCategoryIconUrl, ALL_CATEGORIES_ICON_URL } from '../../utils/categoryIcons';
+import { ALL_CATEGORIES_ICON_URL } from '../../utils/categoryIcons';
+import { CategoryIcon } from '../common/CategoryIcon';
 import { Users } from 'lucide-react';
 
 export const CaptainDirectory: React.FC<{ onOpenProfile: (captain: Captain) => void }> = ({ onOpenProfile }) => {
@@ -53,7 +54,7 @@ export const CaptainDirectory: React.FC<{ onOpenProfile: (captain: Captain) => v
                 : 'bg-white border border-slate-200/80 shadow-xs hover:border-blue-300 hover:shadow-premium'
             }`}
           >
-            <img src={ALL_CATEGORIES_ICON_URL} alt="All" className="w-16 h-16 object-contain transition-transform duration-200 group-hover:scale-105" />
+            <img src={ALL_CATEGORIES_ICON_URL} alt="All" className="w-16 h-16 object-contain mix-blend-multiply transition-transform duration-200 group-hover:scale-105" />
             <span className="text-xs font-bold text-slate-800 text-center leading-tight">All</span>
           </button>
 
@@ -69,7 +70,7 @@ export const CaptainDirectory: React.FC<{ onOpenProfile: (captain: Captain) => v
                     : 'bg-white border border-slate-200/80 shadow-xs hover:border-blue-300 hover:shadow-premium'
                 }`}
               >
-                <img src={getCategoryIconUrl(cat.id)} alt={cat.title} className="w-16 h-16 object-contain transition-transform duration-200 group-hover:scale-105" />
+                <span className="transition-transform duration-200 group-hover:scale-105"><CategoryIcon categoryId={cat.id} title={cat.title} iconName={cat.iconName} colorClass={cat.color} /></span>
                 <span className="text-xs font-bold text-slate-800 text-center leading-tight">{cat.title}</span>
               </button>
             );
