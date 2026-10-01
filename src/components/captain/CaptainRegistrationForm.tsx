@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import type { ServiceCategoryId } from '../../types';
+import type { City, ServiceCategoryId } from '../../types';
+import { StateCitySelect } from '../common/StateCitySelect';
 import { UserPlus, Check } from 'lucide-react';
 
 const LANGUAGE_OPTIONS = ['Hindi', 'English', 'Tamil', 'Telugu', 'Marathi', 'Bengali', 'Urdu', 'Marwari'];
@@ -12,7 +13,7 @@ export const CaptainRegistrationForm: React.FC = () => {
   const [phone, setPhone] = useState('');
   const [sameAsPhoneForWhatsapp, setSameAsPhoneForWhatsapp] = useState(true);
   const [whatsapp, setWhatsapp] = useState('');
-  const [cityId, setCityId] = useState(allCities[0]?.id || '');
+  const [selectedCity, setSelectedCity] = useState<City | null>(allCities[0] || null);
   const [areasInput, setAreasInput] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<ServiceCategoryId[]>([]);
   const [experienceYears, setExperienceYears] = useState('2');
@@ -34,7 +35,7 @@ export const CaptainRegistrationForm: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !phone.trim() || selectedCategories.length === 0 || !areasInput.trim() || isSubmitting) return;
+    if (!name.trim() || !phone.trim() || !selectedCity || selectedCategories.length === 0 || !areasInput.trim() || isSubmitting) return;
 
     const cleanPhoneDigits = digitsOnly(phone);
     const waNumber = sameAsPhoneForWhatsapp ? `91${cleanPhoneDigits.slice(-10)}` : digitsOnly(whatsapp);
@@ -47,7 +48,7 @@ export const CaptainRegistrationForm: React.FC = () => {
         phone: phone.trim(),
         whatsapp: waNumber,
         avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name.trim())}&background=1A73E8&color=fff&size=200&bold=true`,
-        cityId,
+        cityId: selectedCity!.id,
         areas: areasInput.split(',').map((a) => a.trim()).filter(Boolean),
         categories: selectedCategories,
         experienceYears: Number(experienceYears) || 0,
@@ -120,29 +121,19 @@ export const CaptainRegistrationForm: React.FC = () => {
             )}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">City</label>
-              <select
-                value={cityId}
-                onChange={(e) => setCityId(e.target.value as typeof cityId)}
-                className="w-full text-sm p-2.5 bg-slate-50 border border-slate-300 rounded-xl"
-              >
-                {allCities.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">Years of Experience</label>
-              <input
-                type="number"
-                min={0}
-                value={experienceYears}
-                onChange={(e) => setExperienceYears(e.target.value)}
-                className="w-full text-sm p-2.5 bg-slate-50 border border-slate-300 rounded-xl"
-              />
-            </div>
+          <div>
+            <StateCitySelect value={selectedCity} onSelect={setSelectedCity} />
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-slate-700 block mb-1">Years of Experience</label>
+            <input
+              type="number"
+              min={0}
+              value={experienceYears}
+              onChange={(e) => setExperienceYears(e.target.value)}
+              className="w-full text-sm p-2.5 bg-slate-50 border border-slate-300 rounded-xl"
+            />
           </div>
 
           <div>

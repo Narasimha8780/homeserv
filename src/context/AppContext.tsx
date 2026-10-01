@@ -43,6 +43,7 @@ interface AppContextType {
   selectedCity: City;
   setSelectedCity: (city: City) => void;
   allCities: City[];
+  addCity: (name: string, state: string) => Promise<City>;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
 
@@ -156,6 +157,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     [allCities, selectedCityId]
   );
   const setSelectedCity = (city: City) => setSelectedCityId(city.id);
+
+  const addCity = async (name: string, state: string): Promise<City> => {
+    const city = await api.post<City>('/cities', { name, state });
+    setAllCities((prev) => (prev.some((c) => c.id === city.id) ? prev : [...prev, city]));
+    return city;
+  };
 
   const currentCaptain = useMemo(
     () => captains.find((c) => c.id === activeCaptainId) || null,
@@ -274,6 +281,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         selectedCity,
         setSelectedCity,
         allCities,
+        addCity,
         searchQuery,
         setSearchQuery,
         categories,

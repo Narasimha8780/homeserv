@@ -1,11 +1,11 @@
-export type CityId = 'jaipur' | 'lucknow' | 'indore' | 'coimbatore' | 'bhopal' | 'nagpur' | 'patna' | 'vizag';
+export type CityId = string;
 
 export interface City {
   id: CityId;
   name: string;
   state: string;
   population: string;
-  tier: 'Tier 1' | 'Tier 2' | 'Semi-Urban';
+  tier: string;
   isActive: boolean;
 }
 
