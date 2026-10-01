@@ -1,7 +1,7 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
 import type { AppLanguage } from '../../types';
-import { Smartphone, Wrench, ShieldCheck, Globe, RotateCcw, MapPin } from 'lucide-react';
+import { Smartphone, Wrench, Globe, RotateCcw, MapPin } from 'lucide-react';
 
 export const RoleSwitcherBar: React.FC<{ onOpenCityModal: () => void }> = ({ onOpenCityModal }) => {
   const { role, setRole, setCustomerTab, language, setLanguage, selectedCity, resetToDefault, currentCaptain } = useApp();
@@ -63,16 +63,6 @@ export const RoleSwitcherBar: React.FC<{ onOpenCityModal: () => void }> = ({ onO
         </div>
 
         <div className="flex items-center space-x-2">
-          <button
-            onClick={() => setRole('admin')}
-            title="Admin console"
-            className={`p-1.5 rounded-lg border transition-colors ${
-              role === 'admin' ? 'bg-emerald-700 border-emerald-500 text-white' : 'bg-blue-950/60 border-blue-800 text-blue-300 hover:text-white'
-            }`}
-          >
-            <ShieldCheck className="w-3.5 h-3.5" />
-          </button>
-
           <div className="relative flex items-center">
             <Globe className="w-3.5 h-3.5 absolute left-2 text-blue-300 pointer-events-none" />
             <select

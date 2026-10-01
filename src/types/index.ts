@@ -29,7 +29,7 @@ export interface ServiceCategory {
 }
 
 export type KycStatus = 'verified' | 'pending' | 'rejected';
-export type AppRole = 'customer' | 'captain' | 'admin';
+export type AppRole = 'customer' | 'captain';
 export type AppLanguage = 'en' | 'hi' | 'ta' | 'te' | 'mr' | 'bn';
 
 export interface Captain {
