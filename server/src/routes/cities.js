@@ -38,3 +38,13 @@ citiesRouter.post('/', async (req, res) => {
   }
   res.status(201).json(city);
 });
+
+// Admin-only: hide/restore a city from customer & captain pickers without deleting it
+// (deactivating rather than deleting keeps any captains already using this city intact).
+citiesRouter.patch('/:id/toggle', async (req, res) => {
+  const city = await City.findById(req.params.id);
+  if (!city) return res.status(404).json({ error: 'City not found' });
+  city.isActive = !city.isActive;
+  await city.save();
+  res.json(city);
+});

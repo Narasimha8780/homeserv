@@ -37,8 +37,8 @@ interface AppContextType {
   setCustomerTab: (tab: 'home' | 'favorites' | 'more') => void;
   captainTab: 'dashboard' | 'reviews' | 'kyc';
   setCaptainTab: (tab: 'dashboard' | 'reviews' | 'kyc') => void;
-  adminTab: 'overview' | 'kyc' | 'categories';
-  setAdminTab: (tab: 'overview' | 'kyc' | 'categories') => void;
+  adminTab: 'overview' | 'kyc' | 'categories' | 'cities';
+  setAdminTab: (tab: 'overview' | 'kyc' | 'categories' | 'cities') => void;
 
   selectedCity: City;
   setSelectedCity: (city: City) => void;
@@ -73,6 +73,7 @@ interface AppContextType {
   rejectCaptainKyc: (id: string) => void;
   toggleCategoryActive: (id: ServiceCategoryId) => void;
   addCategory: (title: string, iconName: string) => void;
+  toggleCityActive: (id: string) => void;
 
   resetToDefault: () => void;
 }
@@ -86,7 +87,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [language, setLanguage] = useState<AppLanguage>('en');
   const [customerTab, setCustomerTab] = useState<'home' | 'favorites' | 'more'>('home');
   const [captainTab, setCaptainTab] = useState<'dashboard' | 'reviews' | 'kyc'>('dashboard');
-  const [adminTab, setAdminTab] = useState<'overview' | 'kyc' | 'categories'>('overview');
+  const [adminTab, setAdminTab] = useState<'overview' | 'kyc' | 'categories' | 'cities'>('overview');
 
   const [allCities, setAllCities] = useState<City[]>([]);
   const [selectedCityId, setSelectedCityId] = useState<string | null>(null);
@@ -100,9 +101,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
-  const [activeCaptainId, setActiveCaptainId] = useState<string | null>('cap-ravi');
+  // No real login system exists yet, so "which captain is this device" is remembered
+  // locally rather than defaulted to a shared demo account or picked from a list of
+  // everyone else's profiles (that was a privacy leak — any visitor could browse and
+  // view/edit any registered captain's private dashboard and KYC documents).
+  const [activeCaptainId, setActiveCaptainId] = useState<string | null>(null);
 
-  // Load device-local preferences (favorites, language are per-device, not stored in Mongo)
+  // Load device-local preferences (favorites, language, which captain this device is)
   useEffect(() => {
     try {
       const saved = localStorage.getItem(PREFS_KEY);
@@ -110,6 +115,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         const parsed = JSON.parse(saved);
         if (parsed.favorites) setFavorites(parsed.favorites);
         if (parsed.language) setLanguage(parsed.language);
+        if (parsed.activeCaptainId) setActiveCaptainId(parsed.activeCaptainId);
       }
     } catch {
       // ignore
@@ -118,11 +124,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   useEffect(() => {
     try {
-      localStorage.setItem(PREFS_KEY, JSON.stringify({ favorites, language }));
+      localStorage.setItem(PREFS_KEY, JSON.stringify({ favorites, language, activeCaptainId }));
     } catch {
       // ignore
     }
-  }, [favorites, language]);
+  }, [favorites, language, activeCaptainId]);
 
   // Load all data from the API on startup
   const loadAll = async () => {
@@ -139,7 +145,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setCategories(categoriesRes);
       setCaptains(captainsRes);
       setReviews(reviewsRes);
-      setSelectedCityId((prev) => prev || citiesRes[0]?.id || null);
+      setSelectedCityId((prev) => prev || citiesRes.find((c) => c.isActive)?.id || citiesRes[0]?.id || null);
     } catch (err) {
       setLoadError(err instanceof Error ? err.message : 'Failed to load data');
     } finally {
@@ -250,6 +256,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     api.patch(`/categories/${id}/toggle`, {}).catch(() => {});
   };
 
+  const toggleCityActive = (id: string) => {
+    soundFx.playTap();
+    setAllCities((prev) => prev.map((c) => (c.id === id ? { ...c, isActive: !c.isActive } : c)));
+    api.patch(`/cities/${id}/toggle`, {}).catch(() => {});
+  };
+
   const addCategory = async (title: string, iconName: string) => {
     const category = await api.post<ServiceCategory>('/categories', { title, iconName });
     soundFx.playSuccess();
@@ -260,7 +272,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     localStorage.removeItem(PREFS_KEY);
     setFavorites([]);
     setLanguage('en');
-    setActiveCaptainId('cap-ravi');
+    setActiveCaptainId(null);
     loadAll();
   };
 
@@ -305,6 +317,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         rejectCaptainKyc,
         toggleCategoryActive,
         addCategory,
+        toggleCityActive,
         resetToDefault,
       }}
     >

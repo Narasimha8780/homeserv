@@ -3,7 +3,8 @@ import { useApp } from '../../context/AppContext';
 import { AdminOverviewTab } from './AdminOverviewTab';
 import { AdminKycTab } from './AdminKycTab';
 import { AdminCategoriesTab } from './AdminCategoriesTab';
-import { LayoutDashboard, ShieldCheck, Grid3x3 } from 'lucide-react';
+import { AdminCitiesTab } from './AdminCitiesTab';
+import { LayoutDashboard, ShieldCheck, Grid3x3, MapPin } from 'lucide-react';
 
 export const AdminApp: React.FC = () => {
   const { adminTab, setAdminTab, captains, t } = useApp();
@@ -13,6 +14,7 @@ export const AdminApp: React.FC = () => {
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
     { id: 'kyc', label: 'KYC Queue', icon: ShieldCheck, badge: pendingCount },
     { id: 'categories', label: 'Categories', icon: Grid3x3 },
+    { id: 'cities', label: 'Cities', icon: MapPin },
   ];
 
   return (
@@ -54,6 +56,7 @@ export const AdminApp: React.FC = () => {
         {adminTab === 'overview' && <AdminOverviewTab />}
         {adminTab === 'kyc' && <AdminKycTab />}
         {adminTab === 'categories' && <AdminCategoriesTab />}
+        {adminTab === 'cities' && <AdminCitiesTab />}
       </main>
     </div>
   );

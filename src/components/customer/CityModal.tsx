@@ -19,7 +19,8 @@ export const CityModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ 
     setIsDetecting(true);
     setTimeout(() => {
       // Simulate geolocation matching closest Tier 2 hub
-      setSelectedCity(allCities[0]); // Jaipur
+      const fallbackCity = allCities.find((c) => c.isActive) || allCities[0];
+      if (fallbackCity) setSelectedCity(fallbackCity);
       setIsDetecting(false);
       onClose();
     }, 700);

@@ -4,12 +4,10 @@ import { CaptainRegistrationForm } from './CaptainRegistrationForm';
 import { CaptainDashboard } from './CaptainDashboard';
 import { CaptainKycTab } from './CaptainKycTab';
 import { CaptainReviewsTab } from './CaptainReviewsTab';
-import { LayoutGrid, Star, ShieldCheck, UserCog, UserPlus } from 'lucide-react';
-
-const NEW_CAPTAIN_VALUE = '__new__';
+import { LayoutGrid, Star, ShieldCheck, UserPlus } from 'lucide-react';
 
 export const CaptainApp: React.FC = () => {
-  const { captainTab, setCaptainTab, captains, activeCaptainId, setActiveCaptainId, currentCaptain, t } = useApp();
+  const { captainTab, setCaptainTab, setActiveCaptainId, currentCaptain, t } = useApp();
 
   const TABS: { id: typeof captainTab; label: string; icon: React.ElementType }[] = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutGrid },
@@ -24,24 +22,6 @@ export const CaptainApp: React.FC = () => {
           <div>
             <h1 className="text-sm sm:text-base font-black tracking-tight">{t('captainPortalTitle')}</h1>
             <p className="text-[11px] text-orange-100">List your service for free and get discovered by local customers</p>
-          </div>
-
-          <div className="flex items-center space-x-1.5 bg-black/15 rounded-xl px-2 py-1">
-            <UserCog className="w-3.5 h-3.5 text-orange-100" />
-            <select
-              value={activeCaptainId || NEW_CAPTAIN_VALUE}
-              onChange={(e) =>
-                setActiveCaptainId(e.target.value === NEW_CAPTAIN_VALUE ? null : e.target.value)
-              }
-              className="bg-transparent text-white text-xs font-semibold focus:outline-none cursor-pointer max-w-[180px]"
-            >
-              {captains.map((c) => (
-                <option key={c.id} value={c.id} className="text-slate-900">
-                  {c.name} {c.kycStatus !== 'verified' ? '(Pending)' : ''}
-                </option>
-              ))}
-              <option value={NEW_CAPTAIN_VALUE} className="text-slate-900">+ Register New Captain</option>
-            </select>
           </div>
         </div>
       </div>
