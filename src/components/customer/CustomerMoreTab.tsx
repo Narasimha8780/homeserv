@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { Globe, HelpCircle, ChevronRight, RotateCcw, ShieldCheck, Briefcase } from 'lucide-react';
+import { Globe, HelpCircle, ChevronRight, RotateCcw, ShieldCheck, Briefcase, User, LogOut } from 'lucide-react';
 import type { AppLanguage } from '../../types';
 
 export const CustomerMoreTab: React.FC<{ onBecomeCaptain: () => void }> = ({ onBecomeCaptain }) => {
-  const { language, setLanguage, resetToDefault } = useApp();
+  const { language, setLanguage, resetToDefault, currentCustomer, signOutCustomer } = useApp();
   const [showHelp, setShowHelp] = useState(false);
 
   const languages: { code: AppLanguage; label: string }[] = [
@@ -24,6 +24,27 @@ export const CustomerMoreTab: React.FC<{ onBecomeCaptain: () => void }> = ({ onB
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 space-y-5">
+      {currentCustomer && (
+        <div className="bg-white rounded-3xl border border-slate-200 shadow-xs p-4 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
+              <User className="w-4 h-4" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-bold text-slate-900 truncate">{currentCustomer.name}</p>
+              <p className="text-xs text-slate-500 truncate">{currentCustomer.phone}</p>
+            </div>
+          </div>
+          <button
+            onClick={signOutCustomer}
+            className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-rose-600 border border-rose-200 hover:bg-rose-50 transition-colors"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            Sign Out
+          </button>
+        </div>
+      )}
+
       <button
         onClick={onBecomeCaptain}
         className="w-full bg-gradient-to-r from-orange-500 to-amber-600 rounded-3xl p-5 text-white shadow-lg flex items-center justify-between text-left"

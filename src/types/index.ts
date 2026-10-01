@@ -65,3 +65,9 @@ export interface Review {
   comment: string;
   date: string;
 }
+
+export interface Customer {
+  id: string;
+  name: string;
+  phone: string;
+}

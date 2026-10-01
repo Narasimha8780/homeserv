@@ -7,6 +7,7 @@ import type {
   ServiceCategoryId,
   Captain,
   Review,
+  Customer,
 } from '../types';
 import { api } from '../utils/api';
 import { translations } from '../i18n/translations';
@@ -59,6 +60,11 @@ interface AppContextType {
   setActiveCaptainId: (id: string | null) => void;
   currentCaptain: Captain | null;
 
+  currentCustomer: Customer | null;
+  verifyCustomerOtp: (phone: string, code: string, name?: string) => Promise<Customer | null>;
+  completeCustomerSignup: (name: string, phone: string) => Promise<Customer>;
+  signOutCustomer: () => void;
+
   toggleFavorite: (captainId: string) => void;
   isFavorite: (captainId: string) => boolean;
   recordContactClick: (captainId: string) => void;
@@ -108,8 +114,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // everyone else's profiles (that was a privacy leak — any visitor could browse and
   // view/edit any registered captain's private dashboard and KYC documents).
   const [activeCaptainId, setActiveCaptainId] = useState<string | null>(null);
+  const [currentCustomer, setCurrentCustomer] = useState<Customer | null>(null);
 
-  // Load device-local preferences (favorites, language, which captain this device is)
+  // Load device-local preferences (favorites, language, which captain/customer this device is)
   useEffect(() => {
     try {
       const saved = localStorage.getItem(PREFS_KEY);
@@ -118,6 +125,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         if (parsed.favorites) setFavorites(parsed.favorites);
         if (parsed.language) setLanguage(parsed.language);
         if (parsed.activeCaptainId) setActiveCaptainId(parsed.activeCaptainId);
+        if (parsed.currentCustomer) setCurrentCustomer(parsed.currentCustomer);
       }
     } catch {
       // ignore
@@ -126,11 +134,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   useEffect(() => {
     try {
-      localStorage.setItem(PREFS_KEY, JSON.stringify({ favorites, language, activeCaptainId }));
+      localStorage.setItem(PREFS_KEY, JSON.stringify({ favorites, language, activeCaptainId, currentCustomer }));
     } catch {
       // ignore
     }
-  }, [favorites, language, activeCaptainId]);
+  }, [favorites, language, activeCaptainId, currentCustomer]);
 
   // Load all data from the API on startup
   const loadAll = async () => {
@@ -242,6 +250,30 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return captain;
   };
 
+  const verifyCustomerOtp = async (phone: string, code: string, name?: string): Promise<Customer | null> => {
+    const { customer } = await api.post<{ verified: boolean; customer: Customer | null }>('/customers/verify-otp', {
+      phone,
+      code,
+      name,
+    });
+    if (customer) {
+      soundFx.playSuccess();
+      setCurrentCustomer(customer);
+    }
+    return customer;
+  };
+
+  const completeCustomerSignup = async (name: string, phone: string): Promise<Customer> => {
+    const customer = await api.post<Customer>('/customers', { name, phone });
+    soundFx.playSuccess();
+    setCurrentCustomer(customer);
+    return customer;
+  };
+
+  const signOutCustomer = () => {
+    setCurrentCustomer(null);
+  };
+
   const updateCaptainProfile = (id: string, updates: Partial<Captain>) => {
     soundFx.playTap();
     setCaptains((prev) => prev.map((c) => (c.id === id ? { ...c, ...updates } : c)));
@@ -292,6 +324,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setFavorites([]);
     setLanguage('en');
     setActiveCaptainId(null);
+    setCurrentCustomer(null);
     loadAll();
   };
 
@@ -324,6 +357,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         activeCaptainId,
         setActiveCaptainId,
         currentCaptain,
+        currentCustomer,
+        verifyCustomerOtp,
+        completeCustomerSignup,
+        signOutCustomer,
         toggleFavorite,
         isFavorite,
         recordContactClick,

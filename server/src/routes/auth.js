@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { Otp } from '../models/Otp.js';
 import { Captain } from '../models/Captain.js';
 import { normalizePhone } from '../utils/phone.js';
+import { consumeOtp } from '../utils/otpVerify.js';
 
 export const authRouter = Router();
 
@@ -28,14 +29,8 @@ authRouter.post('/send-otp', async (req, res) => {
 });
 
 authRouter.post('/verify-otp', async (req, res) => {
-  const phone = normalizePhone(req.body.phone);
-  const code = String(req.body.code || '').trim();
-
-  const otp = await Otp.findById(phone);
-  if (!otp || otp.expiresAt < new Date() || otp.code !== code) {
-    return res.status(400).json({ error: 'Invalid or expired OTP' });
-  }
-  await Otp.deleteOne({ _id: phone });
+  const { ok, phone } = await consumeOtp(req.body.phone, req.body.code);
+  if (!ok) return res.status(400).json({ error: 'Invalid or expired OTP' });
 
   const captain = await Captain.findOne({ phoneNormalized: phone });
   res.json({ verified: true, captain: captain || null });

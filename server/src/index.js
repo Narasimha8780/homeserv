@@ -7,6 +7,7 @@ import { categoriesRouter } from './routes/categories.js';
 import { captainsRouter } from './routes/captains.js';
 import { reviewsRouter } from './routes/reviews.js';
 import { authRouter } from './routes/auth.js';
+import { customersRouter } from './routes/customers.js';
 
 const app = express();
 
@@ -32,6 +33,7 @@ app.use('/api/categories', categoriesRouter);
 app.use('/api/captains', captainsRouter);
 app.use('/api/reviews', reviewsRouter);
 app.use('/api/auth', authRouter);
+app.use('/api/customers', customersRouter);
 
 app.use((err, _req, res, _next) => {
   console.error(err);

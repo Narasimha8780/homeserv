@@ -8,10 +8,11 @@ import { CustomerMoreTab } from './CustomerMoreTab';
 import { CityModal } from './CityModal';
 import { CaptainProfileModal } from './CaptainProfileModal';
 import { ReviewModal } from './ReviewModal';
+import { CustomerAuthGate } from './CustomerAuthGate';
 import { Home, Heart, Menu } from 'lucide-react';
 
 export const CustomerApp: React.FC = () => {
-  const { customerTab, setCustomerTab, setSearchQuery, setRole, t } = useApp();
+  const { customerTab, setCustomerTab, setSearchQuery, setRole, currentCustomer, t } = useApp();
 
   const [isCityModalOpen, setCityModalOpen] = useState(false);
   const [selectedCaptain, setSelectedCaptain] = useState<Captain | null>(null);
@@ -28,6 +29,8 @@ export const CustomerApp: React.FC = () => {
     { id: 'favorites', label: t('myFavorites'), icon: Heart },
     { id: 'more', label: t('more'), icon: Menu },
   ];
+
+  if (!currentCustomer) return <CustomerAuthGate />;
 
   return (
     <div className="min-h-screen bg-[#F5F7FA] pb-20 sm:pb-6">
