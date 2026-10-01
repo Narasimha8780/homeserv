@@ -16,14 +16,14 @@ steps:
       'build',
       '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/homeserv/api/$BRANCH_NAME:${COMMIT_SHA}',
       '--cache-from', 'us-central1-docker.pkg.dev/$PROJECT_ID/homeserv/api:latest',
-      '-f', 'server/Dockerfile',
+      '-f', 'Dockerfile',
       '.'
     ]
     id: Building the container image
 
   # Tag the image as latest for future caching
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['tag', 'us-central1-docker.pkg.dev/$PROJECT_ID/homeserv/api/$BRANCH_NAME:${COMMIT_SHA}', '${_REGION}-docker.pkg.dev/$PROJECT_ID/homeserv/api:latest']
+    args: ['tag', 'us-central1-docker.pkg.dev/$PROJECT_ID/homeserv/api/$BRANCH_NAME:${COMMIT_SHA}', 'us-central1-docker.pkg.dev/$PROJECT_ID/homeserv/api:latest']
     id: Tagging as latest
 
   # Push both the tagged image and latest
