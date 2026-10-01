@@ -60,7 +60,7 @@ Other useful scripts:
 
 ## Deploying to the cloud (Google Cloud Run)
 
-See [DEPLOY.md](DEPLOY.md) for the full guide: MongoDB on a Compute Engine VM, the backend and frontend each as a Cloud Run service, and a `Dockerfile` + `cloudbuild-web.yaml` already set up for both in this repo.
+See [DEPLOY.md](DEPLOY.md) for the full guide: MongoDB on a Compute Engine VM, the backend and frontend each as a Cloud Run service, and a separate IAP-protected Admin console (same codebase, same backend/DB, different build mode) — with `Dockerfile` + `cloudbuild-*.yaml` already set up for all three in this repo.
 
 ## Publishing to the Play Store
 

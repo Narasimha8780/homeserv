@@ -1,0 +1,42 @@
+options:
+ logging: CLOUD_LOGGING_ONLY
+
+steps:
+  # Pull the cached image from Artifact Registry (with fallback for first build)
+  - name: 'gcr.io/cloud-builders/docker'
+    entrypoint: 'bash'
+    args: ['-c', 'docker pull us-central1-docker.pkg.dev/$PROJECT_ID/narasimha8780/homeserv/admin:latest || exit 0']
+    id: Pulling cached image
+
+  # Build the container image with cache optimization
+  - name: gcr.io/cloud-builders/docker
+    args: [
+      'build',
+      '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/narasimha8780/homeserv/admin/$BRANCH_NAME:${COMMIT_SHA}',
+      '--cache-from', 'us-central1-docker.pkg.dev/$PROJECT_ID/narasimha8780/homeserv/admin:latest',
+      '--build-arg', 'VITE_API_URL=${_VITE_API_URL}',
+      '--build-arg', 'VITE_APP_MODE=admin',
+      '-f', 'Dockerfile',
+      '.'
+    ]
+    id: Building the container image
+
+  # Tag the image as latest for future caching
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['tag', 'us-central1-docker.pkg.dev/$PROJECT_ID/narasimha8780/homeserv/admin/$BRANCH_NAME:${COMMIT_SHA}', 'us-central1-docker.pkg.dev/$PROJECT_ID/narasimha8780/homeserv/admin:latest']
+    id: Tagging as latest
+
+  # Push both the tagged image and latest
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'us-central1-docker.pkg.dev/$PROJECT_ID/narasimha8780/homeserv/admin/$BRANCH_NAME:${COMMIT_SHA}']
+    id: Pushing the image to registry
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'us-central1-docker.pkg.dev/$PROJECT_ID/narasimha8780/homeserv/admin:latest']
+    id: Pushing latest tag
+
+  # Deploy to Cloud Run — deliberately NOT --allow-unauthenticated. This service sits
+  # behind the Load Balancer with Identity-Aware Proxy in front of it (see DEPLOY.md),
+  # so only Google accounts you explicitly grant access to can ever reach it.
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args: ['run', 'deploy', '${_SERVICE_NAME}', '--image', 'us-central1-docker.pkg.dev/$PROJECT_ID/narasimha8780/homeserv/admin/$BRANCH_NAME:${COMMIT_SHA}', '--region', 'us-central1', '--platform', 'managed']

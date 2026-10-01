@@ -1,9 +1,10 @@
 # Deploying to Google Cloud (Cloud Run + VM)
 
-Three pieces:
+Four pieces:
 - **MongoDB** — on a Compute Engine VM you create yourself
 - **Backend API** — Cloud Run service, built from `server/Dockerfile`
 - **Frontend** — Cloud Run service, built from `Dockerfile` (root)
+- **Admin console** — the same frontend codebase built in a different mode (`VITE_APP_MODE=admin`), as its own Cloud Run service, talking to the same backend and the same database — locked down with Identity-Aware Proxy so only your Google account can open it (step 7)
 
 Android is out of scope for this guide — browser only, per your current setup.
 
@@ -11,7 +12,7 @@ Run everything below from the project root unless noted. Replace `YOUR_PROJECT_I
 
 ```
 gcloud config set project YOUR_PROJECT_ID
-gcloud services enable run.googleapis.com artifactregistry.googleapis.com compute.googleapis.com vpcaccess.googleapis.com
+gcloud services enable run.googleapis.com artifactregistry.googleapis.com compute.googleapis.com vpcaccess.googleapis.com iap.googleapis.com
 ```
 
 ## 1. MongoDB on your VM
@@ -212,9 +213,76 @@ gcloud run services update homeserv-api \
   --set-env-vars="MONGODB_URI=...,CORS_ORIGIN=https://home-serv.in,https://www.home-serv.in"
 ```
 
+## 7. Deploy the Admin console as its own IAP-protected service
+
+The Admin UI is the same codebase, built with a different entry point (`VITE_APP_MODE=admin` — see `src/main.tsx`), pointed at the **same** `homeserv-api` backend and the **same** MongoDB. It deploys as its own Cloud Run service (`homeserv-admin`), reachable only by Google accounts you explicitly allow, via Identity-Aware Proxy (IAP) in front of it on the Load Balancer. No separate backend, no separate database, no custom login code to write.
+
+**Build and deploy it** — deliberately with no `--allow-unauthenticated` (`cloudbuild-admin.yaml` already omits it):
+```bash
+gcloud builds submit --config=cloudbuild-admin.yaml \
+  --substitutions=_SERVICE_NAME=homeserv-admin,_VITE_API_URL=https://api.home-serv.in/api,BRANCH_NAME=main,COMMIT_SHA=manual-$(date +%s)
+```
+
+**Serverless NEG + backend service**, same pattern as `web`/`api`:
+```bash
+gcloud compute network-endpoint-groups create homeserv-admin-neg \
+  --region=REGION --network-endpoint-type=serverless --cloud-run-service=homeserv-admin
+
+gcloud compute backend-services create homeserv-admin-backend --global --load-balancing-scheme=EXTERNAL_MANAGED
+gcloud compute backend-services add-backend homeserv-admin-backend \
+  --global --network-endpoint-group=homeserv-admin-neg --network-endpoint-group-region=REGION
+```
+
+**Route `admin.home-serv.in` to it** in the existing URL map:
+```bash
+gcloud compute url-maps add-path-matcher homeserv-lb \
+  --path-matcher-name=admin-matcher \
+  --default-service=homeserv-admin-backend \
+  --new-hosts=admin.home-serv.in
+```
+
+**Extend the SSL cert** to cover the new hostname — Google-managed certs are immutable, so this means creating a new cert with all four hostnames and swapping it onto the HTTPS proxy (the old one can be deleted once the new one is `ACTIVE`):
+```bash
+gcloud compute ssl-certificates create homeserv-cert-v2 \
+  --domains=home-serv.in,www.home-serv.in,api.home-serv.in,admin.home-serv.in --global
+
+# wait for it to become ACTIVE (same DNS-must-point-here requirement as before), then:
+gcloud compute target-https-proxies update homeserv-https-proxy --ssl-certificates=homeserv-cert-v2
+gcloud compute ssl-certificates delete homeserv-cert --global
+```
+
+**DNS in Cloudflare**: add one more record, same as the others — `admin.home-serv.in` → `<LB_IP>`, DNS only (grey cloud) until the cert is `ACTIVE`.
+
+**Enable IAP on just this backend service** (one-time OAuth consent screen setup is needed first if you've never used IAP/OAuth in this project — do this via [console.cloud.google.com/apis/credentials/consent](https://console.cloud.google.com/apis/credentials/consent): choose "External", publish it, and since you'll be the only user, add yourself under "Test users" rather than going through Google's verification review):
+```bash
+gcloud compute backend-services update homeserv-admin-backend --global --iap=enabled
+```
+
+**Grant yourself access** — this is the actual access-control list; only accounts added here can ever get past IAP:
+```bash
+gcloud iap web add-iam-policy-binding \
+  --resource-type=backend-services --service=homeserv-admin-backend \
+  --member="user:narasimha.proddutoor@gmail.com" --role="roles/iap.httpsResourceAccessor"
+```
+
+**Let IAP actually call your Cloud Run service** — IAP forwards the request using its own service identity, which needs `run.invoker` on the service (replace `PROJECT_NUMBER`, found via `gcloud projects describe chat-bot-488712 --format='value(projectNumber)'`):
+```bash
+gcloud run services add-iam-policy-binding homeserv-admin \
+  --region=REGION \
+  --member="serviceAccount:service-PROJECT_NUMBER@gcp-sa-iap.iam.gserviceaccount.com" \
+  --role="roles/run.invoker"
+```
+
+**Harden ingress** the same way as the other two services:
+```bash
+gcloud run services update homeserv-admin --region=REGION --ingress=internal-and-cloud-load-balancing
+```
+
+Now `https://admin.home-serv.in` prompts a Google Sign-In, checks your email against the IAP access list, and only then shows the Admin console. Anyone else gets Google's own "you don't have access" page — never your app's content, since the request never reaches Cloud Run otherwise.
+
 ## Redeploying after code changes
 
-Same two commands as steps 3 and 4 — both configs already end with a Cloud Run deploy, so there's nothing extra to run:
+Same commands as steps 3, 4 and 7 — all three configs already end with a Cloud Run deploy, so there's nothing extra to run:
 ```bash
 # backend
 gcloud builds submit --config=server/cloudbuild-api.yaml \
@@ -222,16 +290,21 @@ gcloud builds submit --config=server/cloudbuild-api.yaml \
 
 # frontend (rebuild needed any time VITE_API_URL or the UI changes)
 gcloud builds submit --config=cloudbuild-web.yaml \
-  --substitutions=_REGION=REGION,_SERVICE_NAME=homeserv-web,_VITE_API_URL=https://homeserv-api-xxxxx-REGION.a.run.app/api,BRANCH_NAME=main,COMMIT_SHA=manual-$(date +%s)
+  --substitutions=_REGION=REGION,_SERVICE_NAME=homeserv-web,_VITE_API_URL=https://api.home-serv.in/api,BRANCH_NAME=main,COMMIT_SHA=manual-$(date +%s)
+
+# admin console (same source, different build mode)
+gcloud builds submit --config=cloudbuild-admin.yaml \
+  --substitutions=_SERVICE_NAME=homeserv-admin,_VITE_API_URL=https://api.home-serv.in/api,BRANCH_NAME=main,COMMIT_SHA=manual-$(date +%s)
 ```
 
 ### Automating this with a Cloud Build trigger
 
-Instead of running these by hand, connect the GitHub repo in Cloud Build and create two triggers (Console → Cloud Build → Triggers → Connect Repository):
+Instead of running these by hand, connect the GitHub repo in Cloud Build and create three triggers (Console → Cloud Build → Triggers → Connect Repository):
 - one pointed at `server/cloudbuild-api.yaml`, with `_SERVICE_NAME=homeserv-api` (this config has no `_VITE_API_URL` substitution — the API doesn't need one)
-- one pointed at `cloudbuild-web.yaml`, with `_VITE_API_URL` set to the backend's Cloud Run URL and `_SERVICE_NAME=homeserv-web`
+- one pointed at `cloudbuild-web.yaml`, with `_VITE_API_URL=https://api.home-serv.in/api` and `_SERVICE_NAME=homeserv-web`
+- one pointed at `cloudbuild-admin.yaml`, with `_VITE_API_URL=https://api.home-serv.in/api` and `_SERVICE_NAME=homeserv-admin`
 
-Both fire automatically `$BRANCH_NAME`/`$COMMIT_SHA` from the push that triggered them — every `git push` to `main` redeploys both services with zero manual commands. **This is still separate from the `git push` to GitHub itself**, which stays under your control as before.
+All three fire automatically from `$BRANCH_NAME`/`$COMMIT_SHA` on the push that triggered them — every `git push` to `main` redeploys all three services with zero manual commands. **This is still separate from the `git push` to GitHub itself**, which stays under your control as before.
 
 ## Cost note
 

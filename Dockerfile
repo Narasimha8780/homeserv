@@ -13,6 +13,11 @@ COPY . .
 ARG VITE_API_URL
 ENV VITE_API_URL=$VITE_API_URL
 
+# Set to "admin" to build the admin-only console instead of the full customer/captain
+# app — same codebase, same backend/DB, just a different entry point (see src/main.tsx).
+ARG VITE_APP_MODE
+ENV VITE_APP_MODE=$VITE_APP_MODE
+
 RUN npm run build
 
 FROM node:20-alpine
