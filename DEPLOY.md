@@ -67,7 +67,7 @@ gcloud compute networks vpc-access connectors create homeserv-connector \
 
 Create the Artifact Registry repo once:
 ```bash
-gcloud artifacts repositories create homeserv --repository-format=docker --location=REGION
+gcloud artifacts repositories create narasimha8780 --repository-format=docker --location=REGION
 ```
 
 Both services build via a `cloudbuild-*.yaml` (same pattern: pull the previous `:latest` as a build cache, build + tag with `$BRANCH_NAME:$COMMIT_SHA`, push both tags, then deploy). These are written to work either as a one-off manual build or wired to a Cloud Build **trigger** on git push — see the note at the end of this section.
