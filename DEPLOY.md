@@ -112,13 +112,104 @@ gcloud builds submit --config=cloudbuild-web.yaml \
   --substitutions=_REGION=REGION,_SERVICE_NAME=homeserv-web,_VITE_API_URL=https://homeserv-api-xxxxx-REGION.a.run.app/api,BRANCH_NAME=main,COMMIT_SHA=manual-$(date +%s)
 ```
 
-## 5. Lock down CORS
+## 5. Map `home-serv.in` with an external HTTPS Load Balancer
 
-Once you have the frontend's real URL, redeploy the backend restricting CORS to it instead of allowing all origins:
+With two Cloud Run services, a Load Balancer is the right tool — it gives you one static IP, host-based routing (`home-serv.in` → frontend, `api.home-serv.in` → backend), and a single managed TLS cert for both, rather than juggling two separate Cloud Run domain mappings.
+
+**Reserve a static IP:**
+```bash
+gcloud compute addresses create homeserv-lb-ip --global
+gcloud compute addresses describe homeserv-lb-ip --global --format='get(address)'
+```
+Note the IP — you'll point DNS at it below.
+
+**Serverless NEGs** (one per Cloud Run service, same region as the service):
+```bash
+gcloud compute network-endpoint-groups create homeserv-web-neg \
+  --region=REGION --network-endpoint-type=serverless --cloud-run-service=homeserv-web
+
+gcloud compute network-endpoint-groups create homeserv-api-neg \
+  --region=REGION --network-endpoint-type=serverless --cloud-run-service=homeserv-api
+```
+
+**Backend services** wrapping each NEG:
+```bash
+gcloud compute backend-services create homeserv-web-backend --global --load-balancing-scheme=EXTERNAL_MANAGED
+gcloud compute backend-services add-backend homeserv-web-backend \
+  --global --network-endpoint-group=homeserv-web-neg --network-endpoint-group-region=REGION
+
+gcloud compute backend-services create homeserv-api-backend --global --load-balancing-scheme=EXTERNAL_MANAGED
+gcloud compute backend-services add-backend homeserv-api-backend \
+  --global --network-endpoint-group=homeserv-api-neg --network-endpoint-group-region=REGION
+```
+
+**URL map** — `home-serv.in`/`www` go to the frontend by default; `api.home-serv.in` is routed to the backend:
+```bash
+gcloud compute url-maps create homeserv-lb --default-service=homeserv-web-backend
+
+gcloud compute url-maps add-path-matcher homeserv-lb \
+  --path-matcher-name=api-matcher \
+  --default-service=homeserv-api-backend \
+  --new-hosts=api.home-serv.in
+```
+
+**Managed SSL cert** covering all three hostnames:
+```bash
+gcloud compute ssl-certificates create homeserv-cert \
+  --domains=home-serv.in,www.home-serv.in,api.home-serv.in --global
+```
+
+**HTTPS proxy + forwarding rule** (binds the cert + URL map to the static IP on port 443):
+```bash
+gcloud compute target-https-proxies create homeserv-https-proxy \
+  --url-map=homeserv-lb --ssl-certificates=homeserv-cert
+
+gcloud compute forwarding-rules create homeserv-https-rule \
+  --global --target-https-proxy=homeserv-https-proxy --address=homeserv-lb-ip --ports=443
+```
+
+**Optional HTTP → HTTPS redirect** (plain port 80 traffic bounces to https):
+```bash
+cat <<EOF | gcloud compute url-maps import homeserv-http-redirect --global
+defaultUrlRedirect:
+  httpsRedirect: true
+EOF
+gcloud compute target-http-proxies create homeserv-http-proxy --url-map=homeserv-http-redirect
+gcloud compute forwarding-rules create homeserv-http-rule \
+  --global --target-http-proxy=homeserv-http-proxy --address=homeserv-lb-ip --ports=80
+```
+
+**DNS in Cloudflare** — add these A records, all pointing at the reserved IP, set to **DNS only (grey cloud, not proxied)**:
+- `home-serv.in` → `<LB_IP>`
+- `www.home-serv.in` → `<LB_IP>`
+- `api.home-serv.in` → `<LB_IP>`
+
+Keep Cloudflare's proxy **off** for now — Google's managed cert verifies ownership by checking that these hostnames resolve directly to the LB's IP, which an orange-clouded record would hide. You can turn Cloudflare's proxy back on afterward once the cert is `ACTIVE`, as long as its SSL mode is set to "Full (strict)".
+
+Check provisioning status (can take anywhere from a few minutes to ~1 hour after DNS propagates):
+```bash
+gcloud compute ssl-certificates describe homeserv-cert --global --format='get(managed.status)'
+```
+
+**Harden it**: once the LB is working, stop Cloud Run from being reachable directly at its `*.run.app` URL so all traffic is forced through the LB/domain:
+```bash
+gcloud run services update homeserv-web --region=REGION --ingress=internal-and-cloud-load-balancing
+gcloud run services update homeserv-api --region=REGION --ingress=internal-and-cloud-load-balancing
+```
+
+From here on, rebuild the frontend pointing `VITE_API_URL` at `https://api.home-serv.in/api` instead of the raw `*.run.app` URL — it's the stable, permanent address:
+```bash
+gcloud builds submit --config=cloudbuild-web.yaml \
+  --substitutions=_REGION=REGION,_SERVICE_NAME=homeserv-web,_VITE_API_URL=https://api.home-serv.in/api,BRANCH_NAME=main,COMMIT_SHA=manual-$(date +%s)
+```
+
+## 6. Lock down CORS
+
+Now that the domain is live, redeploy the backend restricting CORS to it instead of allowing all origins:
 ```bash
 gcloud run services update homeserv-api \
   --region=REGION \
-  --set-env-vars="MONGODB_URI=...,CORS_ORIGIN=https://homeserv-web-xxxxx-REGION.a.run.app"
+  --set-env-vars="MONGODB_URI=...,CORS_ORIGIN=https://home-serv.in,https://www.home-serv.in"
 ```
 
 ## Redeploying after code changes
