@@ -37,14 +37,15 @@ export const ReviewModal: React.FC<{
   };
 
   return (
-    <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
-      <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden border border-slate-200">
-        <div className="p-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white flex items-center justify-between">
-          <div className="flex items-center space-x-2">
+    <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+      <div className="bg-white rounded-[1.75rem] w-full max-w-md shadow-premium-lg overflow-hidden border border-white/60">
+        <div className="relative overflow-hidden p-4 bg-gradient-to-br from-amber-500 to-orange-500 text-white flex items-center justify-between">
+          <div className="absolute inset-0 mesh-bg-amber opacity-40 pointer-events-none" />
+          <div className="relative flex items-center space-x-2">
             <ThumbsUp className="w-5 h-5" />
             <h3 className="font-extrabold text-base">{t('writeReview')}</h3>
           </div>
-          <button onClick={onClose} className="p-1 rounded-full hover:bg-white/20 text-white">
+          <button onClick={onClose} className="relative p-1.5 rounded-full hover:bg-white/20 text-white">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -74,26 +75,26 @@ export const ReviewModal: React.FC<{
           </div>
 
           <div>
-            <label className="text-xs font-bold text-slate-700 block mb-1">Your name</label>
+            <label className="text-xs font-bold text-slate-700 block mb-1.5">Your name</label>
             <input
               type="text"
               required
               placeholder="e.g. Priya Sharma"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full text-sm p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-1 focus:ring-blue-500"
+              className="w-full text-sm p-3 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all"
             />
           </div>
 
           <div>
-            <label className="text-xs font-bold text-slate-700 block mb-1">Your review</label>
+            <label className="text-xs font-bold text-slate-700 block mb-1.5">Your review</label>
             <textarea
               required
               rows={3}
               placeholder="Tell others about the quality, punctuality, and behaviour..."
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              className="w-full text-xs p-3 bg-slate-50 border border-slate-300 rounded-2xl focus:bg-white focus:ring-1 focus:ring-blue-500"
+              className="w-full text-xs p-3 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all"
             />
           </div>
 
@@ -102,7 +103,7 @@ export const ReviewModal: React.FC<{
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-extrabold text-sm rounded-2xl shadow-lg transition-transform active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-extrabold text-sm rounded-2xl shadow-[0_8px_24px_-6px_rgba(37,99,235,0.5)] hover:shadow-[0_10px_30px_-6px_rgba(37,99,235,0.6)] hover-lift active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {isSubmitting ? 'Submitting...' : t('submitReview')}
           </button>

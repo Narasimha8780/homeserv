@@ -25,10 +25,10 @@ export const CustomerMoreTab: React.FC<{ onBecomeCaptain: () => void }> = ({ onB
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 space-y-5">
       {currentCustomer && (
-        <div className="bg-white rounded-3xl border border-slate-200 shadow-xs p-4 flex items-center justify-between gap-3">
+        <div className="bg-white rounded-3xl border border-slate-200/70 shadow-premium p-4 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
-              <User className="w-4 h-4" />
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center shrink-0 shadow-premium">
+              <User className="w-5 h-5" />
             </div>
             <div className="min-w-0">
               <p className="text-sm font-bold text-slate-900 truncate">{currentCustomer.name}</p>
@@ -47,19 +47,20 @@ export const CustomerMoreTab: React.FC<{ onBecomeCaptain: () => void }> = ({ onB
 
       <button
         onClick={onBecomeCaptain}
-        className="w-full bg-gradient-to-r from-orange-500 to-amber-600 rounded-3xl p-5 text-white shadow-lg flex items-center justify-between text-left"
+        className="relative overflow-hidden w-full bg-gradient-to-br from-orange-500 to-amber-600 rounded-3xl p-5 text-white shadow-premium-lg hover-lift transition-all flex items-center justify-between text-left"
       >
-        <div>
+        <div className="absolute inset-0 mesh-bg-amber opacity-40 pointer-events-none" />
+        <div className="relative">
           <h3 className="font-black text-base flex items-center gap-2">
             <Briefcase className="w-5 h-5" />
             Are you a plumber, electrician or driver?
           </h3>
           <p className="text-xs text-orange-100 mt-1">List your service for free and get found by local customers.</p>
         </div>
-        <ChevronRight className="w-5 h-5 shrink-0" />
+        <ChevronRight className="relative w-5 h-5 shrink-0" />
       </button>
 
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-xs p-4">
+      <div className="bg-white rounded-3xl border border-slate-200/70 shadow-premium p-4">
         <h3 className="text-sm font-black text-slate-900 flex items-center space-x-2 mb-3">
           <Globe className="w-4 h-4 text-blue-600" />
           <span>App Language</span>
@@ -69,9 +70,9 @@ export const CustomerMoreTab: React.FC<{ onBecomeCaptain: () => void }> = ({ onB
             <button
               key={l.code}
               onClick={() => setLanguage(l.code)}
-              className={`px-2 py-2 rounded-xl text-xs font-bold border transition-all ${
+              className={`px-2 py-2 rounded-xl text-xs font-bold border-2 transition-all ${
                 language === l.code
-                  ? 'border-blue-600 bg-blue-50 text-blue-800 ring-1 ring-blue-400'
+                  ? 'border-transparent bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-[0_4px_12px_-2px_rgba(37,99,235,0.4)]'
                   : 'border-slate-200 text-slate-600 hover:border-blue-300'
               }`}
             >
@@ -81,7 +82,7 @@ export const CustomerMoreTab: React.FC<{ onBecomeCaptain: () => void }> = ({ onB
         </div>
       </div>
 
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden">
+      <div className="bg-white rounded-3xl border border-slate-200/70 shadow-premium overflow-hidden">
         <button onClick={() => setShowHelp(!showHelp)} className="w-full p-4 flex items-center justify-between">
           <h3 className="text-sm font-black text-slate-900 flex items-center space-x-2">
             <HelpCircle className="w-4 h-4 text-blue-600" />

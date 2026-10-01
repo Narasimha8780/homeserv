@@ -40,7 +40,7 @@ export const AdminOverviewTab: React.FC = () => {
         {KPI_CARDS.map((kpi) => {
           const Icon = kpi.icon;
           return (
-            <div key={kpi.label} className="bg-white rounded-2xl border border-slate-200 shadow-xs p-4">
+            <div key={kpi.label} className="bg-white rounded-2xl border border-slate-200/70 shadow-premium hover:shadow-premium-lg hover-lift transition-all p-4">
               <div className={`w-9 h-9 rounded-xl flex items-center justify-center mb-2.5 ${kpi.color}`}>
                 <Icon className="w-4 h-4" />
               </div>
@@ -52,7 +52,7 @@ export const AdminOverviewTab: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-white rounded-3xl border border-slate-200 shadow-xs p-4">
+        <div className="bg-white rounded-3xl border border-slate-200/70 shadow-premium p-4">
           <h3 className="text-sm font-black text-slate-900 flex items-center space-x-1.5 mb-3">
             <MapPin className="w-4 h-4 text-blue-600" />
             <span>Captains by City</span>
@@ -72,7 +72,7 @@ export const AdminOverviewTab: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-3xl border border-slate-200 shadow-xs p-4">
+        <div className="bg-white rounded-3xl border border-slate-200/70 shadow-premium p-4">
           <h3 className="text-sm font-black text-slate-900 mb-3">Captains by Category</h3>
           <div className="space-y-3">
             {categoryStats.map((cat) => (
@@ -90,7 +90,7 @@ export const AdminOverviewTab: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-4 flex items-center justify-around text-center">
+      <div className="bg-white rounded-2xl border border-slate-200/70 shadow-premium hover:shadow-premium-lg hover-lift transition-all p-4 flex items-center justify-around text-center">
         <div>
           <span className="block text-xl font-black text-slate-900">{totalViews}</span>
           <span className="block text-[11px] text-slate-500 font-semibold">Total Profile Views</span>

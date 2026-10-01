@@ -16,17 +16,17 @@ export const AdminKycTab: React.FC = () => {
       <div>
         <h2 className="text-lg font-black text-slate-900 mb-3">Captain Verification Queue ({pending.length})</h2>
         {pending.length === 0 ? (
-          <div className="bg-white rounded-3xl p-8 text-center border border-slate-200 shadow-xs">
+          <div className="bg-white rounded-3xl p-8 text-center border border-slate-200/70 shadow-premium">
             <ShieldCheck className="w-10 h-10 text-emerald-400 mx-auto mb-2" />
             <p className="text-sm text-slate-500">All caught up! No pending verifications.</p>
           </div>
         ) : (
           <div className="space-y-3">
             {pending.map((c) => (
-              <div key={c.id} className="bg-white rounded-3xl border border-amber-200 shadow-sm p-4">
+              <div key={c.id} className="bg-white rounded-3xl border border-amber-200 shadow-premium hover:shadow-premium-lg transition-shadow p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="flex items-center space-x-3">
-                    <img src={c.avatar} alt={c.name} className="w-14 h-14 rounded-2xl object-cover border-2 border-amber-300" />
+                    <img src={c.avatar} alt={c.name} className="w-14 h-14 rounded-2xl object-cover border-2 border-white shadow-premium ring-2 ring-amber-300" />
                     <div>
                       <h3 className="font-black text-sm text-slate-900">{c.name}</h3>
                       <p className="text-xs text-slate-500">{c.phone} • {c.experienceYears} yrs exp • {categoryTitles(c.categories)}</p>
@@ -39,14 +39,14 @@ export const AdminKycTab: React.FC = () => {
                   <div className="flex space-x-2">
                     <button
                       onClick={() => rejectCaptainKyc(c.id)}
-                      className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl border border-rose-200 text-rose-600 font-bold text-xs hover:bg-rose-50"
+                      className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl border-2 border-rose-200 text-rose-600 font-bold text-xs hover:bg-rose-50 transition-colors"
                     >
                       <XCircle className="w-3.5 h-3.5" />
                       <span>Reject</span>
                     </button>
                     <button
                       onClick={() => approveCaptainKyc(c.id)}
-                      className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md"
+                      className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs shadow-[0_4px_14px_-2px_rgba(5,150,105,0.5)] hover-lift transition-all"
                     >
                       <ShieldCheck className="w-3.5 h-3.5" />
                       <span>Approve</span>
@@ -78,7 +78,7 @@ export const AdminKycTab: React.FC = () => {
 
       <div>
         <h2 className="text-sm font-black text-slate-900 mb-3">Reviewed Captains</h2>
-        <div className="bg-white rounded-3xl border border-slate-200 shadow-xs divide-y divide-slate-100">
+        <div className="bg-white rounded-3xl border border-slate-200/70 shadow-premium divide-y divide-slate-100">
           {reviewed.map((c) => (
             <div key={c.id} className="p-3.5 flex items-center justify-between">
               <div className="flex items-center space-x-3">

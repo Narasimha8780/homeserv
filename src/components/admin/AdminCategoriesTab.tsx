@@ -50,7 +50,7 @@ export const AdminCategoriesTab: React.FC = () => {
     <div className="max-w-4xl mx-auto px-4 py-6 space-y-5">
       <h2 className="text-lg font-black text-slate-900">Category Management</h2>
 
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-xs p-4 flex flex-wrap items-center gap-2">
+      <div className="bg-white rounded-3xl border border-slate-200/70 shadow-premium p-4 flex flex-wrap items-center gap-2">
         <input
           type="text"
           placeholder="New category name (e.g. Mason)"
@@ -76,7 +76,7 @@ export const AdminCategoriesTab: React.FC = () => {
         </button>
       </div>
 
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-xs divide-y divide-slate-100">
+      <div className="bg-white rounded-3xl border border-slate-200/70 shadow-premium divide-y divide-slate-100">
         {categories.map((cat) => {
           const captainCount = captains.filter((c) => c.categories.includes(cat.id)).length;
           return (

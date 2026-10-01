@@ -15,8 +15,8 @@ export const CaptainKycTab: React.FC = () => {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-5">
-      <div className={`rounded-3xl border p-5 flex items-center gap-4 ${statusMeta.color}`}>
-        <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center shrink-0 shadow-xs">
+      <div className={`rounded-3xl border p-5 flex items-center gap-4 shadow-premium ${statusMeta.color}`}>
+        <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center shrink-0 shadow-premium">
           <StatusIcon className="w-6 h-6" />
         </div>
         <div>
@@ -31,7 +31,7 @@ export const CaptainKycTab: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden">
+      <div className="bg-white rounded-3xl border border-slate-200/70 shadow-premium overflow-hidden">
         <div className="p-4 border-b border-slate-100 flex items-center gap-2">
           <FileText className="w-4 h-4 text-blue-600" />
           <h3 className="text-sm font-black text-slate-900">Aadhaar / ID Document</h3>

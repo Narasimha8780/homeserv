@@ -19,9 +19,10 @@ export const AdminApp: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#F5F7FA]">
-      <div className="bg-gradient-to-r from-emerald-700 via-teal-700 to-cyan-800 text-white px-4 sm:px-6 py-3">
-        <div className="max-w-6xl mx-auto">
-          <h1 className="text-sm sm:text-base font-black tracking-tight">{t('adminConsole')}</h1>
+      <div className="relative overflow-hidden bg-gradient-to-br from-emerald-700 via-teal-700 to-cyan-800 text-white px-4 sm:px-6 py-4 shadow-premium-lg">
+        <div className="absolute inset-0 mesh-bg-blue opacity-25 pointer-events-none" />
+        <div className="relative max-w-6xl mx-auto">
+          <h1 className="text-base sm:text-lg font-black tracking-tight">{t('adminConsole')}</h1>
           <p className="text-[11px] text-emerald-100">Approve captain listings and manage service categories</p>
         </div>
       </div>

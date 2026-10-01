@@ -17,8 +17,10 @@ export const CustomerFavoritesTab: React.FC<{ onOpenProfile: (captain: Captain) 
       </div>
 
       {favoriteCaptains.length === 0 ? (
-        <div className="bg-white rounded-3xl p-12 text-center border border-slate-200 shadow-xs">
-          <Heart className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+        <div className="bg-white rounded-3xl p-12 text-center border border-slate-200/80 shadow-premium">
+          <div className="w-16 h-16 rounded-2xl bg-rose-50 flex items-center justify-center mx-auto mb-3">
+            <Heart className="w-7 h-7 text-rose-300" />
+          </div>
           <h3 className="font-bold text-slate-700 text-base">No favorites saved yet</h3>
           <p className="text-xs text-slate-400 mt-1">Tap the heart icon on any profile to save it here.</p>
         </div>

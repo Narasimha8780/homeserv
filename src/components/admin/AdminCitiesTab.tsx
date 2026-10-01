@@ -25,7 +25,7 @@ export const AdminCitiesTab: React.FC = () => {
         </p>
       </div>
 
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-xs p-4 flex flex-wrap items-center gap-2">
+      <div className="bg-white rounded-3xl border border-slate-200/70 shadow-premium p-4 flex flex-wrap items-center gap-2">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
           <input
@@ -47,7 +47,7 @@ export const AdminCitiesTab: React.FC = () => {
         </label>
       </div>
 
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-xs divide-y divide-slate-100 max-h-[60vh] overflow-y-auto custom-scrollbar">
+      <div className="bg-white rounded-3xl border border-slate-200/70 shadow-premium divide-y divide-slate-100 max-h-[60vh] overflow-y-auto custom-scrollbar">
         {filtered.length === 0 && (
           <p className="p-6 text-xs text-slate-400 text-center">No cities match this search.</p>
         )}

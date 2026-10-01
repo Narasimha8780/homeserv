@@ -10,7 +10,7 @@ export const CaptainReviewsTab: React.FC = () => {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 flex items-center justify-between">
+      <div className="bg-white rounded-3xl border border-slate-200/70 shadow-premium p-5 flex items-center justify-between">
         <div>
           <h2 className="text-sm font-black text-slate-900">Reviews Received</h2>
           <p className="text-xs text-slate-500">What customers are saying about you</p>
@@ -33,7 +33,7 @@ export const CaptainReviewsTab: React.FC = () => {
       ) : (
         <div className="space-y-3">
           {myReviews.map((r) => (
-            <div key={r.id} className="bg-white rounded-2xl border border-slate-200 shadow-xs p-4">
+            <div key={r.id} className="bg-white rounded-2xl border border-slate-200/70 shadow-xs hover:shadow-premium transition-shadow p-4">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-900">{r.customerName}</span>
                 <span className="flex items-center gap-1 text-[11px] font-bold text-amber-600">

@@ -38,21 +38,22 @@ export const CaptainProfileModal: React.FC<{
     .filter(Boolean);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-3 sm:p-4 animate-in fade-in duration-200">
-      <div className="bg-white rounded-3xl w-full max-w-xl shadow-2xl overflow-hidden border border-slate-200 flex flex-col max-h-[92vh]">
-        <div className="relative bg-gradient-to-r from-blue-700 to-indigo-800 text-white p-5 shrink-0">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-3 sm:p-4 animate-in fade-in duration-200">
+      <div className="bg-white rounded-[1.75rem] w-full max-w-xl shadow-premium-lg overflow-hidden border border-white/60 flex flex-col max-h-[92vh]">
+        <div className="relative overflow-hidden bg-gradient-to-br from-blue-700 to-indigo-800 text-white p-5 shrink-0">
+          <div className="absolute inset-0 mesh-bg-blue opacity-40 pointer-events-none" />
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center transition-colors"
+            className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center transition-colors z-10"
           >
             <X className="w-4 h-4" />
           </button>
 
-          <div className="flex items-center gap-4">
+          <div className="relative flex items-center gap-4">
             <img
               src={captain.avatar}
               alt={captain.name}
-              className="w-20 h-20 rounded-2xl object-cover border-2 border-white/40"
+              className="w-20 h-20 rounded-2xl object-cover border-2 border-white/40 shadow-premium-lg"
             />
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
@@ -162,7 +163,7 @@ export const CaptainProfileModal: React.FC<{
           <a
             href={`tel:${captain.phone}`}
             onClick={() => recordContactClick(captain.id)}
-            className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-black text-sm px-4 py-3 rounded-2xl shadow-md transition-transform active:scale-95"
+            className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-black text-sm px-4 py-3 rounded-2xl shadow-[0_6px_18px_-4px_rgba(37,99,235,0.5)] hover:shadow-[0_8px_22px_-4px_rgba(37,99,235,0.6)] active:scale-[0.97] transition-all"
           >
             <Phone className="w-4 h-4" />
             <span>{t('callNow')}</span>
@@ -172,7 +173,7 @@ export const CaptainProfileModal: React.FC<{
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => recordContactClick(captain.id)}
-            className="flex-1 flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm px-4 py-3 rounded-2xl shadow-md transition-transform active:scale-95"
+            className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-black text-sm px-4 py-3 rounded-2xl shadow-[0_6px_18px_-4px_rgba(5,150,105,0.5)] hover:shadow-[0_8px_22px_-4px_rgba(5,150,105,0.6)] active:scale-[0.97] transition-all"
           >
             <MessageCircle className="w-4 h-4" />
             <span>{t('whatsapp')}</span>

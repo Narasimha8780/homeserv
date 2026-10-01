@@ -65,42 +65,44 @@ export const CaptainRegistrationForm: React.FC<{ verifiedPhone?: string }> = ({ 
   };
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6">
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-5 bg-gradient-to-r from-orange-600 to-amber-600 text-white">
-          <h2 className="text-lg font-black flex items-center gap-2">
+    <div className="min-h-[calc(100vh-56px)] bg-gradient-to-b from-orange-50/60 via-[#F5F7FA] to-[#F5F7FA] px-4 py-8">
+      <div className="max-w-2xl mx-auto">
+      <div className="bg-white rounded-[2rem] border border-slate-200/70 shadow-premium-lg overflow-hidden">
+        <div className="relative overflow-hidden p-6 bg-gradient-to-br from-orange-600 to-amber-600 text-white">
+          <div className="absolute inset-0 mesh-bg-amber opacity-40 pointer-events-none" />
+          <h2 className="relative text-xl font-black flex items-center gap-2">
             <UserPlus className="w-5 h-5" />
             List Your Service — Free
           </h2>
-          <p className="text-xs text-orange-100 mt-1">
+          <p className="relative text-xs text-orange-100 mt-1">
             Fill this once. Customers in your city will be able to find and call you directly.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-5 space-y-5">
+        <form onSubmit={handleSubmit} className="p-6 space-y-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">Full Name</label>
+              <label className="text-xs font-bold text-slate-700 block mb-1.5">Full Name</label>
               <input
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g. Ravi Kumar"
-                className="w-full text-sm p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-1 focus:ring-orange-500"
+                className="w-full text-sm p-3 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 outline-none transition-all"
               />
             </div>
             <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">Phone Number</label>
+              <label className="text-xs font-bold text-slate-700 block mb-1.5">Phone Number</label>
               <input
                 required
                 readOnly={!!verifiedPhone}
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="+91 98XXX XXXXX"
-                className={`w-full text-sm p-2.5 border rounded-xl focus:ring-1 focus:ring-orange-500 ${
+                className={`w-full text-sm p-3 border-2 rounded-2xl outline-none transition-all ${
                   verifiedPhone
                     ? 'bg-emerald-50 border-emerald-200 text-emerald-800 font-semibold'
-                    : 'bg-slate-50 border-slate-300 focus:bg-white'
+                    : 'bg-slate-50 border-slate-200 focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10'
                 }`}
               />
               {verifiedPhone && <span className="text-[11px] text-emerald-600 font-semibold">✓ Verified via OTP</span>}
@@ -132,24 +134,24 @@ export const CaptainRegistrationForm: React.FC<{ verifiedPhone?: string }> = ({ 
           </div>
 
           <div>
-            <label className="text-xs font-bold text-slate-700 block mb-1">Years of Experience</label>
+            <label className="text-xs font-bold text-slate-700 block mb-1.5">Years of Experience</label>
             <input
               type="number"
               min={0}
               value={experienceYears}
               onChange={(e) => setExperienceYears(e.target.value)}
-              className="w-full text-sm p-2.5 bg-slate-50 border border-slate-300 rounded-xl"
+              className="w-full text-sm p-3 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 outline-none transition-all"
             />
           </div>
 
           <div>
-            <label className="text-xs font-bold text-slate-700 block mb-1">Areas / Localities You Serve</label>
+            <label className="text-xs font-bold text-slate-700 block mb-1.5">Areas / Localities You Serve</label>
             <input
               required
               value={areasInput}
               onChange={(e) => setAreasInput(e.target.value)}
               placeholder="e.g. Vaishali Nagar, Malviya Nagar"
-              className="w-full text-sm p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-1 focus:ring-orange-500"
+              className="w-full text-sm p-3 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 outline-none transition-all"
             />
             <span className="text-[11px] text-slate-400">Separate multiple areas with commas</span>
           </div>
@@ -162,9 +164,9 @@ export const CaptainRegistrationForm: React.FC<{ verifiedPhone?: string }> = ({ 
                   type="button"
                   key={cat.id}
                   onClick={() => toggleCategory(cat.id)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                  className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all duration-150 ${
                     selectedCategories.includes(cat.id)
-                      ? 'bg-orange-600 text-white shadow-xs'
+                      ? 'bg-gradient-to-r from-orange-600 to-amber-600 text-white shadow-[0_4px_12px_-2px_rgba(234,88,12,0.4)] scale-[1.03]'
                       : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                   }`}
                 >
@@ -182,9 +184,9 @@ export const CaptainRegistrationForm: React.FC<{ verifiedPhone?: string }> = ({ 
                   type="button"
                   key={lang}
                   onClick={() => toggleLanguage(lang)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                  className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all duration-150 ${
                     selectedLanguages.includes(lang)
-                      ? 'bg-blue-600 text-white shadow-xs'
+                      ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-[0_4px_12px_-2px_rgba(37,99,235,0.4)] scale-[1.03]'
                       : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                   }`}
                 >
@@ -196,26 +198,26 @@ export const CaptainRegistrationForm: React.FC<{ verifiedPhone?: string }> = ({ 
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">Starting Price (Optional, ₹)</label>
+              <label className="text-xs font-bold text-slate-700 block mb-1.5">Starting Price (Optional, ₹)</label>
               <input
                 type="number"
                 min={0}
                 value={startingPrice}
                 onChange={(e) => setStartingPrice(e.target.value)}
                 placeholder="e.g. 149"
-                className="w-full text-sm p-2.5 bg-slate-50 border border-slate-300 rounded-xl"
+                className="w-full text-sm p-3 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 outline-none transition-all"
               />
             </div>
           </div>
 
           <div>
-            <label className="text-xs font-bold text-slate-700 block mb-1">Short Bio (Optional)</label>
+            <label className="text-xs font-bold text-slate-700 block mb-1.5">Short Bio (Optional)</label>
             <textarea
               rows={3}
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               placeholder="Tell customers what you specialize in..."
-              className="w-full text-xs p-3 bg-slate-50 border border-slate-300 rounded-2xl focus:bg-white focus:ring-1 focus:ring-orange-500"
+              className="w-full text-xs p-3 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 outline-none transition-all"
             />
           </div>
 
@@ -224,7 +226,7 @@ export const CaptainRegistrationForm: React.FC<{ verifiedPhone?: string }> = ({ 
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-black text-sm rounded-2xl shadow-lg transition-transform active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-black text-sm rounded-2xl shadow-[0_8px_24px_-6px_rgba(234,88,12,0.5)] hover:shadow-[0_10px_30px_-6px_rgba(234,88,12,0.6)] hover-lift active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed"
           >
             <Check className="w-4 h-4" />
             <span>{isSubmitting ? 'Submitting...' : 'Submit for Verification'}</span>
@@ -233,6 +235,7 @@ export const CaptainRegistrationForm: React.FC<{ verifiedPhone?: string }> = ({ 
             After submitting, an ID document (Aadhaar) is required before your profile goes live to customers.
           </p>
         </form>
+      </div>
       </div>
     </div>
   );

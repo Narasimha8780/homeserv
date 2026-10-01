@@ -48,13 +48,13 @@ export const CaptainDashboard: React.FC = () => {
         </div>
       )}
 
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-4">
+      <div className="bg-white rounded-3xl border border-slate-200/70 shadow-premium p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
             <img
               src={currentCaptain.avatar}
               alt={currentCaptain.name}
-              className="w-16 h-16 rounded-2xl object-cover border-2 border-orange-400"
+              className="w-16 h-16 rounded-2xl object-cover border-2 border-white shadow-premium ring-2 ring-orange-400/60"
             />
             <div>
               <div className="flex items-center gap-1.5">
@@ -67,7 +67,7 @@ export const CaptainDashboard: React.FC = () => {
           </div>
           <button
             onClick={() => toggleAvailability(currentCaptain.id)}
-            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-bold text-xs shadow-xs transition-all shrink-0 ${
+            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-bold text-xs shadow-premium hover-lift transition-all shrink-0 ${
               currentCaptain.isAvailable ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white' : 'bg-slate-200 text-slate-600'
             }`}
           >
@@ -78,32 +78,32 @@ export const CaptainDashboard: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-3 gap-3">
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-3.5 text-center">
-          <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-2">
-            <Eye className="w-4 h-4" />
+        <div className="bg-white rounded-2xl border border-slate-200/70 shadow-xs hover:shadow-premium hover-lift transition-all p-3.5 text-center">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 text-blue-600 flex items-center justify-center mx-auto mb-2">
+            <Eye className="w-5 h-5" />
           </div>
-          <span className="block text-base font-black text-slate-900">{currentCaptain.profileViews}</span>
-          <span className="block text-[10px] text-slate-500 uppercase font-semibold">Profile Views</span>
+          <span className="block text-lg font-black text-slate-900">{currentCaptain.profileViews}</span>
+          <span className="block text-[10px] text-slate-500 uppercase font-semibold tracking-wide">Profile Views</span>
         </div>
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-3.5 text-center">
-          <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-2">
-            <Phone className="w-4 h-4" />
+        <div className="bg-white rounded-2xl border border-slate-200/70 shadow-xs hover:shadow-premium hover-lift transition-all p-3.5 text-center">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-50 to-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-2">
+            <Phone className="w-5 h-5" />
           </div>
-          <span className="block text-base font-black text-slate-900">{currentCaptain.contactClicks}</span>
-          <span className="block text-[10px] text-slate-500 uppercase font-semibold">Contact Clicks</span>
+          <span className="block text-lg font-black text-slate-900">{currentCaptain.contactClicks}</span>
+          <span className="block text-[10px] text-slate-500 uppercase font-semibold tracking-wide">Contact Clicks</span>
         </div>
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-3.5 text-center">
-          <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto mb-2">
-            <Star className="w-4 h-4 fill-amber-500" />
+        <div className="bg-white rounded-2xl border border-slate-200/70 shadow-xs hover:shadow-premium hover-lift transition-all p-3.5 text-center">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-50 to-amber-100 text-amber-600 flex items-center justify-center mx-auto mb-2">
+            <Star className="w-5 h-5 fill-amber-500" />
           </div>
-          <span className="block text-base font-black text-slate-900">
+          <span className="block text-lg font-black text-slate-900">
             {currentCaptain.rating > 0 ? currentCaptain.rating.toFixed(2) : '—'}
           </span>
-          <span className="block text-[10px] text-slate-500 uppercase font-semibold">Rating ({currentCaptain.reviewCount})</span>
+          <span className="block text-[10px] text-slate-500 uppercase font-semibold tracking-wide">Rating ({currentCaptain.reviewCount})</span>
         </div>
       </div>
 
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-4">
+      <div className="bg-white rounded-3xl border border-slate-200/70 shadow-premium p-4">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-black text-slate-900">Your Profile</h3>
           {!isEditing ? (

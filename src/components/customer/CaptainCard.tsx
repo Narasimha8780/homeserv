@@ -32,14 +32,14 @@ export const CaptainCard: React.FC<{
   return (
     <div
       onClick={() => onOpenProfile(captain)}
-      className="bg-white rounded-2xl border border-slate-200/90 hover:border-blue-400 shadow-sm hover:shadow-lg transition-all duration-200 p-4 flex flex-col gap-3 cursor-pointer"
+      className="group bg-white rounded-3xl border border-slate-200/80 hover:border-blue-300 shadow-xs hover:shadow-premium-lg hover-lift transition-all duration-200 p-4 flex flex-col gap-3 cursor-pointer"
     >
       <div className="flex items-start gap-3">
         <div className="relative shrink-0">
           <img
             src={captain.avatar}
             alt={captain.name}
-            className="w-16 h-16 rounded-2xl object-cover border border-slate-200"
+            className="w-16 h-16 rounded-2xl object-cover border-2 border-white shadow-premium ring-1 ring-slate-200/80 transition-transform duration-200 group-hover:scale-[1.03]"
           />
           {primaryCategory && (
             <img
@@ -99,7 +99,7 @@ export const CaptainCard: React.FC<{
         <a
           href={`tel:${captain.phone}`}
           onClick={handleCall}
-          className="flex-1 flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-3 py-2.5 rounded-xl shadow-xs transition-colors"
+          className="flex-1 flex items-center justify-center gap-1.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold text-xs px-3 py-2.5 rounded-xl shadow-[0_4px_12px_-2px_rgba(37,99,235,0.4)] hover:shadow-[0_6px_16px_-2px_rgba(37,99,235,0.5)] active:scale-[0.97] transition-all"
         >
           <Phone className="w-3.5 h-3.5" />
           <span>{t('callNow')}</span>
@@ -109,7 +109,7 @@ export const CaptainCard: React.FC<{
           target="_blank"
           rel="noopener noreferrer"
           onClick={handleWhatsApp}
-          className="flex-1 flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3 py-2.5 rounded-xl shadow-xs transition-colors"
+          className="flex-1 flex items-center justify-center gap-1.5 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-bold text-xs px-3 py-2.5 rounded-xl shadow-[0_4px_12px_-2px_rgba(5,150,105,0.4)] hover:shadow-[0_6px_16px_-2px_rgba(5,150,105,0.5)] active:scale-[0.97] transition-all"
         >
           <MessageCircle className="w-3.5 h-3.5" />
           <span>{t('whatsapp')}</span>

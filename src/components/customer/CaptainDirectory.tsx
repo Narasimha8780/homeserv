@@ -33,13 +33,13 @@ export const CaptainDirectory: React.FC<{ onOpenProfile: (captain: Captain) => v
   filteredCaptains.sort((a, b) => b.rating - a.rating);
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-7">
       <div>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
             {t('allCategories')}
           </h2>
-          <span className="text-xs text-blue-600 font-semibold">
+          <span className="text-xs text-blue-700 font-bold bg-blue-50 px-2.5 py-1 rounded-full">
             {activeCategories.length} categories
           </span>
         </div>
@@ -47,11 +47,13 @@ export const CaptainDirectory: React.FC<{ onOpenProfile: (captain: Captain) => v
         <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-3">
           <button
             onClick={() => setSelectedCatId('all')}
-            className={`flex flex-col items-center gap-1.5 p-2.5 rounded-2xl transition-all ${
-              selectedCatId === 'all' ? 'bg-blue-50 ring-2 ring-blue-500' : 'bg-white border border-slate-200 hover:border-blue-300'
+            className={`group flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all duration-200 hover-lift ${
+              selectedCatId === 'all'
+                ? 'bg-blue-50 ring-2 ring-blue-500 shadow-premium'
+                : 'bg-white border border-slate-200/80 shadow-xs hover:border-blue-300 hover:shadow-premium'
             }`}
           >
-            <img src={ALL_CATEGORIES_ICON_URL} alt="All" className="w-16 h-16 object-contain" />
+            <img src={ALL_CATEGORIES_ICON_URL} alt="All" className="w-16 h-16 object-contain transition-transform duration-200 group-hover:scale-105" />
             <span className="text-xs font-bold text-slate-800 text-center leading-tight">All</span>
           </button>
 
@@ -61,11 +63,13 @@ export const CaptainDirectory: React.FC<{ onOpenProfile: (captain: Captain) => v
               <button
                 key={cat.id}
                 onClick={() => setSelectedCatId(cat.id)}
-                className={`flex flex-col items-center gap-1.5 p-2.5 rounded-2xl transition-all ${
-                  isSelected ? 'bg-blue-50 ring-2 ring-blue-500' : 'bg-white border border-slate-200 hover:border-blue-300'
+                className={`group flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all duration-200 hover-lift ${
+                  isSelected
+                    ? 'bg-blue-50 ring-2 ring-blue-500 shadow-premium'
+                    : 'bg-white border border-slate-200/80 shadow-xs hover:border-blue-300 hover:shadow-premium'
                 }`}
               >
-                <img src={getCategoryIconUrl(cat.id)} alt={cat.title} className="w-16 h-16 object-contain" />
+                <img src={getCategoryIconUrl(cat.id)} alt={cat.title} className="w-16 h-16 object-contain transition-transform duration-200 group-hover:scale-105" />
                 <span className="text-xs font-bold text-slate-800 text-center leading-tight">{cat.title}</span>
               </button>
             );
@@ -75,17 +79,19 @@ export const CaptainDirectory: React.FC<{ onOpenProfile: (captain: Captain) => v
 
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight">
+          <h2 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
             {selectedCatId === 'all'
               ? `Top-rated in ${selectedCity.name}`
               : categories.find((c) => c.id === selectedCatId)?.title}
           </h2>
-          <span className="text-xs text-slate-500">{filteredCaptains.length} listed</span>
+          <span className="text-xs text-slate-500 font-semibold">{filteredCaptains.length} listed</span>
         </div>
 
         {filteredCaptains.length === 0 ? (
-          <div className="bg-white rounded-2xl p-10 text-center border border-slate-200 shadow-xs">
-            <Users className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+          <div className="bg-white rounded-3xl p-10 text-center border border-slate-200/80 shadow-premium">
+            <div className="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center mx-auto mb-3">
+              <Users className="w-7 h-7 text-slate-300" />
+            </div>
             <h3 className="text-base font-bold text-slate-800">{t('noResults')}</h3>
             <p className="text-xs text-slate-500 mt-1">Try another category or check back soon.</p>
           </div>
