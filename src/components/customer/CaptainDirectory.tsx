@@ -92,7 +92,7 @@ export const CaptainDirectory: React.FC<{ onOpenProfile: (captain: Captain) => v
           <div className="relative flex items-center gap-4">
             <div className="shrink-0 rounded-2xl bg-white p-1.5 shadow-premium">
               {isAll ? (
-                <img src={ALL_CATEGORIES_ICON_URL} alt="All" className="w-16 h-16 object-contain mix-blend-multiply" />
+                <img src={ALL_CATEGORIES_ICON_URL} alt="All" className="w-16 h-16 object-cover rounded-2xl" />
               ) : (
                 <CategoryIcon
                   categoryId={selectedCategoryId}
@@ -200,7 +200,7 @@ export const CaptainDirectory: React.FC<{ onOpenProfile: (captain: Captain) => v
             onClick={() => openCategory('all')}
             className="group flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs hover:border-blue-300 hover:shadow-premium transition-all duration-200 hover-lift"
           >
-            <img src={ALL_CATEGORIES_ICON_URL} alt="All" className="w-16 h-16 object-contain mix-blend-multiply transition-transform duration-200 group-hover:scale-105" />
+            <img src={ALL_CATEGORIES_ICON_URL} alt="All" className="w-16 h-16 object-cover rounded-2xl transition-transform duration-200 group-hover:scale-105" />
             <span className="text-xs font-bold text-slate-800 text-center leading-tight">All</span>
           </button>
 

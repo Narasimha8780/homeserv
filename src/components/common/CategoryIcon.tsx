@@ -32,7 +32,7 @@ export const CategoryIcon: React.FC<{
       src={url}
       alt={title}
       onError={() => setFailed(true)}
-      className={`${className} object-contain shrink-0 mix-blend-multiply`}
+      className={`${className} object-cover rounded-2xl shrink-0 shadow-premium`}
     />
   );
 };
