@@ -17,7 +17,7 @@ export const CategoryIcon: React.FC<{
   iconClassName?: string;
 }> = ({ categoryId, title, iconName, colorClass, className = 'w-16 h-16', iconClassName = 'w-7 h-7' }) => {
   const [failed, setFailed] = useState(false);
-  const url = getCategoryIconUrl(categoryId);
+  const url = getCategoryIconUrl(categoryId, title);
   const Fallback = FALLBACK_ICONS[iconName] || Briefcase;
 
   if (failed || !url) {
