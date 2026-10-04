@@ -2,7 +2,7 @@ import { AlertTriangle, RotateCw, Inbox } from 'lucide-react';
 
 export function LoadingScreen() {
   return (
-    <div className="min-h-screen bg-[#F5F7FA] flex flex-col items-center justify-center gap-3">
+    <div className="min-h-screen bg-transparent flex flex-col items-center justify-center gap-3">
       <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
       <p className="text-sm text-slate-500 font-medium">Loading HomeServ...</p>
     </div>
@@ -11,7 +11,7 @@ export function LoadingScreen() {
 
 export function ErrorScreen({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
-    <div className="min-h-screen bg-[#F5F7FA] flex flex-col items-center justify-center gap-3 px-6 text-center">
+    <div className="min-h-screen bg-transparent flex flex-col items-center justify-center gap-3 px-6 text-center">
       <AlertTriangle className="w-10 h-10 text-rose-500" />
       <p className="text-sm font-bold text-slate-800">Couldn't reach the HomeServ server</p>
       <p className="text-xs text-slate-500 max-w-sm">{message}</p>
@@ -31,7 +31,7 @@ export function ErrorScreen({ message, onRetry }: { message: string; onRetry: ()
 
 export function EmptyScreen({ onRetry }: { onRetry: () => void }) {
   return (
-    <div className="min-h-screen bg-[#F5F7FA] flex flex-col items-center justify-center gap-3 px-6 text-center">
+    <div className="min-h-screen bg-transparent flex flex-col items-center justify-center gap-3 px-6 text-center">
       <Inbox className="w-10 h-10 text-slate-400" />
       <p className="text-sm font-bold text-slate-800">No data yet</p>
       <p className="text-xs text-slate-500 max-w-sm">

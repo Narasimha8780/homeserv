@@ -26,7 +26,7 @@ export const CaptainApp: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F7FA]">
+    <div className="min-h-screen bg-transparent">
       <div className="relative overflow-hidden bg-gradient-to-br from-amber-600 via-orange-600 to-red-600 text-white px-4 sm:px-6 py-4 shadow-premium-lg">
         <div className="absolute inset-0 mesh-bg-amber opacity-50 pointer-events-none" />
         <div className="relative max-w-2xl mx-auto flex flex-wrap items-center justify-between gap-2">

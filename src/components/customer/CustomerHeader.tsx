@@ -6,7 +6,7 @@ export const CustomerHeader: React.FC<{ onOpenCityModal: () => void }> = ({ onOp
   const { selectedCity, searchQuery, setSearchQuery, t } = useApp();
 
   return (
-    <div className="relative overflow-hidden bg-gradient-to-br from-[#0a3a8f] via-[#1A73E8] to-[#0d5bc7] text-white pt-5 pb-7 px-4 sm:px-6 shadow-premium-lg">
+    <div className="relative overflow-hidden bg-gradient-to-br from-[#4c1d95] via-[#5b3df5] to-[#2563eb] text-white pt-5 pb-7 px-4 sm:px-6 shadow-premium-lg">
       <div className="absolute inset-0 mesh-bg-blue opacity-60 pointer-events-none" />
       <div className="absolute -top-16 right-10 w-64 h-64 bg-cyan-400/20 rounded-full blur-3xl pointer-events-none" />
 
@@ -23,7 +23,7 @@ export const CustomerHeader: React.FC<{ onOpenCityModal: () => void }> = ({ onOp
 
           <button
             onClick={onOpenCityModal}
-            className="self-start sm:self-auto flex items-center space-x-2 bg-white text-blue-900 px-3.5 py-2 rounded-2xl font-bold text-xs shadow-premium hover:shadow-premium-lg hover-lift transition-all border border-white/50"
+            className="self-start sm:self-auto flex items-center space-x-2 bg-white/90 text-blue-900 px-3.5 py-2 rounded-2xl font-bold text-xs shadow-premium hover:shadow-premium-lg hover-lift transition-all border border-white/50"
           >
             <MapPin className="w-4 h-4 text-orange-600" />
             <span>{selectedCity.name}, {selectedCity.state}</span>
@@ -40,7 +40,7 @@ export const CustomerHeader: React.FC<{ onOpenCityModal: () => void }> = ({ onOp
             placeholder={t('searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-14 pr-4 py-3.5 bg-white text-slate-900 placeholder:text-slate-400 rounded-2xl shadow-premium-lg text-sm font-medium focus:outline-none focus:ring-4 focus:ring-orange-400/40 border border-white/50 transition-all"
+            className="w-full pl-14 pr-4 py-3.5 bg-white/95 text-slate-900 placeholder:text-slate-400 rounded-2xl shadow-premium-lg text-sm font-medium focus:outline-none focus:ring-4 focus:ring-orange-400/40 border border-white/50 transition-all"
           />
         </div>
 

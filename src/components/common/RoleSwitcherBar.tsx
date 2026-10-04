@@ -22,7 +22,7 @@ export const RoleSwitcherBar: React.FC<{ onOpenCityModal: () => void }> = ({ onO
   ];
 
   return (
-    <header className="sticky top-0 z-50 bg-gradient-to-r from-[#0a3a8f] via-[#0D47A1] to-[#153e91] text-white shadow-premium-lg border-b border-white/10">
+    <header className="sticky top-0 z-50 bg-gradient-to-r from-[#3b1a8a]/90 via-[#4338ca]/90 to-[#1d4ed8]/90 glass-surface text-white shadow-premium-lg border-b border-white/20">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center space-x-3">
           <button onClick={goHome} className="flex items-center space-x-2 group" title="Go to home">

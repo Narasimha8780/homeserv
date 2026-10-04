@@ -58,7 +58,7 @@ function AppShell() {
   if (allCities.length === 0) return <EmptyScreen onRetry={resetToDefault} />;
 
   return (
-    <div className="min-h-screen bg-[#F5F7FA]">
+    <div className="min-h-screen bg-transparent">
       <RoleSwitcherBar onOpenCityModal={() => setCityModalOpen(true)} />
 
       {role === 'customer' && <CustomerApp />}

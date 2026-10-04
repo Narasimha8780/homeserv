@@ -46,7 +46,7 @@ export const CustomerApp: React.FC = () => {
   if (!currentCustomer) return <CustomerAuthGate />;
 
   return (
-    <div className="min-h-screen bg-[#F5F7FA] pb-20 sm:pb-6">
+    <div className="min-h-screen bg-transparent pb-20 sm:pb-6">
       <div className="sm:flex sm:max-w-7xl sm:mx-auto">
         {/* Left sidebar — desktop/tablet only; phones keep the bottom tab bar */}
         <aside className="hidden sm:block sm:w-56 sm:shrink-0 sm:pt-6 sm:pl-4 sm:pr-2 sm:sticky sm:top-16 sm:self-start sm:max-h-[calc(100vh-4rem)] sm:overflow-y-auto custom-scrollbar sm:pb-6">
@@ -98,7 +98,7 @@ export const CustomerApp: React.FC = () => {
       {isMenuOpen && (
         <div className="sm:hidden fixed inset-0 z-[60]">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setMenuOpen(false)} />
-          <div className="absolute left-0 top-0 bottom-0 w-[84%] max-w-xs bg-[#F5F7FA] shadow-premium-lg overflow-y-auto animate-drawer-enter p-4">
+          <div className="absolute left-0 top-0 bottom-0 w-[84%] max-w-xs bg-white/70 shadow-premium-lg overflow-y-auto animate-drawer-enter p-4">
             <div className="flex items-center justify-between mb-4">
               <span className="flex items-center gap-2 font-black text-slate-900">
                 <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-400 to-amber-500 text-white text-xs flex items-center justify-center">HS</span>

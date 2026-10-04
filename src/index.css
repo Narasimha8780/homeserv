@@ -116,3 +116,50 @@
 .animate-drawer-enter {
   animation: drawer-enter 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }
+
+/* ===== Glassmorphism theme =====
+   Aurora background + frosted translucent surfaces. Applied globally by restyling the
+   shared surface utilities so every screen (customer, captain, admin) picks it up. */
+body {
+  background:
+    radial-gradient(60rem 40rem at 8% -5%, rgba(124, 58, 237, 0.38), transparent 60%),
+    radial-gradient(50rem 36rem at 100% 5%, rgba(56, 189, 248, 0.38), transparent 60%),
+    radial-gradient(50rem 40rem at 90% 100%, rgba(244, 114, 182, 0.34), transparent 60%),
+    radial-gradient(45rem 35rem at 0% 95%, rgba(251, 146, 60, 0.30), transparent 60%),
+    #eef0ff;
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+.bg-white {
+  background-color: rgba(255, 255, 255, 0.58) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(170%);
+  backdrop-filter: blur(18px) saturate(170%);
+}
+.bg-white\/70 {
+  -webkit-backdrop-filter: blur(22px) saturate(170%);
+  backdrop-filter: blur(22px) saturate(170%);
+}
+.bg-slate-50 {
+  background-color: rgba(255, 255, 255, 0.42) !important;
+}
+.border-slate-200, .border-slate-200\/70, .border-slate-200\/80, .border-slate-100 {
+  border-color: rgba(255, 255, 255, 0.75) !important;
+}
+.border-slate-300 {
+  border-color: rgba(148, 163, 184, 0.45) !important;
+}
+.shadow-premium, .shadow-xs {
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8) inset, 0 10px 30px -10px rgba(76, 29, 149, 0.25) !important;
+}
+.shadow-premium-lg {
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset, 0 22px 50px -14px rgba(76, 29, 149, 0.38) !important;
+}
+/* Rich accent buttons */
+.from-blue-600 { --tw-gradient-from: #6d28d9 !important; }
+.to-blue-700, .to-indigo-600 { --tw-gradient-to: #2563eb !important; }
+.bg-blue-600 { background-image: linear-gradient(135deg, #6d28d9, #2563eb); background-color: #4f46e5 !important; }
+.text-gradient-blue {
+  background-image: linear-gradient(135deg, #5b21b6, #7c3aed 45%, #ec4899);
+}
+input, select, textarea { -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }

@@ -18,7 +18,7 @@ export const AdminApp: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#F5F7FA]">
+    <div className="min-h-screen bg-transparent">
       <div className="relative overflow-hidden bg-gradient-to-br from-emerald-700 via-teal-700 to-cyan-800 text-white px-4 sm:px-6 py-4 shadow-premium-lg">
         <div className="absolute inset-0 mesh-bg-blue opacity-25 pointer-events-none" />
         <div className="relative max-w-6xl mx-auto">
