@@ -23,7 +23,7 @@ export const CustomerHeader: React.FC<{ onOpenCityModal: () => void }> = ({ onOp
 
           <button
             onClick={onOpenCityModal}
-            className="self-start sm:self-auto flex items-center space-x-2 bg-white/90 text-blue-900 px-3.5 py-2 rounded-2xl font-bold text-xs shadow-premium hover:shadow-premium-lg hover-lift transition-all border border-white/50"
+            className="self-start sm:self-auto flex items-center space-x-2 bg-black/25 glass-surface text-white px-3.5 py-2 rounded-2xl font-bold text-xs shadow-premium hover:shadow-premium-lg hover-lift transition-all border border-white/25"
           >
             <MapPin className="w-4 h-4 text-orange-600" />
             <span>{selectedCity.name}, {selectedCity.state}</span>

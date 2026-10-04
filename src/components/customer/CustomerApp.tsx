@@ -46,7 +46,7 @@ export const CustomerApp: React.FC = () => {
   if (!currentCustomer) return <CustomerAuthGate />;
 
   return (
-    <div className="min-h-screen bg-transparent pb-20 sm:pb-6">
+    <div className="min-h-screen bg-transparent pb-28 sm:pb-6">
       <div className="sm:flex sm:max-w-7xl sm:mx-auto">
         {/* Left sidebar — desktop/tablet only; phones keep the bottom tab bar */}
         <aside className="hidden sm:block sm:w-56 sm:shrink-0 sm:pt-6 sm:pl-4 sm:pr-2 sm:sticky sm:top-16 sm:self-start sm:max-h-[calc(100vh-4rem)] sm:overflow-y-auto custom-scrollbar sm:pb-6">
@@ -63,7 +63,7 @@ export const CustomerApp: React.FC = () => {
         </div>
       </div>
 
-      <nav className="sm:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-slate-200 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] flex items-center justify-around px-2 py-1.5">
+      <nav className="sm:hidden glass-dock fixed bottom-3 inset-x-4 z-40 rounded-full flex items-center justify-around px-2 py-1.5">
         {TABS.map((tab) => {
           const Icon = tab.icon;
           const isActive = customerTab === tab.id;
