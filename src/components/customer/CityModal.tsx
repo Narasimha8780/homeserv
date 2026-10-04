@@ -38,7 +38,7 @@ export const CityModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ 
             </div>
             <div>
               <h3 className="font-black text-lg">Select Your City</h3>
-              <p className="text-xs text-blue-200">All states covered — can't find yours? Just add it</p>
+              <p className="text-xs text-zinc-300">All states covered — can't find yours? Just add it</p>
             </div>
           </div>
           <button

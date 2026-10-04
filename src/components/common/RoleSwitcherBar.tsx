@@ -22,7 +22,7 @@ export const RoleSwitcherBar: React.FC<{ onOpenCityModal: () => void }> = ({ onO
   ];
 
   return (
-    <header className="sticky top-0 z-50 bg-gradient-to-r from-[#3b1a8a]/90 via-[#4338ca]/90 to-[#1d4ed8]/90 glass-surface text-white shadow-premium-lg border-b border-white/20">
+    <header className="sticky top-0 z-50 bg-gradient-to-r from-[#0e0e10]/90 via-[#1b1b1f]/90 to-[#0e0e10]/90 glass-surface text-white shadow-premium-lg border-b border-white/20">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center space-x-3">
           <button onClick={goHome} className="flex items-center space-x-2 group" title="Go to home">
@@ -38,7 +38,7 @@ export const RoleSwitcherBar: React.FC<{ onOpenCityModal: () => void }> = ({ onO
           >
             <MapPin className="w-3.5 h-3.5 text-orange-300" />
             <span className="font-semibold">{selectedCity.name}</span>
-            <ChevronDown className="w-3 h-3 text-blue-200" />
+            <ChevronDown className="w-3 h-3 text-zinc-300" />
           </button>
         </div>
 
@@ -48,7 +48,7 @@ export const RoleSwitcherBar: React.FC<{ onOpenCityModal: () => void }> = ({ onO
             className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${
               role === 'customer'
                 ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-[0_2px_10px_rgba(59,130,246,0.5)]'
-                : 'text-blue-200 hover:text-white hover:bg-white/5'
+                : 'text-zinc-300 hover:text-white hover:bg-white/5'
             }`}
           >
             <Smartphone className="w-3.5 h-3.5" />
@@ -60,7 +60,7 @@ export const RoleSwitcherBar: React.FC<{ onOpenCityModal: () => void }> = ({ onO
             className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${
               role === 'captain'
                 ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-[0_2px_10px_rgba(249,115,22,0.5)]'
-                : 'text-blue-200 hover:text-white hover:bg-white/5'
+                : 'text-zinc-300 hover:text-white hover:bg-white/5'
             }`}
           >
             <Wrench className="w-3.5 h-3.5" />
@@ -70,7 +70,7 @@ export const RoleSwitcherBar: React.FC<{ onOpenCityModal: () => void }> = ({ onO
 
         <div className="flex items-center space-x-2">
           <div className="relative flex items-center">
-            <Globe className="w-3.5 h-3.5 absolute left-2.5 text-blue-300 pointer-events-none" />
+            <Globe className="w-3.5 h-3.5 absolute left-2.5 text-zinc-300 pointer-events-none" />
             <select
               value={language}
               onChange={(e) => setLanguage(e.target.value as AppLanguage)}
@@ -88,7 +88,7 @@ export const RoleSwitcherBar: React.FC<{ onOpenCityModal: () => void }> = ({ onO
           <button
             onClick={resetToDefault}
             title="Reset Language & Favorites"
-            className="p-1.5 bg-white/10 hover:bg-rose-500/30 text-blue-200 hover:text-white rounded-lg border border-white/15 transition-colors"
+            className="p-1.5 bg-white/10 hover:bg-rose-500/30 text-zinc-300 hover:text-white rounded-lg border border-white/15 transition-colors"
           >
             <RotateCcw className="w-3.5 h-3.5" />
           </button>

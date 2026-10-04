@@ -65,7 +65,7 @@ export const CaptainProfileModal: React.FC<{
                   </span>
                 )}
               </div>
-              <p className="text-xs text-blue-100 mt-0.5">{categoryTitles.join(' • ')}</p>
+              <p className="text-xs text-zinc-300 mt-0.5">{categoryTitles.join(' • ')}</p>
               <div className="flex items-center gap-3 mt-1.5 text-xs">
                 {captain.rating > 0 ? (
                   <span className="flex items-center gap-1 font-bold text-amber-300">
@@ -73,9 +73,9 @@ export const CaptainProfileModal: React.FC<{
                     {captain.rating.toFixed(1)} ({captain.reviewCount})
                   </span>
                 ) : (
-                  <span className="text-blue-200">New listing</span>
+                  <span className="text-zinc-300">New listing</span>
                 )}
-                <span className="flex items-center gap-1 text-blue-200">
+                <span className="flex items-center gap-1 text-zinc-300">
                   <Clock className="w-3.5 h-3.5" />
                   {captain.experienceYears} yrs exp
                 </span>

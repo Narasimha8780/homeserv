@@ -104,7 +104,7 @@ export const CaptainDirectory: React.FC<{ onOpenProfile: (captain: Captain) => v
             </div>
             <div className="min-w-0">
               <h1 className="text-2xl font-black tracking-tight leading-tight">{title}</h1>
-              <p className="text-xs text-blue-100 mt-0.5 line-clamp-2">
+              <p className="text-xs text-zinc-300 mt-0.5 line-clamp-2">
                 {isAll ? 'Every verified professional near you' : category?.tagline}
               </p>
               <div className="flex flex-wrap items-center gap-2 mt-2.5 text-[11px] font-semibold">

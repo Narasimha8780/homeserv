@@ -6,9 +6,9 @@ export const CustomerHeader: React.FC<{ onOpenCityModal: () => void }> = ({ onOp
   const { selectedCity, searchQuery, setSearchQuery, t } = useApp();
 
   return (
-    <div className="relative overflow-hidden bg-gradient-to-br from-[#4c1d95] via-[#5b3df5] to-[#2563eb] text-white pt-5 pb-7 px-4 sm:px-6 shadow-premium-lg">
+    <div className="relative overflow-hidden bg-gradient-to-br from-[#17171a] via-[#26262b] to-[#111113] text-white pt-5 pb-7 px-4 sm:px-6 shadow-premium-lg">
       <div className="absolute inset-0 mesh-bg-blue opacity-60 pointer-events-none" />
-      <div className="absolute -top-16 right-10 w-64 h-64 bg-cyan-400/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -top-16 right-10 w-64 h-64 bg-orange-400/20 rounded-full blur-3xl pointer-events-none" />
 
       <div className="relative max-w-5xl mx-auto space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -18,7 +18,7 @@ export const CustomerHeader: React.FC<{ onOpenCityModal: () => void }> = ({ onOp
               <span>{t('tierTag')}</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight">{t('appName')}</h1>
-            <p className="text-xs sm:text-sm text-blue-100 font-medium mt-0.5">{t('tagline')}</p>
+            <p className="text-xs sm:text-sm text-zinc-300 font-medium mt-0.5">{t('tagline')}</p>
           </div>
 
           <button

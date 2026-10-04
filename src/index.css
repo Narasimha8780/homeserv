@@ -123,43 +123,43 @@
 html { color-scheme: dark; }
 body {
   background:
-    radial-gradient(55rem 38rem at 10% -8%, rgba(99, 102, 241, 0.55), transparent 60%),
-    radial-gradient(45rem 34rem at 100% 8%, rgba(14, 165, 233, 0.38), transparent 60%),
-    radial-gradient(48rem 38rem at 85% 105%, rgba(168, 85, 247, 0.40), transparent 60%),
-    radial-gradient(40rem 30rem at 0% 100%, rgba(244, 114, 182, 0.28), transparent 60%),
-    #0b1020;
+    radial-gradient(50rem 34rem at 8% -10%, rgba(255, 255, 255, 0.10), transparent 60%),
+    radial-gradient(44rem 32rem at 100% 0%, rgba(148, 163, 184, 0.14), transparent 60%),
+    radial-gradient(46rem 36rem at 85% 105%, rgba(249, 115, 22, 0.20), transparent 60%),
+    radial-gradient(36rem 28rem at 0% 100%, rgba(255, 255, 255, 0.06), transparent 60%),
+    #0a0a0c;
   background-attachment: fixed;
-  color: #e5e9f5;
+  color: #e7e7ea;
   min-height: 100vh;
 }
 
 /* Surfaces */
 .bg-white {
-  background-color: rgba(30, 36, 60, 0.52) !important;
+  background-color: rgba(255, 255, 255, 0.07) !important;
   -webkit-backdrop-filter: blur(22px) saturate(160%);
   backdrop-filter: blur(22px) saturate(160%);
 }
 .bg-white\/70 {
-  background-color: rgba(18, 22, 42, 0.72) !important;
+  background-color: rgba(16, 16, 18, 0.78) !important;
   -webkit-backdrop-filter: blur(26px) saturate(160%);
   backdrop-filter: blur(26px) saturate(160%);
 }
 .bg-white\/90, .bg-white\/95 { background-color: rgba(255, 255, 255, 0.92) !important; }
 .bg-white\/90 *, .bg-white\/95 * { color: inherit; }
 .bg-slate-50, .bg-slate-100 { background-color: rgba(255, 255, 255, 0.07) !important; }
-.bg-blue-50, .bg-blue-100 { background-color: rgba(99, 102, 241, 0.22) !important; }
+.bg-blue-50, .bg-blue-100 { background-color: rgba(249, 115, 22, 0.18) !important; }
 .bg-emerald-50, .bg-emerald-100 { background-color: rgba(16, 185, 129, 0.2) !important; }
 .bg-amber-50, .bg-amber-100, .bg-orange-50, .bg-orange-100 { background-color: rgba(251, 146, 60, 0.2) !important; }
 .bg-rose-50, .bg-red-50 { background-color: rgba(244, 63, 94, 0.18) !important; }
 .hover\:bg-slate-50:hover, .hover\:bg-rose-50:hover { background-color: rgba(255, 255, 255, 0.12) !important; }
-.hover\:bg-blue-50:hover { background-color: rgba(99, 102, 241, 0.3) !important; }
+.hover\:bg-blue-50:hover { background-color: rgba(249, 115, 22, 0.28) !important; }
 .bg-transparent { background-color: transparent; }
 
 /* Borders & shadows */
 .border-slate-100, .border-slate-200, .border-slate-200\/70, .border-slate-200\/80, .border-slate-300 {
   border-color: rgba(255, 255, 255, 0.14) !important;
 }
-.border-blue-200, .border-blue-300 { border-color: rgba(129, 140, 248, 0.5) !important; }
+.border-blue-200, .border-blue-300 { border-color: rgba(251, 146, 60, 0.55) !important; }
 .border-rose-200 { border-color: rgba(251, 113, 133, 0.4) !important; }
 .border-white { border-color: rgba(255, 255, 255, 0.35) !important; }
 .shadow-premium, .shadow-xs {
@@ -170,17 +170,17 @@ body {
 }
 
 /* Text */
-.text-slate-900, .text-slate-800, .text-gray-900, .text-black { color: #f4f6ff !important; }
-.text-slate-700, .text-slate-600 { color: #c9cfe6 !important; }
-.text-slate-500 { color: #a4abc8 !important; }
-.text-slate-400, .text-slate-300 { color: #8b93b3 !important; }
-.text-blue-900, .text-blue-800, .text-blue-700, .text-blue-600 { color: #a5b4fc !important; }
+.text-slate-900, .text-slate-800, .text-gray-900, .text-black { color: #fafafa !important; }
+.text-slate-700, .text-slate-600 { color: #d4d4d8 !important; }
+.text-slate-500 { color: #a1a1aa !important; }
+.text-slate-400, .text-slate-300 { color: #8a8a93 !important; }
+.text-blue-900, .text-blue-800, .text-blue-700, .text-blue-600 { color: #fb923c !important; }
 .text-emerald-700, .text-emerald-600 { color: #6ee7b7 !important; }
 .text-amber-600, .text-amber-700, .text-orange-600, .text-orange-700 { color: #fdba74 !important; }
 .text-rose-600, .text-rose-500 { color: #fda4af !important; }
 .bg-white\/90 .text-blue-900, .bg-white\/90 .text-slate-900, .bg-white\/95 { color: #111827 !important; }
-.placeholder\:text-slate-400::placeholder, input::placeholder, textarea::placeholder { color: #8b93b3 !important; }
-input, select, textarea { color: #f4f6ff; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.placeholder\:text-slate-400::placeholder, input::placeholder, textarea::placeholder { color: #8a8a93 !important; }
+input, select, textarea { color: #fafafa; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
 input.bg-white\/95 { color: #111827 !important; }
 option { color: #111827; }
 
@@ -189,17 +189,27 @@ option { color: #111827; }
 .bg-gradient-to-r *, .bg-gradient-to-br * { color: inherit; }
 
 /* Rich accent buttons */
-.from-blue-600 { --tw-gradient-from: #6d28d9 !important; }
-.to-blue-700, .to-indigo-600 { --tw-gradient-to: #2563eb !important; }
-.bg-blue-600 { background-image: linear-gradient(135deg, #7c3aed, #2563eb); background-color: #4f46e5 !important; color: #fff !important; }
+.from-blue-600 { --tw-gradient-from: #f97316 !important; }
+.to-blue-700, .to-indigo-600 { --tw-gradient-to: #f59e0b !important; }
+.bg-blue-600 { background-image: linear-gradient(135deg, #f97316, #f59e0b); background-color: #f97316 !important; color: #fff !important; }
 .bg-blue-600 * { color: #fff !important; }
-.text-gradient-blue { background-image: linear-gradient(135deg, #c4b5fd, #93c5fd 50%, #f9a8d4); }
+.text-gradient-blue { background-image: linear-gradient(135deg, #ffffff, #d4d4d8 50%, #fb923c); }
 
 /* Floating pill dock (phone bottom bar) */
 .glass-dock {
-  background: rgba(20, 24, 46, 0.62) !important;
+  background: rgba(18, 18, 20, 0.70) !important;
   -webkit-backdrop-filter: blur(24px) saturate(170%);
   backdrop-filter: blur(24px) saturate(170%);
   border: 1px solid rgba(255, 255, 255, 0.18) !important;
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.16) inset, 0 20px 40px -10px rgba(0, 0, 0, 0.7) !important;
+}
+
+/* Single rich accent (orange): re-map the old blue/indigo gradient stops */
+.from-blue-500, .from-blue-600, .from-indigo-500 { --tw-gradient-from: #f97316 !important; }
+.to-blue-700, .to-blue-600, .to-indigo-600, .to-indigo-500, .to-indigo-700 { --tw-gradient-to: #f59e0b !important; }
+.mesh-bg-blue {
+  background-image:
+    radial-gradient(at 15% 10%, rgba(255, 255, 255, 0.12) 0, transparent 55%),
+    radial-gradient(at 85% 0%, rgba(249, 115, 22, 0.28) 0, transparent 55%),
+    radial-gradient(at 50% 100%, rgba(148, 163, 184, 0.14) 0, transparent 55%);
 }

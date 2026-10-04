@@ -250,7 +250,7 @@ export const CustomerAuthGate: React.FC = () => {
           )}
         </div>
 
-        <div className="flex items-center justify-center gap-5 mt-6 text-blue-200/80 text-[11px] font-medium">
+        <div className="flex items-center justify-center gap-5 mt-6 text-zinc-300/80 text-[11px] font-medium">
           <span className="flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5" /> ID-Verified Pros</span>
           <span className="flex items-center gap-1.5"><Star className="w-3.5 h-3.5" /> Real Reviews</span>
           <span className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5" /> No Middleman</span>
