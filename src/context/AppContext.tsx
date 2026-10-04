@@ -34,8 +34,8 @@ interface AppContextType {
   setLanguage: (lang: AppLanguage) => void;
   t: (key: string) => string;
 
-  customerTab: 'home' | 'favorites' | 'more';
-  setCustomerTab: (tab: 'home' | 'favorites' | 'more') => void;
+  customerTab: 'home' | 'favorites';
+  setCustomerTab: (tab: 'home' | 'favorites') => void;
   selectedCategoryId: string | null;
   setSelectedCategoryId: (id: string | null) => void;
   captainTab: 'dashboard' | 'reviews' | 'kyc';
@@ -95,7 +95,7 @@ const PREFS_KEY = 'homeserv_prefs_v1';
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [role, setRole] = useState<AppRole>('customer');
   const [language, setLanguage] = useState<AppLanguage>('en');
-  const [customerTab, setCustomerTab] = useState<'home' | 'favorites' | 'more'>('home');
+  const [customerTab, setCustomerTab] = useState<'home' | 'favorites'>('home');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [captainTab, setCaptainTab] = useState<'dashboard' | 'reviews' | 'kyc'>('dashboard');
   const [adminTab, setAdminTab] = useState<'overview' | 'kyc' | 'categories' | 'cities'>('overview');

@@ -1,23 +1,37 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import type { Captain } from '../../types';
 import { CustomerHeader } from './CustomerHeader';
 import { CaptainDirectory } from './CaptainDirectory';
 import { CustomerFavoritesTab } from './CustomerFavoritesTab';
-import { CustomerMoreTab } from './CustomerMoreTab';
+import { CustomerMenu } from './CustomerMenu';
 import { CityModal } from './CityModal';
 import { CaptainProfileModal } from './CaptainProfileModal';
 import { ReviewModal } from './ReviewModal';
 import { CustomerAuthGate } from './CustomerAuthGate';
-import { Home, Heart, Menu } from 'lucide-react';
+import { pushBackHandler } from '../../utils/backStack';
+import { Home, Heart, Menu, X } from 'lucide-react';
 
 export const CustomerApp: React.FC = () => {
-  const { customerTab, setCustomerTab, setSearchQuery, setRole, currentCustomer, selectedCategoryId, setSelectedCategoryId, t } = useApp();
+  const { customerTab, setCustomerTab, setSearchQuery, currentCustomer, selectedCategoryId, setSelectedCategoryId, t } = useApp();
 
   const [isCityModalOpen, setCityModalOpen] = useState(false);
   const [selectedCaptain, setSelectedCaptain] = useState<Captain | null>(null);
   const [isProfileOpen, setProfileOpen] = useState(false);
   const [reviewCaptain, setReviewCaptain] = useState<Captain | null>(null);
+  const [isMenuOpen, setMenuOpen] = useState(false);
+
+  // Back closes the top-most open pop-up before anything else.
+  useEffect(() => {
+    if (!isCityModalOpen && !isProfileOpen && !reviewCaptain && !isMenuOpen) return;
+    return pushBackHandler(() => {
+      if (reviewCaptain) setReviewCaptain(null);
+      else if (isProfileOpen) setProfileOpen(false);
+      else if (isCityModalOpen) setCityModalOpen(false);
+      else setMenuOpen(false);
+      return true;
+    });
+  }, [isCityModalOpen, isProfileOpen, reviewCaptain, isMenuOpen]);
 
   const handleOpenProfile = (captain: Captain) => {
     setSelectedCaptain(captain);
@@ -27,7 +41,6 @@ export const CustomerApp: React.FC = () => {
   const TABS: { id: typeof customerTab; label: string; icon: React.ElementType }[] = [
     { id: 'home', label: t('home'), icon: Home },
     { id: 'favorites', label: t('myFavorites'), icon: Heart },
-    { id: 'more', label: t('more'), icon: Menu },
   ];
 
   if (!currentCustomer) return <CustomerAuthGate />;
@@ -36,26 +49,8 @@ export const CustomerApp: React.FC = () => {
     <div className="min-h-screen bg-[#F5F7FA] pb-20 sm:pb-6">
       <div className="sm:flex sm:max-w-7xl sm:mx-auto">
         {/* Left sidebar — desktop/tablet only; phones keep the bottom tab bar */}
-        <aside className="hidden sm:flex sm:flex-col sm:w-52 sm:shrink-0 sm:pt-6 sm:pl-4 sm:pr-2 sm:sticky sm:top-16 sm:self-start sm:gap-1.5">
-          {TABS.map((tab) => {
-            const Icon = tab.icon;
-            const isActive = customerTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => {
-                  setCustomerTab(tab.id);
-                  if (tab.id === 'home') setSelectedCategoryId(null);
-                }}
-                className={`flex items-center space-x-2.5 px-4 py-2.5 rounded-xl text-sm font-bold transition-all text-left ${
-                  isActive ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:border-blue-300'
-                }`}
-              >
-                <Icon className="w-4 h-4 shrink-0" />
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
+        <aside className="hidden sm:block sm:w-56 sm:shrink-0 sm:pt-6 sm:pl-4 sm:pr-2 sm:sticky sm:top-16 sm:self-start sm:max-h-[calc(100vh-4rem)] sm:overflow-y-auto custom-scrollbar sm:pb-6">
+          <CustomerMenu />
         </aside>
 
         <div className="min-w-0 flex-1">
@@ -64,7 +59,6 @@ export const CustomerApp: React.FC = () => {
           <main>
             {customerTab === 'home' && <CaptainDirectory onOpenProfile={handleOpenProfile} />}
             {customerTab === 'favorites' && <CustomerFavoritesTab onOpenProfile={handleOpenProfile} />}
-            {customerTab === 'more' && <CustomerMoreTab onBecomeCaptain={() => setRole('captain')} />}
           </main>
         </div>
       </div>
@@ -90,7 +84,34 @@ export const CustomerApp: React.FC = () => {
             </button>
           );
         })}
+        <button
+          onClick={() => setMenuOpen(true)}
+          className={`flex flex-col items-center justify-center space-y-0.5 px-4 py-1.5 rounded-xl min-w-[64px] transition-colors ${
+            isMenuOpen ? 'text-blue-600' : 'text-slate-400'
+          }`}
+        >
+          <Menu className="w-5 h-5" />
+          <span className="text-[10px] font-bold">{t('more')}</span>
+        </button>
       </nav>
+
+      {isMenuOpen && (
+        <div className="sm:hidden fixed inset-0 z-[60]">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setMenuOpen(false)} />
+          <div className="absolute left-0 top-0 bottom-0 w-[84%] max-w-xs bg-[#F5F7FA] shadow-premium-lg overflow-y-auto animate-drawer-enter p-4">
+            <div className="flex items-center justify-between mb-4">
+              <span className="flex items-center gap-2 font-black text-slate-900">
+                <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-400 to-amber-500 text-white text-xs flex items-center justify-center">HS</span>
+                Menu
+              </span>
+              <button onClick={() => setMenuOpen(false)} className="p-2 rounded-full bg-white border border-slate-200 text-slate-600" aria-label="Close menu">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <CustomerMenu showNav={false} onClose={() => setMenuOpen(false)} />
+          </div>
+        </div>
+      )}
 
       <CityModal isOpen={isCityModalOpen} onClose={() => setCityModalOpen(false)} />
       <CaptainProfileModal
