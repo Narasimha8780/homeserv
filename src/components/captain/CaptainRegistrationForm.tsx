@@ -2,9 +2,21 @@ import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import type { City, ServiceCategoryId } from '../../types';
 import { StateCitySelect } from '../common/StateCitySelect';
-import { UserPlus, Check } from 'lucide-react';
+import { CategoryIcon } from '../common/CategoryIcon';
+import { UserPlus, Check, BadgeCheck, MapPin, Wrench, IndianRupee, User } from 'lucide-react';
 
 const LANGUAGE_OPTIONS = ['Hindi', 'English', 'Tamil', 'Telugu', 'Marathi', 'Bengali', 'Urdu', 'Marwari'];
+
+const Section: React.FC<{ step: number; icon: React.ElementType; title: string; children: React.ReactNode }> = ({ step, icon: Icon, title, children }) => (
+  <section className="py-6 first:pt-0">
+    <h3 className="flex items-center gap-2.5 text-base font-bold text-ink mb-4">
+      <span className="w-8 h-8 rounded-lg bg-accent-soft text-accent-ink flex items-center justify-center text-sm font-display">{step}</span>
+      <Icon className="w-4 h-4 text-ink-3" />
+      {title}
+    </h3>
+    <div className="space-y-4">{children}</div>
+  </section>
+);
 
 export const CaptainRegistrationForm: React.FC<{ verifiedPhone?: string }> = ({ verifiedPhone }) => {
   const { allCities, categories, registerCaptain, setCaptainTab } = useApp();
@@ -32,10 +44,14 @@ export const CaptainRegistrationForm: React.FC<{ verifiedPhone?: string }> = ({ 
   };
 
   const digitsOnly = (v: string) => v.replace(/\D/g, '');
+  const canSubmit = !!name.trim() && !!phone.trim() && !!selectedCity && selectedCategories.length > 0 && !!areasInput.trim();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !phone.trim() || !selectedCity || selectedCategories.length === 0 || !areasInput.trim() || isSubmitting) return;
+    if (!canSubmit || isSubmitting) {
+      if (selectedCategories.length === 0) setError('Pick at least one service you offer.');
+      return;
+    }
 
     const cleanPhoneDigits = digitsOnly(phone);
     const waNumber = sameAsPhoneForWhatsapp ? `91${cleanPhoneDigits.slice(-10)}` : digitsOnly(whatsapp);
@@ -47,7 +63,7 @@ export const CaptainRegistrationForm: React.FC<{ verifiedPhone?: string }> = ({ 
         name: name.trim(),
         phone: phone.trim(),
         whatsapp: waNumber,
-        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name.trim())}&background=1A73E8&color=fff&size=200&bold=true`,
+        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name.trim())}&background=FF7A1A&color=fff&size=200&bold=true`,
         cityId: selectedCity!.id,
         areas: areasInput.split(',').map((a) => a.trim()).filter(Boolean),
         categories: selectedCategories,
@@ -65,178 +81,131 @@ export const CaptainRegistrationForm: React.FC<{ verifiedPhone?: string }> = ({ 
   };
 
   return (
-    <div className="min-h-[calc(100vh-56px)] bg-gradient-to-b from-orange-50/60 via-[#F5F7FA] to-[#F5F7FA] px-4 py-8">
-      <div className="max-w-2xl mx-auto">
-      <div className="bg-white rounded-[2rem] border border-slate-200/70 shadow-premium-lg overflow-hidden">
-        <div className="relative overflow-hidden p-6 bg-gradient-to-br from-orange-600 to-amber-600 text-white">
-          <div className="absolute inset-0 mesh-bg-amber opacity-40 pointer-events-none" />
-          <h2 className="relative text-xl font-black flex items-center gap-2">
-            <UserPlus className="w-5 h-5" />
-            List Your Service — Free
-          </h2>
-          <p className="relative text-xs text-orange-100 mt-1">
-            Fill this once. Customers in your city will be able to find and call you directly.
-          </p>
-        </div>
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10 pb-16 animate-page-enter">
+      <div className="mb-6">
+        <span className="pill bg-accent-soft text-accent-ink !px-2.5">
+          <UserPlus className="w-3.5 h-3.5" /> New captain
+        </span>
+        <h1 className="mt-2.5 text-[1.75rem] sm:text-4xl font-bold text-ink">List your service — free</h1>
+        <p className="text-[15px] text-ink-2 mt-1">Fill this once. Customers in your city will be able to find and call you directly.</p>
+      </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <form onSubmit={handleSubmit} className="card !bg-surface-solid p-5 sm:p-8 [&>section+section]:border-t [&>section+section]:border-line">
+        <Section step={1} icon={User} title="About you">
+          <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1.5">Full Name</label>
-              <input
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Ravi Kumar"
-                className="w-full text-sm p-3 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 outline-none transition-all"
-              />
+              <label className="field-label" htmlFor="reg-name">Full name</label>
+              <input id="reg-name" required autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Ravi Kumar" className="input" />
             </div>
             <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1.5">Phone Number</label>
+              <label className="field-label" htmlFor="reg-phone">Phone number</label>
               <input
+                id="reg-phone"
                 required
                 readOnly={!!verifiedPhone}
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="+91 98XXX XXXXX"
-                className={`w-full text-sm p-3 border-2 rounded-2xl outline-none transition-all ${
-                  verifiedPhone
-                    ? 'bg-emerald-50 border-emerald-200 text-emerald-800 font-semibold'
-                    : 'bg-slate-50 border-slate-200 focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10'
-                }`}
+                className={`input ${verifiedPhone ? '!bg-success-soft !border-transparent !text-success-ink font-semibold' : ''}`}
               />
-              {verifiedPhone && <span className="text-[11px] text-emerald-600 font-semibold">✓ Verified via OTP</span>}
+              {verifiedPhone && (
+                <span className="mt-1 flex items-center gap-1 text-xs font-semibold text-success-ink">
+                  <BadgeCheck className="w-3.5 h-3.5" /> Verified via OTP
+                </span>
+              )}
             </div>
           </div>
-
-          <div>
-            <label className="flex items-center gap-2 text-xs font-semibold text-slate-600 mb-1.5">
-              <input
-                type="checkbox"
-                checked={sameAsPhoneForWhatsapp}
-                onChange={(e) => setSameAsPhoneForWhatsapp(e.target.checked)}
-                className="rounded"
-              />
-              WhatsApp number is the same as phone number
-            </label>
-            {!sameAsPhoneForWhatsapp && (
-              <input
-                value={whatsapp}
-                onChange={(e) => setWhatsapp(e.target.value)}
-                placeholder="91XXXXXXXXXX (with country code)"
-                className="w-full text-sm p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-1 focus:ring-orange-500"
-              />
-            )}
-          </div>
-
-          <div>
-            <StateCitySelect value={selectedCity} onSelect={setSelectedCity} />
-          </div>
-
-          <div>
-            <label className="text-xs font-bold text-slate-700 block mb-1.5">Years of Experience</label>
+          <label className="flex items-center gap-3 text-sm font-medium text-ink-2 cursor-pointer">
             <input
-              type="number"
-              min={0}
-              value={experienceYears}
-              onChange={(e) => setExperienceYears(e.target.value)}
-              className="w-full text-sm p-3 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 outline-none transition-all"
+              type="checkbox"
+              checked={sameAsPhoneForWhatsapp}
+              onChange={(e) => setSameAsPhoneForWhatsapp(e.target.checked)}
+              className="w-5 h-5 rounded accent-orange-500"
             />
-          </div>
+            My WhatsApp number is the same as my phone number
+          </label>
+          {!sameAsPhoneForWhatsapp && (
+            <input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="91XXXXXXXXXX (with country code)" inputMode="numeric" className="input" />
+          )}
+        </Section>
 
-          <div>
-            <label className="text-xs font-bold text-slate-700 block mb-1.5">Areas / Localities You Serve</label>
-            <input
-              required
-              value={areasInput}
-              onChange={(e) => setAreasInput(e.target.value)}
-              placeholder="e.g. Vaishali Nagar, Malviya Nagar"
-              className="w-full text-sm p-3 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 outline-none transition-all"
-            />
-            <span className="text-[11px] text-slate-400">Separate multiple areas with commas</span>
+        <Section step={2} icon={Wrench} title="What services do you offer?">
+          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2.5">
+            {categories
+              .filter((c) => c.isActive)
+              .map((cat) => {
+                const selected = selectedCategories.includes(cat.id);
+                return (
+                  <button
+                    type="button"
+                    key={cat.id}
+                    onClick={() => toggleCategory(cat.id)}
+                    aria-pressed={selected}
+                    className={`relative flex flex-col items-center gap-2 p-3 rounded-2xl border text-center transition-all active:scale-95 ${
+                      selected ? 'bg-accent-soft border-orange-400/60' : 'bg-surface-2 border-line hover:border-line-strong'
+                    }`}
+                  >
+                    {selected && (
+                      <span className="absolute top-2 right-2 w-5 h-5 rounded-full bg-accent text-on-accent flex items-center justify-center">
+                        <Check className="w-3 h-3" strokeWidth={3} />
+                      </span>
+                    )}
+                    <CategoryIcon categoryId={cat.id} title={cat.title} iconName={cat.iconName} colorClass={cat.color} className="w-12 h-12" iconClassName="w-5 h-5" />
+                    <span className={`text-xs font-semibold leading-tight ${selected ? 'text-accent-ink' : 'text-ink-2'}`}>{cat.title}</span>
+                  </button>
+                );
+              })}
           </div>
-
-          <div>
-            <label className="text-xs font-bold text-slate-700 block mb-2">What services do you offer?</label>
-            <div className="flex flex-wrap gap-2">
-              {categories.map((cat) => (
-                <button
-                  type="button"
-                  key={cat.id}
-                  onClick={() => toggleCategory(cat.id)}
-                  className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all duration-150 ${
-                    selectedCategories.includes(cat.id)
-                      ? 'bg-gradient-to-r from-orange-600 to-amber-600 text-white shadow-[0_4px_12px_-2px_rgba(234,88,12,0.4)] scale-[1.03]'
-                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                  }`}
-                >
-                  {cat.title}
-                </button>
-              ))}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="field-label" htmlFor="reg-exp">Experience (years)</label>
+              <input id="reg-exp" type="number" inputMode="numeric" min={0} value={experienceYears} onChange={(e) => setExperienceYears(e.target.value)} className="input" />
+            </div>
+            <div>
+              <label className="field-label" htmlFor="reg-price">Starting price (₹)</label>
+              <input id="reg-price" type="number" inputMode="numeric" min={0} value={startingPrice} onChange={(e) => setStartingPrice(e.target.value)} placeholder="Optional, e.g. 149" className="input" />
             </div>
           </div>
+        </Section>
 
+        <Section step={3} icon={MapPin} title="Where do you work?">
+          <StateCitySelect value={selectedCity} onSelect={setSelectedCity} />
           <div>
-            <label className="text-xs font-bold text-slate-700 block mb-2">Languages You Speak</label>
+            <label className="field-label" htmlFor="reg-areas">Areas / localities you serve</label>
+            <input id="reg-areas" required value={areasInput} onChange={(e) => setAreasInput(e.target.value)} placeholder="e.g. Vaishali Nagar, Malviya Nagar" className="input" />
+            <p className="mt-1 text-xs text-ink-3">Separate multiple areas with commas</p>
+          </div>
+        </Section>
+
+        <Section step={4} icon={IndianRupee} title="Help customers choose you">
+          <div>
+            <span className="field-label">Languages you speak</span>
             <div className="flex flex-wrap gap-2">
               {LANGUAGE_OPTIONS.map((lang) => (
-                <button
-                  type="button"
-                  key={lang}
-                  onClick={() => toggleLanguage(lang)}
-                  className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all duration-150 ${
-                    selectedLanguages.includes(lang)
-                      ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-[0_4px_12px_-2px_rgba(37,99,235,0.4)] scale-[1.03]'
-                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                  }`}
-                >
+                <button type="button" key={lang} onClick={() => toggleLanguage(lang)} aria-pressed={selectedLanguages.includes(lang)} className="chip">
+                  {selectedLanguages.includes(lang) && <Check className="w-3.5 h-3.5" />}
                   {lang}
                 </button>
               ))}
             </div>
           </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1.5">Starting Price (Optional, ₹)</label>
-              <input
-                type="number"
-                min={0}
-                value={startingPrice}
-                onChange={(e) => setStartingPrice(e.target.value)}
-                placeholder="e.g. 149"
-                className="w-full text-sm p-3 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 outline-none transition-all"
-              />
-            </div>
-          </div>
-
           <div>
-            <label className="text-xs font-bold text-slate-700 block mb-1.5">Short Bio (Optional)</label>
-            <textarea
-              rows={3}
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-              placeholder="Tell customers what you specialize in..."
-              className="w-full text-xs p-3 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 outline-none transition-all"
-            />
+            <label className="field-label" htmlFor="reg-bio">Short bio (optional)</label>
+            <textarea id="reg-bio" rows={3} value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Tell customers what you specialise in and how quickly you can visit…" className="input resize-none" />
           </div>
+        </Section>
 
-          {error && <p className="text-xs text-rose-600 font-semibold text-center">{error}</p>}
-
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-black text-sm rounded-2xl shadow-[0_8px_24px_-6px_rgba(234,88,12,0.5)] hover:shadow-[0_10px_30px_-6px_rgba(234,88,12,0.6)] hover-lift active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            <Check className="w-4 h-4" />
-            <span>{isSubmitting ? 'Submitting...' : 'Submit for Verification'}</span>
+        <div className="pt-6 border-t border-line">
+          {error && <p className="mb-3 text-sm text-danger-ink font-semibold text-center">{error}</p>}
+          <button type="submit" disabled={isSubmitting} className="btn btn-primary w-full h-[3.25rem] text-[15px]">
+            <Check className="w-5 h-5" />
+            {isSubmitting ? 'Submitting…' : 'Submit for verification'}
           </button>
-          <p className="text-[11px] text-slate-400 text-center">
+          <p className="mt-3 text-xs text-ink-3 text-center">
             After submitting, an ID document (Aadhaar) is required before your profile goes live to customers.
           </p>
-        </form>
-      </div>
-      </div>
+        </div>
+      </form>
     </div>
   );
 };

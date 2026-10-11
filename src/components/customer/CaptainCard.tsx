@@ -1,8 +1,11 @@
 import React from 'react';
 import type { Captain, ServiceCategory } from '../../types';
 import { useApp } from '../../context/AppContext';
-import { CategoryIcon } from '../common/CategoryIcon';
-import { Star, MapPin, ShieldCheck, Phone, MessageCircle, Heart, Clock } from 'lucide-react';
+import { Avatar } from '../ui/Avatar';
+import { RatingPill } from '../ui/Rating';
+import { WhatsAppIcon } from '../ui/WhatsAppIcon';
+import { formatPrice, telLink, whatsappGreeting, whatsappLink } from '../../utils/format';
+import { BadgeCheck, MapPin, Phone, Heart, Briefcase } from 'lucide-react';
 
 export const CaptainCard: React.FC<{
   captain: Captain;
@@ -12,107 +15,129 @@ export const CaptainCard: React.FC<{
   const { isFavorite, toggleFavorite, recordContactClick, t } = useApp();
   const favorite = isFavorite(captain.id);
 
-  const primaryCategory = categories.find((c) => c.id === captain.categories[0]);
+  const titles = captain.categories.map((id) => categories.find((c) => c.id === id)?.title).filter(Boolean) as string[];
+  const areaText =
+    captain.areas.length > 1 ? `${captain.areas[0]} +${captain.areas.length - 1}` : captain.areas[0] || '';
 
-  const categoryTitles = captain.categories
-    .map((id) => categories.find((c) => c.id === id)?.title)
-    .filter(Boolean)
-    .join(' • ');
-
-  const handleCall = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    recordContactClick(captain.id);
-  };
-
-  const handleWhatsApp = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    recordContactClick(captain.id);
-  };
+  const stop = (e: React.SyntheticEvent) => e.stopPropagation();
+  const open = () => onOpenProfile(captain);
 
   return (
-    <div
-      onClick={() => onOpenProfile(captain)}
-      className="group bg-white rounded-3xl border border-slate-200/80 hover:border-blue-300 shadow-xs hover:shadow-premium-lg hover-lift transition-all duration-200 p-4 flex flex-col gap-3 cursor-pointer"
+    <article
+      role="button"
+      tabIndex={0}
+      onClick={open}
+      onKeyDown={(e) => {
+        if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault();
+          open();
+        }
+      }}
+      aria-label={`${captain.name}, ${titles.join(', ')}`}
+      className="card card-interactive p-4 flex flex-col gap-4 outline-none"
     >
-      <div className="flex items-start gap-3">
-        <div className="relative shrink-0">
-          <img
-            src={captain.avatar}
-            alt={captain.name}
-            className="w-16 h-16 rounded-2xl object-cover border-2 border-white shadow-premium ring-1 ring-slate-200/80 transition-transform duration-200 group-hover:scale-[1.03]"
+      <div className="flex gap-3.5">
+        <div className="relative shrink-0 self-start">
+          <Avatar src={captain.avatar} name={captain.name} className="w-16 h-16 rounded-2xl" textClassName="text-xl" />
+          <span
+            className={`absolute -bottom-1 -right-1 w-[18px] h-[18px] rounded-full border-[3px] border-[var(--surface-solid)] ${
+              captain.isAvailable ? 'bg-success' : 'bg-ink-3'
+            }`}
+            title={captain.isAvailable ? t('available') : t('busy')}
           />
-          {primaryCategory && (
-            <span className="absolute -bottom-1.5 -right-1.5 rounded-full border-2 border-white shadow-sm overflow-hidden bg-white">
-              <CategoryIcon categoryId={primaryCategory.id} title={primaryCategory.title} iconName={primaryCategory.iconName} colorClass={primaryCategory.color} className="w-6 h-6" iconClassName="w-3 h-3" />
-            </span>
-          )}
         </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5">
-                <h3 className="font-bold text-slate-900 text-sm truncate">{captain.name}</h3>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start gap-2">
+            <div className="min-w-0 flex-1">
+              <h3 className="flex items-center gap-1 text-[16px] font-bold text-ink leading-snug">
+                <span className="truncate">{captain.name}</span>
                 {captain.kycStatus === 'verified' && (
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <BadgeCheck className="w-[18px] h-[18px] text-info-ink shrink-0" aria-label={t('verified')} />
                 )}
-              </div>
-              <p className="text-xs text-blue-700 font-semibold truncate">{categoryTitles}</p>
+              </h3>
+              <p className="text-[13px] font-semibold text-accent-ink truncate">{titles.join(' · ')}</p>
             </div>
             <button
               onClick={(e) => {
-                e.stopPropagation();
+                stop(e);
                 toggleFavorite(captain.id);
               }}
-              className={`shrink-0 p-1.5 rounded-full transition-colors ${
-                favorite ? 'text-rose-500 bg-rose-50' : 'text-slate-300 hover:text-rose-400'
-              }`}
+              aria-pressed={favorite}
               aria-label={favorite ? t('removeFromFavorites') : t('addToFavorites')}
+              className={`icon-btn w-9 h-9 -mt-1 -mr-1 ${favorite ? '!text-rose-500 !bg-rose-500/12 !border-rose-500/30' : ''}`}
             >
-              <Heart className={`w-4 h-4 ${favorite ? 'fill-rose-500' : ''}`} />
+              <Heart className={`w-[18px] h-[18px] ${favorite ? 'fill-rose-500' : ''}`} />
             </button>
           </div>
 
-          <div className="flex items-center flex-wrap gap-x-3 gap-y-1 mt-1.5 text-[11px] text-slate-500">
-            {captain.rating > 0 ? (
-              <span className="flex items-center gap-1 font-bold text-amber-600">
-                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                {captain.rating.toFixed(1)} ({captain.reviewCount})
+          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+            <RatingPill rating={captain.rating} count={captain.reviewCount} />
+            <span className="pill">
+              <Briefcase className="w-3.5 h-3.5" />
+              {captain.experienceYears} {t('yrs')}
+            </span>
+            {areaText && (
+              <span className="pill max-w-[11rem]">
+                <MapPin className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">{areaText}</span>
               </span>
-            ) : (
-              <span className="text-slate-400">New</span>
             )}
-            <span className="flex items-center gap-1">
-              <Clock className="w-3.5 h-3.5" />
-              {captain.experienceYears} yrs exp
-            </span>
-            <span className="flex items-center gap-1 truncate">
-              <MapPin className="w-3.5 h-3.5 shrink-0" />
-              {captain.areas.slice(0, 2).join(', ')}
-            </span>
           </div>
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 pt-3.5 border-t border-line">
+        <div className="mr-auto min-w-0 leading-tight">
+          {captain.startingPrice != null ? (
+            <>
+              <span className="block text-[11px] font-medium text-ink-3">{t('from')}</span>
+              <span className="font-display text-lg font-bold text-ink">{formatPrice(captain.startingPrice)}</span>
+            </>
+          ) : (
+            <span className={`text-[13px] font-semibold ${captain.isAvailable ? 'text-success-ink' : 'text-ink-3'}`}>
+              {captain.isAvailable ? t('available') : t('busy')}
+            </span>
+          )}
+        </div>
         <a
-          href={`tel:${captain.phone}`}
-          onClick={handleCall}
-          className="flex-1 flex items-center justify-center gap-1.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold text-xs px-3 py-2.5 rounded-xl shadow-[0_4px_12px_-2px_rgba(37,99,235,0.4)] hover:shadow-[0_6px_16px_-2px_rgba(37,99,235,0.5)] active:scale-[0.97] transition-all"
-        >
-          <Phone className="w-3.5 h-3.5" />
-          <span>{t('callNow')}</span>
-        </a>
-        <a
-          href={`https://wa.me/${captain.whatsapp}`}
+          href={whatsappLink(captain.whatsapp, whatsappGreeting(captain, titles[0]))}
           target="_blank"
           rel="noopener noreferrer"
-          onClick={handleWhatsApp}
-          className="flex-1 flex items-center justify-center gap-1.5 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-bold text-xs px-3 py-2.5 rounded-xl shadow-[0_4px_12px_-2px_rgba(5,150,105,0.4)] hover:shadow-[0_6px_16px_-2px_rgba(5,150,105,0.5)] active:scale-[0.97] transition-all"
+          onClick={(e) => {
+            stop(e);
+            recordContactClick(captain.id);
+          }}
+          aria-label={`${t('whatsapp')} ${captain.name}`}
+          className="btn btn-whatsapp h-11 w-11 min-[400px]:w-auto min-[400px]:px-3.5"
         >
-          <MessageCircle className="w-3.5 h-3.5" />
-          <span>{t('whatsapp')}</span>
+          <WhatsAppIcon className="w-[18px] h-[18px]" />
+          <span className="hidden min-[400px]:inline">{t('whatsapp')}</span>
+        </a>
+        <a
+          href={telLink(captain.phone)}
+          onClick={(e) => {
+            stop(e);
+            recordContactClick(captain.id);
+          }}
+          className="btn btn-primary h-11 px-4"
+        >
+          <Phone className="w-[18px] h-[18px]" />
+          {t('callNow')}
         </a>
       </div>
-    </div>
+    </article>
   );
 };
+
+export const CaptainGrid: React.FC<{
+  captains: Captain[];
+  categories: ServiceCategory[];
+  onOpenProfile: (captain: Captain) => void;
+}> = ({ captains, categories, onOpenProfile }) => (
+  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
+    {captains.map((cap) => (
+      <CaptainCard key={cap.id} captain={cap} categories={categories} onOpenProfile={onOpenProfile} />
+    ))}
+  </div>
+);

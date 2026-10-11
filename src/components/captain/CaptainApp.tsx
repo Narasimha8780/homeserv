@@ -5,17 +5,15 @@ import { CaptainRegistrationForm } from './CaptainRegistrationForm';
 import { CaptainDashboard } from './CaptainDashboard';
 import { CaptainKycTab } from './CaptainKycTab';
 import { CaptainReviewsTab } from './CaptainReviewsTab';
-import { LayoutGrid, Star, ShieldCheck, UserPlus } from 'lucide-react';
+import { BottomNav } from '../ui/BottomNav';
+import { firstName } from '../../utils/format';
+import { LayoutGrid, Star, ShieldCheck, Wrench } from 'lucide-react';
+
+type CaptainTab = 'dashboard' | 'reviews' | 'kyc';
 
 export const CaptainApp: React.FC = () => {
-  const { captainTab, setCaptainTab, setActiveCaptainId, currentCaptain, t } = useApp();
+  const { captainTab, setCaptainTab, currentCaptain, t } = useApp();
   const [newCaptainPhone, setNewCaptainPhone] = useState<string | null>(null);
-
-  const TABS: { id: typeof captainTab; label: string; icon: React.ElementType }[] = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutGrid },
-    { id: 'reviews', label: 'Reviews', icon: Star },
-    { id: 'kyc', label: 'KYC', icon: ShieldCheck },
-  ];
 
   if (!currentCaptain) {
     return newCaptainPhone ? (
@@ -25,54 +23,62 @@ export const CaptainApp: React.FC = () => {
     );
   }
 
+  const TABS: { id: CaptainTab; label: string; icon: React.ElementType; badge?: number }[] = [
+    { id: 'dashboard', label: t('dashboard'), icon: LayoutGrid },
+    { id: 'reviews', label: t('reviews'), icon: Star },
+    { id: 'kyc', label: t('verification'), icon: ShieldCheck, badge: currentCaptain.kycStatus === 'verified' ? undefined : 1 },
+  ];
+
+  const selectTab = (id: CaptainTab) => {
+    setCaptainTab(id);
+    window.scrollTo({ top: 0 });
+  };
+
   return (
-    <div className="min-h-screen bg-transparent">
-      <div className="relative overflow-hidden bg-gradient-to-br from-amber-600 via-orange-600 to-red-600 text-white px-4 sm:px-6 py-4 shadow-premium-lg">
-        <div className="absolute inset-0 mesh-bg-amber opacity-50 pointer-events-none" />
-        <div className="relative max-w-2xl mx-auto flex flex-wrap items-center justify-between gap-2">
+    <>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-5 sm:pt-10 pb-[calc(7.5rem+var(--sa-bottom))] sm:pb-14 animate-page-enter">
+        <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="text-base sm:text-lg font-black tracking-tight">{t('captainPortalTitle')}</h1>
-            <p className="text-[11px] text-orange-100">List your service for free and get discovered by local customers</p>
+            <span className="pill bg-accent-soft text-accent-ink !px-2.5">
+              <Wrench className="w-3.5 h-3.5" /> Captain portal
+            </span>
+            <h1 className="mt-2.5 text-[1.75rem] sm:text-4xl font-bold text-ink">
+              {t('greeting')}, {firstName(currentCaptain.name)} <span aria-hidden="true">👋</span>
+            </h1>
+            <p className="text-[15px] text-ink-2 mt-1">Here's how your HomeServ listing is doing.</p>
+          </div>
+
+          <div className="hidden sm:flex p-1 rounded-2xl bg-surface-2 border border-line" role="tablist" aria-label="Captain sections">
+            {TABS.map((tab) => {
+              const Icon = tab.icon;
+              const active = captainTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => selectTab(tab.id)}
+                  className={`relative flex items-center gap-2 h-10 px-4 rounded-xl text-sm font-semibold transition-all ${
+                    active ? 'bg-surface-solid text-ink shadow-card border border-line' : 'text-ink-3 hover:text-ink'
+                  }`}
+                >
+                  <Icon className={`w-4 h-4 ${active ? 'text-accent' : ''}`} />
+                  {tab.label}
+                  {!!tab.badge && <span className="w-2 h-2 rounded-full bg-warn" />}
+                </button>
+              );
+            })}
           </div>
         </div>
+
+        <main className="mt-6 sm:mt-8">
+          {captainTab === 'dashboard' && <CaptainDashboard onOpenTab={selectTab} />}
+          {captainTab === 'reviews' && <CaptainReviewsTab />}
+          {captainTab === 'kyc' && <CaptainKycTab />}
+        </main>
       </div>
 
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 pt-4 flex items-center space-x-2 overflow-x-auto custom-scrollbar">
-        {TABS.map((tab) => {
-          const Icon = tab.icon;
-          const isActive = captainTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setCaptainTab(tab.id)}
-              className={`shrink-0 flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
-                isActive
-                  ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-md'
-                  : 'bg-white text-slate-600 border border-slate-200 hover:border-orange-300'
-              }`}
-            >
-              <Icon className="w-3.5 h-3.5" />
-              <span>{tab.label}</span>
-            </button>
-          );
-        })}
-        <button
-          onClick={() => {
-            setActiveCaptainId(null);
-            setNewCaptainPhone(null);
-          }}
-          className="shrink-0 flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-white text-orange-600 border border-orange-200 hover:bg-orange-50 ml-auto"
-        >
-          <UserPlus className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Switch Captain</span>
-        </button>
-      </div>
-
-      <main className="pb-10">
-        {captainTab === 'dashboard' && <CaptainDashboard />}
-        {captainTab === 'reviews' && <CaptainReviewsTab />}
-        {captainTab === 'kyc' && <CaptainKycTab />}
-      </main>
-    </div>
+      <BottomNav<CaptainTab> items={TABS} active={captainTab} onSelect={selectTab} />
+    </>
   );
 };
