@@ -8,6 +8,7 @@ const FALLBACK_ICONS: Record<string, React.ElementType> = {
 
 // Uses the generated icon image when one exists for this category id; categories an
 // admin creates later (no image yet) fall back to a gradient tile with a lucide icon.
+// The artwork has its own rounded-square background, so the radius here clips its corners.
 export const CategoryIcon: React.FC<{
   categoryId: string;
   title: string;
@@ -22,7 +23,7 @@ export const CategoryIcon: React.FC<{
 
   if (failed || !url) {
     return (
-      <span className={`${className} rounded-2xl bg-gradient-to-br ${colorClass} text-white flex items-center justify-center shadow-premium shrink-0`}>
+      <span className={`${className} rounded-[24%] bg-gradient-to-br ${colorClass} text-white flex items-center justify-center shrink-0`}>
         <Fallback className={iconClassName} />
       </span>
     );
@@ -30,9 +31,10 @@ export const CategoryIcon: React.FC<{
   return (
     <img
       src={url}
-      alt={title}
+      alt=""
+      loading="lazy"
       onError={() => setFailed(true)}
-      className={`${className} object-cover rounded-2xl shrink-0 shadow-premium`}
+      className={`${className} object-cover rounded-[24%] shrink-0`}
     />
   );
 };

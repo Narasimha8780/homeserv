@@ -1,107 +1,82 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
-import { ShieldCheck, XCircle, Clock3, FileText, Star } from 'lucide-react';
+import { Avatar } from '../ui/Avatar';
+import { EmptyState } from '../ui/EmptyState';
+import { ShieldCheck, XCircle, Clock3, FileText, Star, MapPin } from 'lucide-react';
 
 export const AdminKycTab: React.FC = () => {
-  const { captains, categories, approveCaptainKyc, rejectCaptainKyc } = useApp();
+  const { captains, categories, allCities, approveCaptainKyc, rejectCaptainKyc } = useApp();
 
   const pending = captains.filter((c) => c.kycStatus === 'pending');
   const reviewed = captains.filter((c) => c.kycStatus !== 'pending');
 
-  const categoryTitles = (ids: string[]) =>
-    ids.map((id) => categories.find((c) => c.id === id)?.title).filter(Boolean).join(', ');
+  const categoryTitles = (ids: string[]) => ids.map((id) => categories.find((c) => c.id === id)?.title).filter(Boolean).join(', ');
+  const cityName = (id: string) => allCities.find((c) => c.id === id)?.name || id;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
-      <div>
-        <h2 className="text-lg font-black text-slate-900 mb-3">Captain Verification Queue ({pending.length})</h2>
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-8">
+      <section>
+        <h2 className="text-xl font-bold text-ink mb-4">Verification queue <span className="text-ink-3">({pending.length})</span></h2>
         {pending.length === 0 ? (
-          <div className="bg-white rounded-3xl p-8 text-center border border-slate-200/70 shadow-premium">
-            <ShieldCheck className="w-10 h-10 text-emerald-400 mx-auto mb-2" />
-            <p className="text-sm text-slate-500">All caught up! No pending verifications.</p>
-          </div>
+          <EmptyState icon={<ShieldCheck className="w-7 h-7" />} title="All caught up!" body="No pending verifications right now." />
         ) : (
-          <div className="space-y-3">
+          <div className="grid lg:grid-cols-2 gap-4">
             {pending.map((c) => (
-              <div key={c.id} className="bg-white rounded-3xl border border-amber-200 shadow-premium hover:shadow-premium-lg transition-shadow p-4">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="flex items-center space-x-3">
-                    <img src={c.avatar} alt={c.name} className="w-14 h-14 rounded-2xl object-cover border-2 border-white shadow-premium ring-2 ring-amber-300" />
-                    <div>
-                      <h3 className="font-black text-sm text-slate-900">{c.name}</h3>
-                      <p className="text-xs text-slate-500">{c.phone} • {c.experienceYears} yrs exp • {categoryTitles(c.categories)}</p>
-                      <span className="inline-flex items-center space-x-1 mt-1 bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                        <Clock3 className="w-3 h-3" />
-                        <span>Awaiting Review</span>
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => rejectCaptainKyc(c.id)}
-                      className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl border-2 border-rose-200 text-rose-600 font-bold text-xs hover:bg-rose-50 transition-colors"
-                    >
-                      <XCircle className="w-3.5 h-3.5" />
-                      <span>Reject</span>
-                    </button>
-                    <button
-                      onClick={() => approveCaptainKyc(c.id)}
-                      className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs shadow-[0_4px_14px_-2px_rgba(5,150,105,0.5)] hover-lift transition-all"
-                    >
-                      <ShieldCheck className="w-3.5 h-3.5" />
-                      <span>Approve</span>
-                    </button>
+              <article key={c.id} className="card p-5">
+                <div className="flex items-start gap-4">
+                  <Avatar src={c.avatar} name={c.name} className="w-14 h-14 rounded-2xl ring-2 ring-warn/50" />
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-base font-bold text-ink">{c.name}</h3>
+                    <p className="text-[13px] text-ink-3">{c.phone} · {c.experienceYears} yrs · {categoryTitles(c.categories)}</p>
+                    <span className="mt-1.5 pill bg-warn-soft text-warn-ink">
+                      <Clock3 className="w-3.5 h-3.5" /> Awaiting review
+                    </span>
                   </div>
                 </div>
-
-                <div className="grid grid-cols-2 gap-3 mt-4 pt-3 border-t border-slate-100">
-                  <div className="flex items-center space-x-2 bg-slate-50 rounded-xl p-2.5">
-                    <FileText className="w-4 h-4 text-blue-600 shrink-0" />
-                    <div className="text-xs">
-                      <span className="block text-slate-400">ID Number</span>
-                      <span className="font-mono font-bold text-slate-800">{c.aadhaarMasked}</span>
-                    </div>
+                <dl className="grid grid-cols-2 gap-2.5 mt-4">
+                  <div className="rounded-2xl bg-surface-2 border border-line p-3">
+                    <dt className="flex items-center gap-1.5 text-xs text-ink-3"><FileText className="w-3.5 h-3.5" /> ID number</dt>
+                    <dd className="mt-0.5 font-mono text-sm font-bold text-ink">{c.aadhaarMasked}</dd>
                   </div>
-                  <div className="flex items-center space-x-2 bg-slate-50 rounded-xl p-2.5">
-                    <FileText className="w-4 h-4 text-purple-600 shrink-0" />
-                    <div className="text-xs">
-                      <span className="block text-slate-400">Areas Served</span>
-                      <span className="font-bold text-slate-800">{c.areas.join(', ')}</span>
-                    </div>
+                  <div className="rounded-2xl bg-surface-2 border border-line p-3">
+                    <dt className="flex items-center gap-1.5 text-xs text-ink-3"><MapPin className="w-3.5 h-3.5" /> {cityName(c.cityId)}</dt>
+                    <dd className="mt-0.5 text-sm font-semibold text-ink truncate">{c.areas.join(', ')}</dd>
                   </div>
+                </dl>
+                <div className="grid grid-cols-2 gap-2.5 mt-4">
+                  <button onClick={() => rejectCaptainKyc(c.id)} className="btn btn-danger h-11">
+                    <XCircle className="w-4 h-4" /> Reject
+                  </button>
+                  <button onClick={() => approveCaptainKyc(c.id)} className="btn btn-whatsapp h-11">
+                    <ShieldCheck className="w-4 h-4" /> Approve
+                  </button>
                 </div>
-              </div>
+              </article>
             ))}
           </div>
         )}
-      </div>
+      </section>
 
-      <div>
-        <h2 className="text-sm font-black text-slate-900 mb-3">Reviewed Captains</h2>
-        <div className="bg-white rounded-3xl border border-slate-200/70 shadow-premium divide-y divide-slate-100">
+      <section>
+        <h2 className="text-lg font-bold text-ink mb-3">Reviewed captains</h2>
+        <div className="card divide-y divide-line overflow-hidden">
           {reviewed.map((c) => (
-            <div key={c.id} className="p-3.5 flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <img src={c.avatar} alt={c.name} className="w-10 h-10 rounded-xl object-cover" />
-                <div>
-                  <span className="text-xs font-bold text-slate-900 block">{c.name}</span>
-                  <span className="text-[11px] text-slate-400 flex items-center gap-1">
-                    <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                    {c.rating > 0 ? c.rating.toFixed(2) : '—'} • {c.reviewCount} reviews
-                  </span>
-                </div>
+            <div key={c.id} className="px-4 py-3.5 flex items-center gap-3">
+              <Avatar src={c.avatar} name={c.name} className="w-10 h-10 rounded-xl" textClassName="text-sm" />
+              <div className="min-w-0 flex-1">
+                <span className="block text-sm font-semibold text-ink truncate">{c.name}</span>
+                <span className="flex items-center gap-1 text-xs text-ink-3">
+                  <Star className="w-3 h-3 fill-star text-star" />
+                  {c.rating > 0 ? c.rating.toFixed(2) : '—'} · {c.reviewCount} reviews · {cityName(c.cityId)}
+                </span>
               </div>
-              <span
-                className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-full ${
-                  c.kycStatus === 'verified' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
-                }`}
-              >
+              <span className={`pill uppercase !text-[11px] tracking-wide ${c.kycStatus === 'verified' ? 'bg-success-soft text-success-ink' : 'bg-danger-soft text-danger-ink'}`}>
                 {c.kycStatus}
               </span>
             </div>
           ))}
         </div>
-      </div>
+      </section>
     </div>
   );
 };

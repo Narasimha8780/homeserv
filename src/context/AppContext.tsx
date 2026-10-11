@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useMemo, type Re
 import type {
   AppRole,
   AppLanguage,
+  AppTheme,
   City,
   ServiceCategory,
   ServiceCategoryId,
@@ -12,6 +13,7 @@ import type {
 import { api } from '../utils/api';
 import { translations } from '../i18n/translations';
 import { soundFx } from '../utils/audio';
+import { applyTheme, resolveTheme, type ResolvedTheme } from '../utils/theme';
 
 export interface CaptainRegistrationInput {
   name: string;
@@ -32,7 +34,10 @@ interface AppContextType {
   setRole: (role: AppRole) => void;
   language: AppLanguage;
   setLanguage: (lang: AppLanguage) => void;
-  t: (key: string) => string;
+  t: (key: string, vars?: Record<string, string | number>) => string;
+  theme: AppTheme;
+  setTheme: (theme: AppTheme) => void;
+  resolvedTheme: ResolvedTheme;
 
   customerTab: 'home' | 'favorites';
   setCustomerTab: (tab: 'home' | 'favorites') => void;
@@ -82,7 +87,7 @@ interface AppContextType {
   approveCaptainKyc: (id: string) => void;
   rejectCaptainKyc: (id: string) => void;
   toggleCategoryActive: (id: ServiceCategoryId) => void;
-  addCategory: (title: string, iconName: string) => void;
+  addCategory: (title: string, iconName: string) => Promise<void>;
   toggleCityActive: (id: string) => void;
 
   resetToDefault: () => void;
@@ -92,9 +97,30 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const PREFS_KEY = 'homeserv_prefs_v1';
 
+interface SavedPrefs {
+  favorites?: string[];
+  language?: AppLanguage;
+  theme?: AppTheme;
+  activeCaptainId?: string | null;
+  currentCustomer?: Customer | null;
+}
+
+// Read once, synchronously, so the first render already has the saved values — loading them
+// in an effect raced the "save prefs" effect, which could overwrite them with defaults.
+function readPrefs(): SavedPrefs {
+  try {
+    return JSON.parse(localStorage.getItem(PREFS_KEY) || '{}');
+  } catch {
+    return {};
+  }
+}
+
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [initialPrefs] = useState(readPrefs);
   const [role, setRole] = useState<AppRole>('customer');
-  const [language, setLanguage] = useState<AppLanguage>('en');
+  const [language, setLanguage] = useState<AppLanguage>(initialPrefs.language || 'en');
+  const [theme, setTheme] = useState<AppTheme>(initialPrefs.theme || 'dark');
+  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(() => resolveTheme(theme));
   const [customerTab, setCustomerTab] = useState<'home' | 'favorites'>('home');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [captainTab, setCaptainTab] = useState<'dashboard' | 'reviews' | 'kyc'>('dashboard');
@@ -107,7 +133,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [categories, setCategories] = useState<ServiceCategory[]>([]);
   const [captains, setCaptains] = useState<Captain[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [favorites, setFavorites] = useState<string[]>([]);
+  const [favorites, setFavorites] = useState<string[]>(initialPrefs.favorites || []);
 
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -116,32 +142,34 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // locally rather than defaulted to a shared demo account or picked from a list of
   // everyone else's profiles (that was a privacy leak — any visitor could browse and
   // view/edit any registered captain's private dashboard and KYC documents).
-  const [activeCaptainId, setActiveCaptainId] = useState<string | null>(null);
-  const [currentCustomer, setCurrentCustomer] = useState<Customer | null>(null);
-
-  // Load device-local preferences (favorites, language, which captain/customer this device is)
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(PREFS_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.favorites) setFavorites(parsed.favorites);
-        if (parsed.language) setLanguage(parsed.language);
-        if (parsed.activeCaptainId) setActiveCaptainId(parsed.activeCaptainId);
-        if (parsed.currentCustomer) setCurrentCustomer(parsed.currentCustomer);
-      }
-    } catch {
-      // ignore
-    }
-  }, []);
+  const [activeCaptainId, setActiveCaptainId] = useState<string | null>(initialPrefs.activeCaptainId || null);
+  const [currentCustomer, setCurrentCustomer] = useState<Customer | null>(initialPrefs.currentCustomer || null);
 
   useEffect(() => {
     try {
-      localStorage.setItem(PREFS_KEY, JSON.stringify({ favorites, language, activeCaptainId, currentCustomer }));
+      localStorage.setItem(PREFS_KEY, JSON.stringify({ favorites, language, theme, activeCaptainId, currentCustomer }));
     } catch {
       // ignore
     }
-  }, [favorites, language, activeCaptainId, currentCustomer]);
+  }, [favorites, language, theme, activeCaptainId, currentCustomer]);
+
+  // Apply the theme, and keep following the OS setting while on "system".
+  useEffect(() => {
+    const update = () => {
+      const resolved = resolveTheme(theme);
+      setResolvedTheme(resolved);
+      applyTheme(resolved);
+    };
+    update();
+    if (theme !== 'system') return;
+    const media = window.matchMedia('(prefers-color-scheme: light)');
+    media.addEventListener('change', update);
+    return () => media.removeEventListener('change', update);
+  }, [theme]);
+
+  useEffect(() => {
+    document.documentElement.lang = language;
+  }, [language]);
 
   // Load all data from the API on startup
   const loadAll = async () => {
@@ -188,9 +216,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     [captains, activeCaptainId]
   );
 
-  const t = (key: string): string => {
+  const t = (key: string, vars?: Record<string, string | number>): string => {
     const langDict = translations[language] || translations.en;
-    return langDict[key] || translations.en[key] || key;
+    const text = langDict[key] || translations.en[key] || key;
+    return vars ? text.replace(/\{(\w+)\}/g, (m, name) => (name in vars ? String(vars[name]) : m)) : text;
   };
 
   const toggleFavorite = (captainId: string) => {
@@ -326,6 +355,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     localStorage.removeItem(PREFS_KEY);
     setFavorites([]);
     setLanguage('en');
+    setTheme('dark');
     setActiveCaptainId(null);
     setCurrentCustomer(null);
     loadAll();
@@ -339,6 +369,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         language,
         setLanguage,
         t,
+        theme,
+        setTheme,
+        resolvedTheme,
         customerTab,
         setCustomerTab,
         selectedCategoryId,

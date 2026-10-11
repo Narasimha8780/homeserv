@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { OtpInput } from '../common/OtpInput';
-import { Phone, ShieldCheck, Sparkles, ArrowLeft, Wrench } from 'lucide-react';
+import { AuthLayout, DemoOtpNotice, PhoneField } from '../common/AuthLayout';
+import { formatIndianPhone } from '../../utils/format';
+import { ArrowLeft, IndianRupee, Phone, BadgeCheck, Wrench } from 'lucide-react';
 
 export const CaptainLoginForm: React.FC<{ onNewCaptain: (phone: string) => void }> = ({ onNewCaptain }) => {
   const { sendOtp, verifyOtp } = useApp();
@@ -13,15 +15,15 @@ export const CaptainLoginForm: React.FC<{ onNewCaptain: (phone: string) => void 
   const [isVerifying, setIsVerifying] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const digitsOnly = (v: string) => v.replace(/\D/g, '');
+  const fullPhone = formatIndianPhone(phone);
 
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (digitsOnly(phone).length < 10 || isSending) return;
+    if (phone.length < 10 || isSending) return;
     setIsSending(true);
     setError(null);
     try {
-      const { mockOtp: otp } = await sendOtp(phone);
+      const { mockOtp: otp } = await sendOtp(fullPhone);
       setMockOtp(otp || null);
       setCode('');
       setStep('otp');
@@ -34,15 +36,13 @@ export const CaptainLoginForm: React.FC<{ onNewCaptain: (phone: string) => void 
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (digitsOnly(code).length !== 6 || isVerifying) return;
+    if (code.replace(/\D/g, '').length !== 6 || isVerifying) return;
     setIsVerifying(true);
     setError(null);
     try {
-      const captain = await verifyOtp(phone, code);
-      if (!captain) {
-        onNewCaptain(phone.trim());
-      }
+      const captain = await verifyOtp(fullPhone, code);
       // If a captain was found, AppContext already logged them in — CaptainApp re-renders.
+      if (!captain) onNewCaptain(fullPhone);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Invalid or expired OTP. Try again.');
     } finally {
@@ -51,102 +51,68 @@ export const CaptainLoginForm: React.FC<{ onNewCaptain: (phone: string) => void 
   };
 
   return (
-    <div className="min-h-[calc(100vh-56px)] relative flex items-center justify-center px-4 py-10 overflow-hidden bg-[#140a05]">
-      <div className="absolute inset-0 mesh-bg-amber opacity-90" />
-      <div className="absolute -top-24 -left-24 w-96 h-96 bg-orange-600/25 rounded-full blur-3xl" />
-      <div className="absolute -bottom-32 -right-24 w-[28rem] h-[28rem] bg-amber-600/20 rounded-full blur-3xl" />
-
-      <div className="relative w-full max-w-md">
-        <div className="flex items-center justify-center gap-2.5 mb-6">
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-[0_4px_20px_rgba(249,115,22,0.5)]">
-            <Wrench className="w-5 h-5 text-white" />
-          </div>
-          <span className="font-black text-2xl text-white tracking-tight">Captain Portal</span>
-        </div>
-
-        <div className="w-full bg-white rounded-[2rem] shadow-premium-lg border border-white/60 overflow-hidden">
-          <div className="px-6 pt-6 pb-2 text-center">
-            <h2 className="text-xl font-black text-slate-900 tracking-tight flex items-center justify-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-orange-600" />
-              Captain Login
-            </h2>
-            <p className="text-xs text-slate-500 mt-1">
-              Verify your phone with OTP to access your dashboard, or register as a new captain.
-            </p>
-          </div>
-
-          {step === 'phone' ? (
-            <form onSubmit={handleSendOtp} className="p-6 pt-3 space-y-4">
-              <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1.5">Phone Number</label>
-                <div className="relative">
-                  <div className="absolute left-1.5 top-1.5 w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center">
-                    <Phone className="w-4 h-4 text-orange-600" />
-                  </div>
-                  <input
-                    required
-                    autoFocus
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+91 98XXX XXXXX"
-                    className="w-full pl-12 text-sm py-3.5 pr-4 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 outline-none transition-all"
-                  />
-                </div>
-              </div>
-              {error && <p className="text-xs text-rose-600 font-semibold text-center">{error}</p>}
-              <button
-                type="submit"
-                disabled={isSending}
-                className="w-full flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-black text-sm rounded-2xl shadow-[0_8px_24px_-6px_rgba(234,88,12,0.5)] hover:shadow-[0_10px_30px_-6px_rgba(234,88,12,0.6)] hover-lift active:scale-[0.98] transition-all disabled:opacity-60"
-              >
-                {isSending ? 'Sending...' : 'Send OTP'}
-              </button>
-            </form>
-          ) : (
-            <form onSubmit={handleVerify} className="p-6 pt-3 space-y-5">
-              <button
-                type="button"
-                onClick={() => {
-                  setStep('phone');
-                  setCode('');
-                  setMockOtp(null);
-                  setError(null);
-                }}
-                className="flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-slate-700"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                Change number
-              </button>
-
-              <p className="text-xs text-slate-500 text-center">
-                Enter the 6-digit code sent to <span className="font-bold text-slate-800">{phone}</span>
-              </p>
-
-              {mockOtp && (
-                <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-2xl">
-                  <Sparkles className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-                  <p className="text-xs text-amber-800">
-                    <span className="font-bold">Demo mode — no real SMS sent.</span> Your OTP is{' '}
-                    <span className="font-mono font-black tracking-widest">{mockOtp}</span>
-                  </p>
-                </div>
-              )}
-
-              <OtpInput value={code} onChange={setCode} accent="orange" autoFocus />
-
-              {error && <p className="text-xs text-rose-600 font-semibold text-center">{error}</p>}
-
-              <button
-                type="submit"
-                disabled={isVerifying}
-                className="w-full flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-black text-sm rounded-2xl shadow-[0_8px_24px_-6px_rgba(234,88,12,0.5)] hover:shadow-[0_10px_30px_-6px_rgba(234,88,12,0.6)] hover-lift active:scale-[0.98] transition-all disabled:opacity-60"
-              >
-                {isVerifying ? 'Verifying...' : 'Verify & Continue'}
-              </button>
-            </form>
-          )}
-        </div>
+    <AuthLayout
+      eyebrow="For electricians, plumbers, drivers & more"
+      headline={
+        <>
+          Get more customers. <span className="text-gradient">Pay nothing.</span>
+        </>
+      }
+      sub="List your service on HomeServ for free and get calls directly from customers in your city."
+      benefits={[
+        { icon: IndianRupee, title: '0% commission, forever', body: 'Customers pay you directly — we never take a cut.' },
+        { icon: Phone, title: 'Direct calls & WhatsApp', body: 'No app to learn. Customers simply call you.' },
+        { icon: BadgeCheck, title: 'Verified badge', body: 'Get ID-verified once and stand out from the crowd.' },
+      ]}
+      stats={[
+        { value: '₹0', label: 'Listing fee' },
+        { value: '2 min', label: 'To sign up' },
+        { value: '24h', label: 'Verification' },
+      ]}
+    >
+      <div className="flex items-center gap-2.5 mb-6">
+        <span className="w-10 h-10 rounded-xl bg-accent-soft text-accent-ink flex items-center justify-center">
+          <Wrench className="w-5 h-5" />
+        </span>
+        <span className="font-display text-lg font-bold text-ink">Captain login</span>
       </div>
-    </div>
+
+      {step === 'phone' ? (
+        <form onSubmit={handleSendOtp} className="space-y-4">
+          <p className="text-sm text-ink-3 -mt-2">
+            New or returning — verify your number with OTP. New captains go straight to a 2-minute sign-up.
+          </p>
+          <PhoneField id="captain-phone" value={phone} onChange={setPhone} autoFocus />
+          {error && <p className="text-sm text-danger-ink font-semibold text-center">{error}</p>}
+          <button type="submit" disabled={isSending || phone.length < 10} className="btn btn-primary w-full h-[3.25rem] text-[15px]">
+            {isSending ? 'Sending…' : 'Send OTP'}
+          </button>
+        </form>
+      ) : (
+        <form onSubmit={handleVerify} className="space-y-5">
+          <button
+            type="button"
+            onClick={() => {
+              setStep('phone');
+              setCode('');
+              setMockOtp(null);
+              setError(null);
+            }}
+            className="btn btn-ghost h-9 pl-1.5 pr-3 -ml-1.5 -mt-2 text-[13px]"
+          >
+            <ArrowLeft className="w-4 h-4" /> Change number
+          </button>
+          <p className="text-sm text-ink-3">
+            Enter the 6-digit code sent to <span className="font-semibold text-ink">{fullPhone}</span>
+          </p>
+          {mockOtp && <DemoOtpNotice code={mockOtp} />}
+          <OtpInput value={code} onChange={setCode} autoFocus />
+          {error && <p className="text-sm text-danger-ink font-semibold text-center">{error}</p>}
+          <button type="submit" disabled={isVerifying || code.replace(/\D/g, '').length !== 6} className="btn btn-primary w-full h-[3.25rem] text-[15px]">
+            {isVerifying ? 'Verifying…' : 'Verify & continue'}
+          </button>
+        </form>
+      )}
+    </AuthLayout>
   );
 };

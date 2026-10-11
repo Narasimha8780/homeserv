@@ -1,52 +1,49 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
-import { Star, MessageSquareQuote } from 'lucide-react';
+import { RatingSummary, Stars } from '../ui/Rating';
+import { Avatar } from '../ui/Avatar';
+import { EmptyState } from '../ui/EmptyState';
+import { timeAgo } from '../../utils/format';
+import { MessageSquareQuote } from 'lucide-react';
 
 export const CaptainReviewsTab: React.FC = () => {
-  const { currentCaptain, reviews } = useApp();
+  const { currentCaptain, reviews, language } = useApp();
   if (!currentCaptain) return null;
 
   const myReviews = reviews.filter((r) => r.captainId === currentCaptain.id);
 
-  return (
-    <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
-      <div className="bg-white rounded-3xl border border-slate-200/70 shadow-premium p-5 flex items-center justify-between">
-        <div>
-          <h2 className="text-sm font-black text-slate-900">Reviews Received</h2>
-          <p className="text-xs text-slate-500">What customers are saying about you</p>
-        </div>
-        <div className="text-right">
-          <span className="text-2xl font-black text-slate-900 flex items-center gap-1">
-            {currentCaptain.rating > 0 ? currentCaptain.rating.toFixed(2) : '—'}
-            <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
-          </span>
-          <span className="text-[10px] text-slate-400 uppercase font-semibold">{currentCaptain.reviewCount} reviews</span>
-        </div>
-      </div>
+  if (myReviews.length === 0) {
+    return (
+      <EmptyState
+        icon={<MessageSquareQuote className="w-7 h-7" />}
+        tone="accent"
+        title="No reviews yet"
+        body="After you finish a job, ask the customer to find you on HomeServ and leave a review — reviews help you rank higher."
+      />
+    );
+  }
 
-      {myReviews.length === 0 ? (
-        <div className="bg-white rounded-3xl p-10 text-center border border-slate-200 shadow-xs">
-          <MessageSquareQuote className="w-10 h-10 text-slate-300 mx-auto mb-2" />
-          <h4 className="font-bold text-slate-700 text-sm">No reviews yet</h4>
-          <p className="text-xs text-slate-400 mt-1">Reviews from customers you've worked with will show up here.</p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {myReviews.map((r) => (
-            <div key={r.id} className="bg-white rounded-2xl border border-slate-200/70 shadow-xs hover:shadow-premium transition-shadow p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-900">{r.customerName}</span>
-                <span className="flex items-center gap-1 text-[11px] font-bold text-amber-600">
-                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                  {r.rating}
-                </span>
+  return (
+    <div className="grid lg:grid-cols-[20rem_minmax(0,1fr)] gap-4 sm:gap-5 items-start">
+      <div className="lg:sticky lg:top-24 space-y-3">
+        <RatingSummary rating={currentCaptain.rating} count={currentCaptain.reviewCount} reviews={myReviews} />
+        <p className="text-[13px] text-ink-3 px-1">What customers are saying about you. Great reviews move you up in search results.</p>
+      </div>
+      <ul className="space-y-3">
+        {myReviews.map((r) => (
+          <li key={r.id} className="card p-4 sm:p-5">
+            <div className="flex items-center gap-3">
+              <Avatar name={r.customerName} className="w-10 h-10 rounded-full" textClassName="text-sm" />
+              <div className="flex-1 min-w-0">
+                <p className="text-[15px] font-semibold text-ink truncate">{r.customerName}</p>
+                <p className="text-xs text-ink-3">{timeAgo(r.date, language)}</p>
               </div>
-              <p className="text-xs text-slate-600 mt-1.5">{r.comment}</p>
-              <span className="text-[10px] text-slate-400 mt-1 block">{r.date}</span>
+              <Stars value={r.rating} className="w-4 h-4" />
             </div>
-          ))}
-        </div>
-      )}
+            {r.comment && <p className="mt-3 text-[15px] text-ink-2 leading-relaxed">{r.comment}</p>}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };

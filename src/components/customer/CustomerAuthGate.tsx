@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { OtpInput } from '../common/OtpInput';
-import { User, Phone, Sparkles, ArrowLeft, ShieldCheck, Star, Users } from 'lucide-react';
+import { AuthLayout, DemoOtpNotice, PhoneField } from '../common/AuthLayout';
+import { formatIndianPhone } from '../../utils/format';
+import { ArrowLeft, BadgeCheck, Star, Phone, ShieldCheck, Users } from 'lucide-react';
 
 type Mode = 'signup' | 'signin';
 type Step = 'form' | 'otp' | 'needsName';
 
 export const CustomerAuthGate: React.FC = () => {
-  const { sendOtp, verifyCustomerOtp, completeCustomerSignup } = useApp();
+  const { sendOtp, verifyCustomerOtp, completeCustomerSignup, categories, allCities, t } = useApp();
   const [mode, setMode] = useState<Mode>('signup');
   const [step, setStep] = useState<Step>('form');
   const [name, setName] = useState('');
@@ -17,7 +19,7 @@ export const CustomerAuthGate: React.FC = () => {
   const [isBusy, setIsBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const digitsOnly = (v: string) => v.replace(/\D/g, '');
+  const fullPhone = formatIndianPhone(phone);
 
   const switchMode = (next: Mode) => {
     setMode(next);
@@ -29,11 +31,11 @@ export const CustomerAuthGate: React.FC = () => {
 
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (digitsOnly(phone).length < 10 || (mode === 'signup' && !name.trim()) || isBusy) return;
+    if (phone.length < 10 || (mode === 'signup' && !name.trim()) || isBusy) return;
     setIsBusy(true);
     setError(null);
     try {
-      const { mockOtp: otp } = await sendOtp(phone);
+      const { mockOtp: otp } = await sendOtp(fullPhone);
       setMockOtp(otp || null);
       setCode('');
       setStep('otp');
@@ -46,14 +48,12 @@ export const CustomerAuthGate: React.FC = () => {
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (digitsOnly(code).length !== 6 || isBusy) return;
+    if (code.replace(/\D/g, '').length !== 6 || isBusy) return;
     setIsBusy(true);
     setError(null);
     try {
-      const customer = await verifyCustomerOtp(phone, code, mode === 'signup' ? name.trim() : undefined);
-      if (!customer && mode === 'signin') {
-        setStep('needsName');
-      }
+      const customer = await verifyCustomerOtp(fullPhone, code, mode === 'signup' ? name.trim() : undefined);
+      if (!customer && mode === 'signin') setStep('needsName');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Invalid or expired OTP. Try again.');
     } finally {
@@ -67,7 +67,7 @@ export const CustomerAuthGate: React.FC = () => {
     setIsBusy(true);
     setError(null);
     try {
-      await completeCustomerSignup(name.trim(), phone);
+      await completeCustomerSignup(name.trim(), fullPhone);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not create your account. Try again.');
     } finally {
@@ -75,187 +75,132 @@ export const CustomerAuthGate: React.FC = () => {
     }
   };
 
+  const nameField = (
+    <div>
+      <label className="field-label" htmlFor="customer-name">Full name</label>
+      <input
+        id="customer-name"
+        required
+        autoFocus
+        autoComplete="name"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="e.g. Priya Sharma"
+        className="input"
+      />
+    </div>
+  );
+
+  const errorText = error && <p className="text-sm text-danger-ink font-semibold text-center">{error}</p>;
+
   return (
-    <div className="min-h-screen relative flex items-center justify-center px-4 py-10 overflow-hidden bg-[#070b1a]">
-      {/* Decorative mesh background */}
-      <div className="absolute inset-0 mesh-bg-blue opacity-90" />
-      <div className="absolute -top-24 -left-24 w-96 h-96 bg-blue-600/30 rounded-full blur-3xl" />
-      <div className="absolute -bottom-32 -right-24 w-[28rem] h-[28rem] bg-indigo-600/25 rounded-full blur-3xl" />
-      <div className="absolute top-1/3 right-10 w-64 h-64 bg-cyan-500/20 rounded-full blur-3xl" />
-
-      <div className="relative w-full max-w-md">
-        <div className="flex items-center justify-center gap-2.5 mb-6">
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-orange-400 via-amber-400 to-orange-500 flex items-center justify-center font-black text-white shadow-[0_4px_20px_rgba(251,146,60,0.5)]">
-            HS
-          </div>
-          <span className="font-black text-2xl text-white tracking-tight">HomeServ</span>
+    <AuthLayout
+      eyebrow="Free for everyone, forever"
+      headline={
+        <>
+          Find trusted local pros <span className="text-gradient">in minutes.</span>
+        </>
+      }
+      sub="Verified electricians, plumbers, drivers and more near you — call or WhatsApp them directly."
+      benefits={[
+        { icon: BadgeCheck, title: 'ID-verified professionals', body: 'Every listing is checked by our team before it goes live.' },
+        { icon: Phone, title: 'Direct call or WhatsApp', body: 'No middleman, no booking fee, no commission.' },
+        { icon: Star, title: 'Real reviews', body: 'Ratings from customers in your own city.' },
+      ]}
+      stats={[
+        { value: `${categories.filter((c) => c.isActive).length}+`, label: 'Services' },
+        { value: `${Math.floor(allCities.length / 50) * 50}+`, label: 'Cities' },
+        { value: '₹0', label: 'Fees' },
+      ]}
+      footer={
+        <div className="flex items-center justify-center gap-5 text-ink-3 text-xs font-semibold">
+          <span className="flex items-center gap-1.5"><ShieldCheck className="w-4 h-4" /> ID-verified</span>
+          <span className="flex items-center gap-1.5"><Star className="w-4 h-4" /> {t('reviews')}</span>
+          <span className="flex items-center gap-1.5"><Users className="w-4 h-4" /> No middleman</span>
         </div>
+      }
+    >
+      {step === 'form' && (
+        <div className="grid grid-cols-2 gap-1 p-1 rounded-2xl bg-surface-2 border border-line mb-6" role="tablist">
+          {(['signup', 'signin'] as Mode[]).map((m) => (
+            <button
+              key={m}
+              type="button"
+              role="tab"
+              aria-selected={mode === m}
+              onClick={() => switchMode(m)}
+              className={`h-11 rounded-xl text-sm font-bold transition-all ${
+                mode === m ? 'bg-surface-solid text-ink shadow-card border border-line' : 'text-ink-3 hover:text-ink'
+              }`}
+            >
+              {m === 'signup' ? 'Sign up' : 'Sign in'}
+            </button>
+          ))}
+        </div>
+      )}
 
-        <div className="w-full bg-white rounded-[2rem] shadow-premium-lg border border-white/60 overflow-hidden">
-          {/* Sign Up / Sign In segmented toggle */}
-          <div className="p-2 pt-5 px-5">
-            <div className="flex p-1 bg-slate-100 rounded-2xl">
-              <button
-                type="button"
-                onClick={() => switchMode('signup')}
-                className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 ${
-                  mode === 'signup' ? 'bg-white text-blue-700 shadow-premium' : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                Sign Up
-              </button>
-              <button
-                type="button"
-                onClick={() => switchMode('signin')}
-                className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 ${
-                  mode === 'signin' ? 'bg-white text-blue-700 shadow-premium' : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                Sign In
-              </button>
-            </div>
-          </div>
-
-          <div className="px-6 pb-2 pt-3 text-center">
-            <h2 className="text-xl font-black text-slate-900 tracking-tight">
-              {mode === 'signup' ? 'Create your account' : 'Welcome back'}
-            </h2>
-            <p className="text-xs text-slate-500 mt-1">
-              {mode === 'signup'
-                ? 'Just your name and mobile number — verified instantly with OTP.'
-                : 'Sign in with your mobile number using OTP.'}
+      {step === 'form' && (
+        <form onSubmit={handleSendOtp} className="space-y-4">
+          <div className="pb-1">
+            <h2 className="text-2xl font-bold text-ink">{mode === 'signup' ? 'Create your account' : 'Welcome back'}</h2>
+            <p className="text-sm text-ink-3 mt-1">
+              {mode === 'signup' ? 'Just your name and mobile number — verified with OTP.' : 'Sign in with your mobile number using OTP.'}
             </p>
           </div>
+          {mode === 'signup' && nameField}
+          <PhoneField id="customer-phone" value={phone} onChange={setPhone} autoFocus={mode === 'signin'} />
+          {errorText}
+          <button type="submit" disabled={isBusy || phone.length < 10 || (mode === 'signup' && !name.trim())} className="btn btn-primary w-full h-[3.25rem] text-[15px]">
+            {isBusy ? 'Sending…' : 'Send OTP'}
+          </button>
+          <p className="text-[11px] text-ink-3 text-center">By continuing you agree to be contacted about your account by SMS.</p>
+        </form>
+      )}
 
-          {step === 'form' && (
-            <form onSubmit={handleSendOtp} className="p-6 pt-3 space-y-4">
-              {mode === 'signup' && (
-                <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1.5">Full Name</label>
-                  <div className="relative">
-                    <div className="absolute left-1.5 top-1.5 w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
-                      <User className="w-4 h-4 text-blue-600" />
-                    </div>
-                    <input
-                      required
-                      autoFocus
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="e.g. Priya Sharma"
-                      className="w-full pl-12 text-sm py-3.5 pr-4 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all"
-                    />
-                  </div>
-                </div>
-              )}
-              <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1.5">Mobile Number</label>
-                <div className="relative">
-                  <div className="absolute left-1.5 top-1.5 w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
-                    <Phone className="w-4 h-4 text-blue-600" />
-                  </div>
-                  <input
-                    required
-                    autoFocus={mode === 'signin'}
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+91 98XXX XXXXX"
-                    className="w-full pl-12 text-sm py-3.5 pr-4 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all"
-                  />
-                </div>
-              </div>
-              {error && <p className="text-xs text-rose-600 font-semibold text-center">{error}</p>}
-              <button
-                type="submit"
-                disabled={isBusy}
-                className="w-full flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-black text-sm rounded-2xl shadow-[0_8px_24px_-6px_rgba(37,99,235,0.5)] hover:shadow-[0_10px_30px_-6px_rgba(37,99,235,0.6)] hover-lift active:scale-[0.98] transition-all disabled:opacity-60"
-              >
-                {isBusy ? 'Sending...' : 'Send OTP'}
-              </button>
-            </form>
-          )}
+      {step === 'otp' && (
+        <form onSubmit={handleVerify} className="space-y-5">
+          <button
+            type="button"
+            onClick={() => {
+              setStep('form');
+              setCode('');
+              setMockOtp(null);
+              setError(null);
+            }}
+            className="btn btn-ghost h-9 pl-1.5 pr-3 -ml-1.5 text-[13px]"
+          >
+            <ArrowLeft className="w-4 h-4" /> Change number
+          </button>
+          <div>
+            <h2 className="text-2xl font-bold text-ink">Enter the code</h2>
+            <p className="text-sm text-ink-3 mt-1">
+              We sent a 6-digit code to <span className="font-semibold text-ink">{fullPhone}</span>
+            </p>
+          </div>
+          {mockOtp && <DemoOtpNotice code={mockOtp} />}
+          <OtpInput value={code} onChange={setCode} autoFocus />
+          {errorText}
+          <button type="submit" disabled={isBusy || code.replace(/\D/g, '').length !== 6} className="btn btn-primary w-full h-[3.25rem] text-[15px]">
+            {isBusy ? 'Verifying…' : 'Verify & continue'}
+          </button>
+        </form>
+      )}
 
-          {step === 'otp' && (
-            <form onSubmit={handleVerify} className="p-6 pt-3 space-y-5">
-              <button
-                type="button"
-                onClick={() => { setStep('form'); setCode(''); setMockOtp(null); setError(null); }}
-                className="flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-slate-700"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                Change number
-              </button>
-
-              <p className="text-xs text-slate-500 text-center">
-                Enter the 6-digit code sent to <span className="font-bold text-slate-800">{phone}</span>
-              </p>
-
-              {mockOtp && (
-                <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-2xl">
-                  <Sparkles className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-                  <p className="text-xs text-amber-800">
-                    <span className="font-bold">Demo mode — no real SMS sent.</span> Your OTP is{' '}
-                    <span className="font-mono font-black tracking-widest">{mockOtp}</span>
-                  </p>
-                </div>
-              )}
-
-              <OtpInput value={code} onChange={setCode} autoFocus />
-
-              {error && <p className="text-xs text-rose-600 font-semibold text-center">{error}</p>}
-
-              <button
-                type="submit"
-                disabled={isBusy}
-                className="w-full flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-black text-sm rounded-2xl shadow-[0_8px_24px_-6px_rgba(37,99,235,0.5)] hover:shadow-[0_10px_30px_-6px_rgba(37,99,235,0.6)] hover-lift active:scale-[0.98] transition-all disabled:opacity-60"
-              >
-                {isBusy ? 'Verifying...' : 'Verify & Continue'}
-              </button>
-            </form>
-          )}
-
-          {step === 'needsName' && (
-            <form onSubmit={handleCompleteSignup} className="p-6 pt-3 space-y-4">
-              <div className="flex items-start gap-2 p-3 bg-emerald-50 border border-emerald-200 rounded-2xl">
-                <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                <p className="text-xs text-emerald-800">
-                  <span className="font-bold">Phone verified.</span> We couldn't find an account for{' '}
-                  <span className="font-bold">{phone}</span> — add your name to finish creating one.
-                </p>
-              </div>
-              <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1.5">Full Name</label>
-                <div className="relative">
-                  <div className="absolute left-1.5 top-1.5 w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
-                    <User className="w-4 h-4 text-blue-600" />
-                  </div>
-                  <input
-                    required
-                    autoFocus
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="e.g. Priya Sharma"
-                    className="w-full pl-12 text-sm py-3.5 pr-4 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all"
-                  />
-                </div>
-              </div>
-              {error && <p className="text-xs text-rose-600 font-semibold text-center">{error}</p>}
-              <button
-                type="submit"
-                disabled={isBusy}
-                className="w-full flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-black text-sm rounded-2xl shadow-[0_8px_24px_-6px_rgba(37,99,235,0.5)] hover-lift active:scale-[0.98] transition-all disabled:opacity-60"
-              >
-                {isBusy ? 'Creating account...' : 'Create Account'}
-              </button>
-            </form>
-          )}
-        </div>
-
-        <div className="flex items-center justify-center gap-5 mt-6 text-zinc-300/80 text-[11px] font-medium">
-          <span className="flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5" /> ID-Verified Pros</span>
-          <span className="flex items-center gap-1.5"><Star className="w-3.5 h-3.5" /> Real Reviews</span>
-          <span className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5" /> No Middleman</span>
-        </div>
-      </div>
-    </div>
+      {step === 'needsName' && (
+        <form onSubmit={handleCompleteSignup} className="space-y-4">
+          <div className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-success-soft text-success-ink text-[13px]">
+            <ShieldCheck className="w-4 h-4 shrink-0 mt-px" />
+            <p>
+              <span className="font-bold">Phone verified.</span> We couldn't find an account for {fullPhone} — add your name to finish.
+            </p>
+          </div>
+          {nameField}
+          {errorText}
+          <button type="submit" disabled={isBusy || !name.trim()} className="btn btn-primary w-full h-[3.25rem] text-[15px]">
+            {isBusy ? 'Creating account…' : 'Create account'}
+          </button>
+        </form>
+      )}
+    </AuthLayout>
   );
 };
