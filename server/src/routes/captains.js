@@ -5,9 +5,64 @@ import { cityForAreas, normaliseHomePlace, normaliseServiceAreas } from '../util
 
 export const captainsRouter = Router();
 
+// Everything — used by the admin console only. The customer app asks for just what it shows.
 captainsRouter.get('/', async (_req, res) => {
   const captains = await Captain.find().sort({ createdAt: -1 });
   res.json(captains);
+});
+
+// Fields customers never need (ID documents, masked Aadhaar).
+const PUBLIC = { aadhaarDocUrl: 0, skillCertUrl: 0, aadhaarMasked: 0 };
+const LOCAL_LIMIT = 200;
+const ranked = (filter) =>
+  Captain.find({ kycStatus: 'verified', ...filter }, PUBLIC).sort({ isAvailable: -1, rating: -1, reviewCount: -1 }).limit(LOCAL_LIMIT);
+
+// Pros for a customer's place, nearest tier first:
+//   ?district=&subdistrict=  -> { mandal: [...], district: [...] }   (nobody outside the district)
+//   ?city=<cityId>           -> { city: [...] }                       (no place chosen)
+captainsRouter.get('/local', async (req, res) => {
+  if (req.query.district != null) {
+    const d = Number(req.query.district);
+    const sd = Number(req.query.subdistrict);
+    if (!Number.isInteger(d)) return res.status(400).json({ error: 'district is required' });
+    const servesMandal = Number.isInteger(sd)
+      ? {
+          $or: [
+            { 'homePlace.subdistrict.code': sd },
+            { serviceAreas: { $elemMatch: { 'district.code': d, $or: [{ wholeDistrict: true }, { 'subdistricts.code': sd }] } } },
+          ],
+        }
+      : { 'serviceAreas.district.code': d };
+    const mandal = await ranked(servesMandal);
+    const district = Number.isInteger(sd)
+      ? await ranked({ 'serviceAreas.district.code': d, _id: { $nin: mandal.map((c) => c._id) } })
+      : [];
+    return res.json({ mandal, district });
+  }
+  if (req.query.city) {
+    return res.json({ city: await ranked({ cityId: String(req.query.city) }) });
+  }
+  res.status(400).json({ error: 'district or city is required' });
+});
+
+// Specific captains (e.g. a customer's saved favourites): ?ids=a,b,c
+captainsRouter.get('/by-ids', async (req, res) => {
+  const ids = String(req.query.ids || '').split(',').filter(Boolean).slice(0, 100);
+  if (!ids.length) return res.json([]);
+  res.json(await Captain.find({ _id: { $in: ids } }, PUBLIC));
+});
+
+// Verified pros per city, for "popular cities" and choosing the city with pros.
+captainsRouter.get('/stats/cities', async (_req, res) => {
+  const rows = await Captain.aggregate([{ $match: { kycStatus: 'verified' } }, { $group: { _id: '$cityId', count: { $sum: 1 } } }]);
+  res.json(rows.map((r) => ({ cityId: r._id, count: r.count })));
+});
+
+// A captain's own full profile (dashboard / KYC tab).
+captainsRouter.get('/:id', async (req, res) => {
+  const captain = await Captain.findById(req.params.id);
+  if (!captain) return res.status(404).json({ error: 'Captain not found' });
+  res.json(captain);
 });
 
 captainsRouter.post('/', async (req, res) => {

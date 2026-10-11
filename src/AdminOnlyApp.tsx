@@ -19,7 +19,7 @@ function AdminShell() {
 
 function AdminOnlyApp() {
   return (
-    <AppProvider>
+    <AppProvider scope="admin">
       <AdminShell />
     </AppProvider>
   );

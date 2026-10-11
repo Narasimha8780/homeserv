@@ -15,14 +15,17 @@ export const CaptainProfileSheet: React.FC<{
   onClose: () => void;
   onWriteReview: (captainId: string) => void;
 }> = ({ captainId, onClose, onWriteReview }) => {
-  const { captains, categories, reviews, isFavorite, toggleFavorite, recordContactClick, recordProfileView, selectedCity, language, t } = useApp();
+  const { captains, categories, reviews, loadReviews, isFavorite, toggleFavorite, recordContactClick, recordProfileView, selectedCity, language, t } = useApp();
   const [shareState, setShareState] = useState<'idle' | 'copied'>('idle');
 
   // Always read the live captain so rating/review counts update after a new review.
   const captain = captains.find((c) => c.id === captainId) || null;
 
   useEffect(() => {
-    if (captainId) recordProfileView(captainId);
+    if (captainId) {
+      recordProfileView(captainId);
+      loadReviews(captainId).catch(() => {});
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [captainId]);
 

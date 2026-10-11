@@ -4,8 +4,10 @@ import { Captain } from '../models/Captain.js';
 
 export const reviewsRouter = Router();
 
-reviewsRouter.get('/', async (_req, res) => {
-  const reviews = await Review.find().sort({ date: -1 });
+// ?captainId=<id> for one captain's reviews; without it, everything (admin console).
+reviewsRouter.get('/', async (req, res) => {
+  const filter = req.query.captainId ? { captainId: String(req.query.captainId) } : {};
+  const reviews = await Review.find(filter).sort({ date: -1 });
   res.json(reviews);
 });
 

@@ -65,6 +65,10 @@ interface AppContextType {
   captains: Captain[];
   reviews: Review[];
   favorites: string[];
+  cityCounts: Record<string, number>;
+  localTiers: LocalTiers | null;
+  localLoading: boolean;
+  loadReviews: (captainId: string) => Promise<void>;
 
   isLoading: boolean;
   loadError: string | null;
@@ -100,6 +104,15 @@ interface AppContextType {
   resetToDefault: () => void;
 }
 
+// Captain ids for the customer's place (mandal first, then district) or city, as returned by
+// GET /api/captains/local. The captain objects themselves live in the `captains` cache.
+export interface LocalTiers {
+  key: string;
+  mandal?: string[];
+  district?: string[];
+  city?: string[];
+}
+
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const PREFS_KEY = 'homeserv_prefs_v1';
@@ -124,7 +137,9 @@ function readPrefs(): SavedPrefs {
   }
 }
 
-export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+// scope 'admin' (the admin console) loads every captain and review up front; the customer /
+// captain app ('app') loads only what each screen shows.
+export const AppProvider: React.FC<{ children: ReactNode; scope?: 'app' | 'admin' }> = ({ children, scope = 'app' }) => {
   const [initialPrefs] = useState(readPrefs);
   const [role, setRole] = useState<AppRole>('customer');
   const [language, setLanguage] = useState<AppLanguage>(initialPrefs.language || 'en');
@@ -143,6 +158,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [categories, setCategories] = useState<ServiceCategory[]>([]);
   const [captains, setCaptains] = useState<Captain[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [cityCounts, setCityCounts] = useState<Record<string, number>>({});
+  const [localTiers, setLocalTiers] = useState<LocalTiers | null>(null);
+
+  // Upsert fetched captains into the shared cache (keeps live edits like contact counts).
+  const mergeCaptains = (list: Captain[]) =>
+    setCaptains((prev) => {
+      const byId = new Map(prev.map((c) => [c.id, c]));
+      list.forEach((c) => byId.set(c.id, { ...byId.get(c.id), ...c }));
+      return [...byId.values()];
+    });
   const [favorites, setFavorites] = useState<string[]>(initialPrefs.favorites || []);
 
   const [isLoading, setIsLoading] = useState(true);
@@ -189,16 +214,28 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setIsLoading(true);
     setLoadError(null);
     try {
-      const [citiesRes, categoriesRes, captainsRes, reviewsRes] = await Promise.all([
+      const [citiesRes, categoriesRes] = await Promise.all([
         api.get<City[]>('/cities'),
         api.get<ServiceCategory[]>('/categories'),
-        api.get<Captain[]>('/captains'),
-        api.get<Review[]>('/reviews'),
       ]);
       setAllCities(citiesRes);
       setCategories(categoriesRes);
-      setCaptains(captainsRes);
-      setReviews(reviewsRes);
+      if (scope === 'admin') {
+        const [captainsRes, reviewsRes] = await Promise.all([api.get<Captain[]>('/captains'), api.get<Review[]>('/reviews')]);
+        setCaptains(captainsRes);
+        setReviews(reviewsRes);
+      } else {
+        // Only this device's own captain profile and saved favourites; nearby pros load per place.
+        const [counts, own, favs] = await Promise.all([
+          api.get<{ cityId: string; count: number }[]>('/captains/stats/cities'),
+          activeCaptainId ? api.get<Captain>(`/captains/${activeCaptainId}`).catch(() => null) : null,
+          favorites.length ? api.get<Captain[]>(`/captains/by-ids?ids=${favorites.join(',')}`) : [],
+        ]);
+        setCityCounts(Object.fromEntries(counts.map((r) => [r.cityId, r.count])));
+        setCaptains([...(own ? [own] : []), ...favs.filter((c) => c.id !== own?.id)]);
+        setReviews([]);
+        setLocalTiers(null);
+      }
       setSelectedCityId(
         (prev) =>
           (prev && citiesRes.some((c) => c.id === prev) ? prev : null) ||
@@ -217,6 +254,54 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     loadAll();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Fetch the pros for the customer's place (or city) whenever it changes.
+  const localKey =
+    scope === 'admin' || isLoading || loadError
+      ? null
+      : selectedPlace
+      ? `d:${selectedPlace.district.code}|sd:${selectedPlace.subdistrict.code}|c:${selectedCityId}`
+      : selectedCityId
+      ? `c:${selectedCityId}`
+      : null;
+  useEffect(() => {
+    if (!localKey) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        let tiers: LocalTiers = { key: localKey };
+        if (selectedPlace) {
+          const r = await api.get<{ mandal: Captain[]; district: Captain[] }>(
+            `/captains/local?district=${selectedPlace.district.code}&subdistrict=${selectedPlace.subdistrict.code}`
+          );
+          if (cancelled) return;
+          mergeCaptains([...r.mandal, ...r.district]);
+          tiers = { ...tiers, mandal: r.mandal.map((c) => c.id), district: r.district.map((c) => c.id) };
+        }
+        if (!tiers.mandal?.length && !tiers.district?.length && selectedCityId) {
+          // No place chosen, or nobody serves the district yet: the city's pros.
+          const r = await api.get<{ city: Captain[] }>(`/captains/local?city=${encodeURIComponent(selectedCityId)}`);
+          if (cancelled) return;
+          mergeCaptains(r.city);
+          tiers = { ...tiers, city: r.city.map((c) => c.id) };
+        }
+        if (!cancelled) setLocalTiers(tiers);
+      } catch {
+        if (!cancelled) setLocalTiers({ key: localKey });
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // selectedPlace/selectedCityId are captured through localKey
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [localKey]);
+  const localLoading = !!localKey && localTiers?.key !== localKey;
+
+  const loadReviews = async (captainId: string) => {
+    const list = await api.get<Review[]>(`/reviews?captainId=${encodeURIComponent(captainId)}`);
+    setReviews((prev) => [...prev.filter((r) => r.captainId !== captainId), ...list]);
+  };
 
   const selectedCity = useMemo(
     () => allCities.find((c) => c.id === selectedCityId) || allCities[0],
@@ -425,6 +510,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         captains,
         reviews,
         favorites,
+        cityCounts,
+        localTiers: localTiers?.key === localKey ? localTiers : null,
+        localLoading,
+        loadReviews,
         isLoading,
         loadError,
         activeCaptainId,

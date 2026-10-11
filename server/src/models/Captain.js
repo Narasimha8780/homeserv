@@ -51,6 +51,8 @@ const captainSchema = new mongoose.Schema(
 );
 
 captainSchema.index({ 'serviceAreas.district.code': 1 });
+captainSchema.index({ kycStatus: 1, cityId: 1 });
+captainSchema.index({ 'homePlace.subdistrict.code': 1 });
 
 captainSchema.set('toJSON', {
   transform: (_doc, ret) => {

@@ -45,7 +45,7 @@ export const HomeView: React.FC<{
   const categoryTitle = (id: string) => categories.find((c) => c.id === id)?.title || '';
 
   // Pros for the customer's mandal/district (or city when no place is chosen), nearest tier first.
-  const { tiers, all: inCity, byPlace } = useLocalCaptains();
+  const { tiers, all: inCity, byPlace, loading } = useLocalCaptains();
   const byRating = (a: Captain, b: Captain) => Number(b.isAvailable) - Number(a.isAvailable) || b.rating - a.rating;
   const q = searchQuery.trim().toLowerCase();
   const results = q ? inCity.filter((cap) => matchesQuery(cap, q, categoryTitle)).sort((a, b) => b.rating - a.rating) : [];
@@ -234,7 +234,13 @@ export const HomeView: React.FC<{
           </section>
 
           <section className="mt-10 sm:mt-14">
-            {byPlace ? (
+            {loading && !inCity.length ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4" aria-busy="true" aria-label="Loading pros">
+                {[0, 1, 2].map((i) => (
+                  <div key={i} className="skeleton h-44 !rounded-3xl" />
+                ))}
+              </div>
+            ) : byPlace ? (
               tiers.map((tier, i) => (
                 <div key={tier.id} className={i ? 'mt-9' : ''}>
                   <SectionHeader title={tier.title} meta={`${tier.captains.length} ${t('pros')}`} />
@@ -245,7 +251,7 @@ export const HomeView: React.FC<{
             ) : (
               <SectionHeader title={t('topRatedIn', { city: selectedCity.name })} meta={`${topRated.length} ${t('pros')}`} />
             )}
-            {byPlace ? null : topRated.length > 0 ? (
+            {loading && !inCity.length ? null : byPlace ? null : topRated.length > 0 ? (
               <CaptainGrid captains={topRated} categories={categories} onOpenProfile={onOpenProfile} />
             ) : (
               <EmptyState

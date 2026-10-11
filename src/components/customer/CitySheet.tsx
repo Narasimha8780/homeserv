@@ -14,7 +14,7 @@ type Notice =
   | { kind: 'none-nearby'; placeName: string; result: NearestResult; place: PickedPlace | null };
 
 export const CitySheet: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
-  const { captains, selectedCity, setSelectedCity, selectedPlace, setSelectedPlace, addCity, t } = useApp();
+  const { cityCounts, selectedCity, setSelectedCity, selectedPlace, setSelectedPlace, addCity, t } = useApp();
   const popular = usePopularCities();
   const [locating, setLocating] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -27,7 +27,7 @@ export const CitySheet: React.FC<{ open: boolean; onClose: () => void }> = ({ op
     onClose();
   };
 
-  const prosIn = (cityId: string) => captains.filter((c) => c.kycStatus === 'verified' && c.cityId === cityId).length;
+  const prosIn = (cityId: string) => cityCounts[cityId] || 0;
 
   // Show pros from `nearby.city`, remembering the customer's own place (if any).
   const chooseCity = (nearby: NearbyCity | { city: City }, place: PickedPlace | null) => {

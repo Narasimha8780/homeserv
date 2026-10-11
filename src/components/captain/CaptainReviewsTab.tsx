@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { RatingSummary, Stars } from '../ui/Rating';
 import { Avatar } from '../ui/Avatar';
@@ -7,7 +7,12 @@ import { timeAgo } from '../../utils/format';
 import { MessageSquareQuote } from 'lucide-react';
 
 export const CaptainReviewsTab: React.FC = () => {
-  const { currentCaptain, reviews, language } = useApp();
+  const { currentCaptain, reviews, loadReviews, language } = useApp();
+  const captainId = currentCaptain?.id;
+  useEffect(() => {
+    if (captainId) loadReviews(captainId).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [captainId]);
   if (!currentCaptain) return null;
 
   const myReviews = reviews.filter((r) => r.captainId === currentCaptain.id);
