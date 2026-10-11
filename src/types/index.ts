@@ -57,6 +57,16 @@ export interface Captain {
   profileViews: number;
   contactClicks: number;
   createdAt: string;
+  serviceAreas?: ServiceArea[];
+  homePlace?: { state: CodeName; district: CodeName; subdistrict: CodeName; village?: CodeName };
+}
+
+// One district a captain works in: either all of it, or the chosen mandals.
+export interface ServiceArea {
+  state: CodeName;
+  district: CodeName;
+  wholeDistrict: boolean;
+  subdistricts: CodeName[];
 }
 
 export interface Review {

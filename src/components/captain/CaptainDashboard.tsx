@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Avatar } from '../ui/Avatar';
 import { Switch } from '../ui/Switch';
+import { ServiceAreasCard } from './ServiceAreasCard';
 import { formatPrice } from '../../utils/format';
 import {
   Eye, Phone, Star, Pencil, Check, BadgeCheck, Clock3, XCircle, TrendingUp, MapPin, Languages, IndianRupee, CircleCheck, Circle, ChevronRight, X,
@@ -41,7 +42,7 @@ export const CaptainDashboard: React.FC<{ onOpenTab: (tab: CaptainTab) => void }
     { done: !cap.avatar.includes('ui-avatars.com'), label: 'Add a real profile photo', hint: 'Profiles with a photo get noticeably more calls' },
     { done: cap.bio.trim().length >= 60, label: 'Write a detailed bio', hint: 'Mention your specialities and how fast you can visit' },
     { done: cap.startingPrice != null, label: 'Set a starting price', hint: 'Customers prefer pros who show prices upfront' },
-    { done: cap.areas.length >= 2, label: 'Serve 2+ areas', hint: 'Add nearby localities to appear for more customers' },
+    { done: !!cap.serviceAreas?.length, label: 'Add the mandals you serve', hint: 'Customers in those mandals see you first' },
     { done: cap.kycStatus === 'verified', label: 'Get ID-verified', hint: 'Only verified profiles are shown to customers', tab: 'kyc' as const },
     { done: cap.reviewCount > 0, label: 'Get your first review', hint: 'Ask happy customers to review you on HomeServ', tab: 'reviews' as const },
   ];
@@ -129,6 +130,8 @@ export const CaptainDashboard: React.FC<{ onOpenTab: (tab: CaptainTab) => void }
             </span>
           </p>
         )}
+
+        <ServiceAreasCard captain={cap} />
 
         {/* Profile details */}
         <section className="card p-5">

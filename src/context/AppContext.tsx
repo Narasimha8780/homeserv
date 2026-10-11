@@ -22,8 +22,10 @@ export interface CaptainRegistrationInput {
   phone: string;
   whatsapp: string;
   avatar: string;
-  cityId: City['id'];
-  areas: string[];
+  cityId?: City['id'];
+  areas?: string[];
+  serviceAreas?: { districtCode: number; wholeDistrict: boolean; subdistrictCodes: number[] }[];
+  homePlace?: { subdistrictCode: number; villageCode?: number };
   categories: ServiceCategoryId[];
   experienceYears: number;
   bio: string;
@@ -87,6 +89,7 @@ interface AppContextType {
   verifyOtp: (phone: string, code: string) => Promise<Captain | null>;
   updateCaptainProfile: (id: string, updates: Partial<Captain>) => void;
   toggleAvailability: (id: string) => void;
+  updateServiceAreas: (id: string, serviceAreas: CaptainRegistrationInput['serviceAreas']) => Promise<void>;
 
   approveCaptainKyc: (id: string) => void;
   rejectCaptainKyc: (id: string) => void;
@@ -333,6 +336,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     api.patch(`/captains/${id}`, updates).catch(() => {});
   };
 
+  // Validated and normalised by the server, so wait for its copy rather than updating optimistically.
+  const updateServiceAreas = async (id: string, serviceAreas: CaptainRegistrationInput['serviceAreas']) => {
+    const captain = await api.patch<Captain>(`/captains/${id}`, { serviceAreas });
+    soundFx.playSuccess();
+    setCaptains((prev) => prev.map((c) => (c.id === id ? captain : c)));
+  };
+
   const toggleAvailability = (id: string) => {
     soundFx.playTap();
     const current = captains.find((c) => c.id === id);
@@ -434,6 +444,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         verifyOtp,
         updateCaptainProfile,
         toggleAvailability,
+        updateServiceAreas,
         approveCaptainKyc,
         rejectCaptainKyc,
         toggleCategoryActive,

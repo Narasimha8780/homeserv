@@ -1,5 +1,18 @@
 import mongoose from 'mongoose';
 
+const codeName = new mongoose.Schema({ code: { type: Number, required: true }, name: { type: String, required: true } }, { _id: false });
+
+// Where a captain works: one entry per district, either the whole district or chosen mandals.
+const serviceAreaSchema = new mongoose.Schema(
+  {
+    state: { type: codeName, required: true },
+    district: { type: codeName, required: true },
+    wholeDistrict: { type: Boolean, default: false },
+    subdistricts: { type: [codeName], default: [] },
+  },
+  { _id: false }
+);
+
 const captainSchema = new mongoose.Schema(
   {
     _id: { type: String },
@@ -9,6 +22,15 @@ const captainSchema = new mongoose.Schema(
     whatsapp: { type: String, required: true },
     avatar: { type: String, required: true },
     cityId: { type: String, required: true },
+    serviceAreas: { type: [serviceAreaSchema], default: [] },
+    // Optional home village/mandal (LGD), e.g. to show "lives in <village>".
+    homePlace: {
+      type: new mongoose.Schema(
+        { state: codeName, district: codeName, subdistrict: codeName, village: codeName },
+        { _id: false }
+      ),
+      default: undefined,
+    },
     areas: { type: [String], default: [] },
     categories: { type: [String], default: [] },
     experienceYears: { type: Number, default: 0 },
@@ -27,6 +49,8 @@ const captainSchema = new mongoose.Schema(
   },
   { timestamps: { createdAt: 'createdAt', updatedAt: false }, versionKey: false }
 );
+
+captainSchema.index({ 'serviceAreas.district.code': 1 });
 
 captainSchema.set('toJSON', {
   transform: (_doc, ret) => {

@@ -1,5 +1,6 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { usePopularCities } from '../../hooks/usePopularCities';
+import { useLocalCaptains } from '../../hooks/useLocalCaptains';
 import { matchesQuery } from '../../utils/search';
 import { useApp } from '../../context/AppContext';
 import type { Captain, City } from '../../types';
@@ -35,7 +36,7 @@ export const HomeView: React.FC<{
   onOpenProfile: (captain: Captain) => void;
   onOpenCity: () => void;
 }> = ({ onOpenCategory, onOpenProfile, onOpenCity }) => {
-  const { categories, captains, searchQuery, setSearchQuery, selectedCity, setSelectedCity, selectedPlace, currentCustomer, setRole, t } = useApp();
+  const { categories, searchQuery, setSearchQuery, selectedCity, setSelectedCity, selectedPlace, currentCustomer, setRole, t } = useApp();
   const placeName = selectedPlace ? selectedPlace.village?.name || selectedPlace.subdistrict.name : selectedCity.name;
   const servedBy = selectedPlace?.servedBy?.cityId === selectedCity.id ? selectedPlace.servedBy : null;
   const popularCities = usePopularCities();
@@ -43,10 +44,9 @@ export const HomeView: React.FC<{
   const activeCategories = categories.filter((c) => c.isActive);
   const categoryTitle = (id: string) => categories.find((c) => c.id === id)?.title || '';
 
-  const inCity = useMemo(
-    () => captains.filter((cap) => cap.kycStatus === 'verified' && cap.cityId === selectedCity.id),
-    [captains, selectedCity.id]
-  );
+  // Pros for the customer's mandal/district (or city when no place is chosen), nearest tier first.
+  const { tiers, all: inCity, byPlace } = useLocalCaptains();
+  const byRating = (a: Captain, b: Captain) => Number(b.isAvailable) - Number(a.isAvailable) || b.rating - a.rating;
   const q = searchQuery.trim().toLowerCase();
   const results = q ? inCity.filter((cap) => matchesQuery(cap, q, categoryTitle)).sort((a, b) => b.rating - a.rating) : [];
   const matchingCategories = q ? activeCategories.filter((c) => c.title.toLowerCase().includes(q)) : [];
@@ -234,14 +234,24 @@ export const HomeView: React.FC<{
           </section>
 
           <section className="mt-10 sm:mt-14">
-            <SectionHeader title={t('topRatedIn', { city: selectedCity.name })} meta={`${topRated.length} ${t('pros')}`} />
-            {topRated.length > 0 ? (
+            {byPlace ? (
+              tiers.map((tier, i) => (
+                <div key={tier.id} className={i ? 'mt-9' : ''}>
+                  <SectionHeader title={tier.title} meta={`${tier.captains.length} ${t('pros')}`} />
+                  {tier.subtitle && <p className="-mt-3 mb-4 text-[13px] text-ink-3">{tier.subtitle}</p>}
+                  <CaptainGrid captains={[...tier.captains].sort(byRating)} categories={categories} onOpenProfile={onOpenProfile} />
+                </div>
+              ))
+            ) : (
+              <SectionHeader title={t('topRatedIn', { city: selectedCity.name })} meta={`${topRated.length} ${t('pros')}`} />
+            )}
+            {byPlace ? null : topRated.length > 0 ? (
               <CaptainGrid captains={topRated} categories={categories} onOpenProfile={onOpenProfile} />
             ) : (
               <EmptyState
                 icon={<MapPinOff className="w-7 h-7" />}
                 tone="accent"
-                title={t('emptyCity', { city: selectedCity.name })}
+                title={selectedPlace ? `No pros in ${selectedPlace.district.name} district yet` : t('emptyCity', { city: selectedCity.name })}
                 body={t('emptyCityBody')}
                 action={popularCities.length > 0 ? cityChips(popularCities) : undefined}
               />

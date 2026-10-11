@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import type { City, ServiceCategoryId } from '../../types';
-import { StateCitySelect } from '../common/StateCitySelect';
+import type { ServiceArea, ServiceCategoryId } from '../../types';
+import { ServiceAreaPicker } from './ServiceAreaPicker';
+import { HomeVillageFields } from './HomeVillageFields';
+import { toServiceAreaInput } from '../../utils/serviceAreas';
 import { CategoryIcon } from '../common/CategoryIcon';
 import { UserPlus, Check, BadgeCheck, MapPin, Wrench, IndianRupee, User } from 'lucide-react';
 
@@ -25,7 +27,8 @@ export const CaptainRegistrationForm: React.FC<{ verifiedPhone?: string }> = ({ 
   const [phone, setPhone] = useState(verifiedPhone || '');
   const [sameAsPhoneForWhatsapp, setSameAsPhoneForWhatsapp] = useState(true);
   const [whatsapp, setWhatsapp] = useState('');
-  const [selectedCity, setSelectedCity] = useState<City | null>(allCities[0] || null);
+  const [serviceAreas, setServiceAreas] = useState<ServiceArea[]>([]);
+  const [home, setHome] = useState<{ subdistrictCode: number; villageCode?: number } | null>(null);
   const [areasInput, setAreasInput] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<ServiceCategoryId[]>([]);
   const [experienceYears, setExperienceYears] = useState('2');
@@ -44,12 +47,13 @@ export const CaptainRegistrationForm: React.FC<{ verifiedPhone?: string }> = ({ 
   };
 
   const digitsOnly = (v: string) => v.replace(/\D/g, '');
-  const canSubmit = !!name.trim() && !!phone.trim() && !!selectedCity && selectedCategories.length > 0 && !!areasInput.trim();
+  const canSubmit = !!name.trim() && !!phone.trim() && serviceAreas.length > 0 && selectedCategories.length > 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!canSubmit || isSubmitting) {
       if (selectedCategories.length === 0) setError('Pick at least one service you offer.');
+      else if (serviceAreas.length === 0) setError('Add the district and mandals where you work.');
       return;
     }
 
@@ -64,8 +68,9 @@ export const CaptainRegistrationForm: React.FC<{ verifiedPhone?: string }> = ({ 
         phone: phone.trim(),
         whatsapp: waNumber,
         avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name.trim())}&background=FF7A1A&color=fff&size=200&bold=true`,
-        cityId: selectedCity!.id,
-        areas: areasInput.split(',').map((a) => a.trim()).filter(Boolean),
+        serviceAreas: toServiceAreaInput(serviceAreas),
+        ...(home ? { homePlace: home } : {}),
+        ...(areasInput.trim() ? { areas: areasInput.split(',').map((a) => a.trim()).filter(Boolean) } : {}),
         categories: selectedCategories,
         experienceYears: Number(experienceYears) || 0,
         bio: bio.trim() || 'Experienced local professional ready to help with your requirements.',
@@ -169,11 +174,15 @@ export const CaptainRegistrationForm: React.FC<{ verifiedPhone?: string }> = ({ 
         </Section>
 
         <Section step={3} icon={MapPin} title="Where do you work?">
-          <StateCitySelect value={selectedCity} onSelect={setSelectedCity} />
+          <p className="-mt-2 text-[13px] text-ink-3">
+            Customers in these mandals see you first, then the rest of the district. You can add up to 5 districts.
+          </p>
+          <ServiceAreaPicker value={serviceAreas} onChange={setServiceAreas} defaultStateName={allCities[0]?.state} />
+          {serviceAreas.length > 0 && <HomeVillageFields areas={serviceAreas} value={home} onChange={setHome} />}
           <div>
-            <label className="field-label" htmlFor="reg-areas">Areas / localities you serve</label>
-            <input id="reg-areas" required value={areasInput} onChange={(e) => setAreasInput(e.target.value)} placeholder="e.g. Vaishali Nagar, Malviya Nagar" className="input" />
-            <p className="mt-1 text-xs text-ink-3">Separate multiple areas with commas</p>
+            <label className="field-label" htmlFor="reg-areas">Colonies / localities (optional)</label>
+            <input id="reg-areas" value={areasInput} onChange={(e) => setAreasInput(e.target.value)} placeholder="e.g. Vaishali Nagar, Malviya Nagar" className="input" />
+            <p className="mt-1 text-xs text-ink-3">Shown on your profile. Separate with commas.</p>
           </div>
         </Section>
 

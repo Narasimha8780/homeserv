@@ -1,10 +1,11 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import type { Captain } from '../../types';
 import { CaptainGrid } from './CaptainCard';
 import { CategoryIcon } from '../common/CategoryIcon';
 import { EmptyState } from '../ui/EmptyState';
 import { matchesQuery } from '../../utils/search';
+import { useLocalCaptains } from '../../hooks/useLocalCaptains';
 import { ALL_CATEGORIES_ICON_URL } from '../../utils/categoryIcons';
 import { ArrowLeft, Search, X, Users, MapPin, BadgeCheck } from 'lucide-react';
 
@@ -15,7 +16,8 @@ export const CategoryView: React.FC<{
   onBack: () => void;
   onOpenProfile: (captain: Captain) => void;
 }> = ({ categoryId, onBack, onOpenProfile }) => {
-  const { categories, captains, searchQuery, setSearchQuery, selectedCity, t } = useApp();
+  const { categories, searchQuery, setSearchQuery, selectedCity, selectedPlace, t } = useApp();
+  const areaName = selectedPlace ? selectedPlace.subdistrict.name : selectedCity.name;
   const [sortKey, setSortKey] = useState<SortKey>('rating');
   const [availableOnly, setAvailableOnly] = useState(false);
 
@@ -24,26 +26,27 @@ export const CategoryView: React.FC<{
   const title = isAll ? 'All Professionals' : category?.title || 'Category';
   const categoryTitle = (id: string) => categories.find((c) => c.id === id)?.title || '';
 
-  const inCategory = useMemo(
-    () =>
-      captains.filter(
-        (cap) =>
-          cap.kycStatus === 'verified' &&
-          cap.cityId === selectedCity.id &&
-          (isAll || cap.categories.includes(categoryId as never))
-      ),
-    [captains, selectedCity.id, isAll, categoryId]
-  );
-
+  // Mandal first, then the rest of the district (or the city when no place is chosen).
+  const { tiers } = useLocalCaptains();
   const q = searchQuery.trim().toLowerCase();
-  const list = inCategory
-    .filter((cap) => matchesQuery(cap, q, categoryTitle))
-    .filter((cap) => !availableOnly || cap.isAvailable)
-    .sort((a, b) => {
-      if (sortKey === 'experience') return b.experienceYears - a.experienceYears;
-      if (sortKey === 'price') return (a.startingPrice ?? Infinity) - (b.startingPrice ?? Infinity);
-      return b.rating - a.rating;
-    });
+  const inCat = (cap: Captain) => isAll || cap.categories.includes(categoryId as never);
+  const sortFn = (a: Captain, b: Captain) => {
+    if (sortKey === 'experience') return b.experienceYears - a.experienceYears;
+    if (sortKey === 'price') return (a.startingPrice ?? Infinity) - (b.startingPrice ?? Infinity);
+    return b.rating - a.rating;
+  };
+  const inCategory = tiers.flatMap((tier) => tier.captains.filter(inCat));
+  const shownTiers = tiers
+    .map((tier) => ({
+      ...tier,
+      captains: tier.captains
+        .filter(inCat)
+        .filter((cap) => matchesQuery(cap, q, categoryTitle))
+        .filter((cap) => !availableOnly || cap.isAvailable)
+        .sort(sortFn),
+    }))
+    .filter((tier) => tier.captains.length);
+  const list = shownTiers.flatMap((tier) => tier.captains);
 
   const SORTS: { key: SortKey; label: string }[] = [
     { key: 'rating', label: t('sortTopRated') },
@@ -82,7 +85,7 @@ export const CategoryView: React.FC<{
             <Users className="w-3.5 h-3.5" /> {inCategory.length} {t('pros')}
           </span>
           <span className="pill bg-surface-solid/60 border border-line">
-            <MapPin className="w-3.5 h-3.5 text-accent" /> {selectedCity.name}
+            <MapPin className="w-3.5 h-3.5 text-accent" /> {areaName}
           </span>
           <span className="pill bg-surface-solid/60 border border-line">
             <BadgeCheck className="w-3.5 h-3.5 text-info-ink" /> {t('verified')}
@@ -122,7 +125,19 @@ export const CategoryView: React.FC<{
 
       <div className="mt-5">
         {list.length > 0 ? (
-          <CaptainGrid captains={list} categories={categories} onOpenProfile={onOpenProfile} />
+          shownTiers.length > 1 || shownTiers[0]?.id !== 'city' ? (
+            shownTiers.map((tier, i) => (
+              <div key={tier.id} className={i ? 'mt-8' : ''}>
+                <h2 className="text-lg font-bold text-ink">
+                  {tier.title} <span className="text-ink-3 font-semibold">({tier.captains.length})</span>
+                </h2>
+                {tier.subtitle && <p className="mb-3 text-[13px] text-ink-3">{tier.subtitle}</p>}
+                <CaptainGrid captains={tier.captains} categories={categories} onOpenProfile={onOpenProfile} />
+              </div>
+            ))
+          ) : (
+            <CaptainGrid captains={list} categories={categories} onOpenProfile={onOpenProfile} />
+          )
         ) : (
           <EmptyState
             icon={<Users className="w-7 h-7" />}
@@ -130,7 +145,7 @@ export const CategoryView: React.FC<{
             body={
               q || availableOnly
                 ? t('noMatchBody')
-                : `No ${isAll ? 'professionals' : title.toLowerCase() + 's'} listed in ${selectedCity.name} yet — try another city or check back soon.`
+                : `No ${isAll ? 'professionals' : title.toLowerCase() + 's'} listed in ${selectedPlace ? `${selectedPlace.district.name} district` : selectedCity.name} yet — try another city or check back soon.`
             }
             action={
               <button onClick={onBack} className="btn btn-secondary h-11 px-5">

@@ -4,6 +4,7 @@ import { Sheet, SheetBody, SheetFooter } from '../ui/Sheet';
 import { Avatar } from '../ui/Avatar';
 import { RatingSummary, Stars } from '../ui/Rating';
 import { WhatsAppIcon } from '../ui/WhatsAppIcon';
+import { describeArea } from '../../utils/serviceAreas';
 import { firstName, formatPrice, shareText, telLink, timeAgo, whatsappGreeting, whatsappLink } from '../../utils/format';
 import {
   X, Star, BadgeCheck, MapPin, Phone, Heart, Languages, Briefcase, IndianRupee, Eye, Share2, Check, PenLine, ShieldCheck, MessageSquareText,
@@ -139,9 +140,13 @@ export const CaptainProfileSheet: React.FC<{
                 <MapPin className="w-3.5 h-3.5" /> {t('areasServed')}
               </h3>
               <div className="flex flex-wrap gap-1.5">
-                {captain.areas.map((a) => (
-                  <span key={a} className="pill !py-1 !px-2.5 !text-[13px]">{a}</span>
-                ))}
+                {captain.serviceAreas?.length
+                  ? captain.serviceAreas.map((a) => (
+                      <span key={a.district.code} className="pill !py-1 !px-2.5 !text-[13px] !whitespace-normal">{describeArea(a)}</span>
+                    ))
+                  : captain.areas.map((a) => (
+                      <span key={a} className="pill !py-1 !px-2.5 !text-[13px]">{a}</span>
+                    ))}
               </div>
             </div>
             <div>

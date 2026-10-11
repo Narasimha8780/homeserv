@@ -14,6 +14,7 @@ import mongoose from 'mongoose';
 import { connectDB } from './db.js';
 import { City } from './models/City.js';
 import { LgdDistrict, LgdState, LgdSubdistrict, LgdVillage } from './models/Lgd.js';
+import { migrateCaptainAreas } from './migrateCaptainAreas.js';
 import { appStateName, clearStateCache, displayName, geoFor, locateByName, normName, toPoint } from './utils/lgd.js';
 
 const COLUMNS = ['state_code', 'state_name', 'district_code', 'district_name', 'sub-district_code', 'sub-district_name', 'village_code', 'village_name'];
@@ -137,6 +138,9 @@ async function main() {
   }
   console.log(`Cities with a location: ${located}/${cities.length}`);
   if (unlocated.length) console.log(`No location found for: ${unlocated.join(', ')}`);
+
+  // Captains registered with only a city get that city's district as their service area.
+  await migrateCaptainAreas();
 
   await mongoose.disconnect();
 }
