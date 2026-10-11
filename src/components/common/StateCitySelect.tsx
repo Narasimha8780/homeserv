@@ -1,8 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import type { City } from '../../types';
+import type { City, LgdPlace } from '../../types';
 import { INDIAN_STATES } from '../../data/indianStates';
-import { Check, Plus, Search } from 'lucide-react';
+import { api } from '../../utils/api';
+import { Check, Plus, Search, Landmark } from 'lucide-react';
+
+const PLACE_TYPE: Record<LgdPlace['type'], string> = { district: 'District', subdistrict: 'Tehsil', village: 'Village' };
 
 export const StateCitySelect: React.FC<{
   value: City | null;
@@ -15,6 +18,7 @@ export const StateCitySelect: React.FC<{
   const [hasTyped, setHasTyped] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [places, setPlaces] = useState<{ key: string; list: LgdPlace[] }>({ key: '', list: [] });
 
   // Keep the input text in sync with the actual selected city (but never while the
   // user is actively typing/searching — isOpen is only true during that interaction).
@@ -40,6 +44,49 @@ export const StateCitySelect: React.FC<{
   );
 
   const exactMatch = filtered.some((c) => c.name.toLowerCase() === effectiveQuery.trim().toLowerCase());
+
+  // Official LGD places (districts, tehsils, villages) matching what's typed, so anyone can find
+  // their exact village even if no one has added it as a city yet.
+  const placeQuery = isOpen && selectedState ? effectiveQuery.trim() : '';
+  const placeKey = `${selectedState}|${placeQuery.toLowerCase()}`;
+  useEffect(() => {
+    if (placeQuery.length < 2) return;
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      api
+        .get<LgdPlace[]>(`/locations/search?state=${encodeURIComponent(selectedState)}&q=${encodeURIComponent(placeQuery)}`)
+        .then((list) => !cancelled && setPlaces({ key: placeKey, list }))
+        .catch(() => !cancelled && setPlaces({ key: placeKey, list: [] }));
+    }, 250);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [placeQuery, placeKey, selectedState]);
+
+  const placeResults = placeQuery.length >= 2 && places.key === placeKey ? places.list : [];
+  const placesLoading = placeQuery.length >= 2 && places.key !== placeKey;
+  // Hide places that already exist as a city (same name, and same district when known).
+  const newPlaces = placeResults.filter(
+    (p) =>
+      !citiesInState.some(
+        (c) => c.name.toLowerCase() === p.name.toLowerCase() && (!c.district || c.district === (p.type === 'district' ? p.name : p.district))
+      )
+  );
+
+  const handleAddPlace = async (place: LgdPlace) => {
+    if (isAdding) return;
+    setIsAdding(true);
+    setError(null);
+    try {
+      const city = await addCity(place.name, selectedState, { type: place.type, code: place.code });
+      handleSelectCity(city);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not add this place. Try again.');
+    } finally {
+      setIsAdding(false);
+    }
+  };
 
   const handleSelectCity = (city: City) => {
     onSelect(city);
@@ -115,6 +162,7 @@ export const StateCitySelect: React.FC<{
 
           {isOpen && (
             <>
+              {(filtered.length > 0 || newPlaces.length === 0) && (
               <div className="mt-2 max-h-56 overflow-y-auto custom-scrollbar rounded-2xl border border-line bg-surface-2 p-1">
                 {filtered.length > 0 ? (
                   filtered.map((city) => {
@@ -129,7 +177,10 @@ export const StateCitySelect: React.FC<{
                           isCurrent ? 'bg-accent-soft text-accent-ink font-semibold' : 'text-ink hover:bg-surface-3'
                         }`}
                       >
-                        <span>{city.name}</span>
+                        <span>
+                          {city.name}
+                          {city.district && <span className="ml-1.5 text-xs text-ink-3 font-normal">{city.district}</span>}
+                        </span>
                         {isCurrent && <Check className="w-4 h-4" />}
                       </button>
                     );
@@ -140,8 +191,40 @@ export const StateCitySelect: React.FC<{
                   </p>
                 )}
               </div>
+              )}
 
-              {effectiveQuery.trim() && !exactMatch && (
+              {newPlaces.length > 0 && (
+                <div className="mt-3">
+                  <p className="flex items-center gap-1.5 px-1 mb-1.5 text-xs font-bold uppercase tracking-wider text-ink-3">
+                    <Landmark className="w-3.5 h-3.5" /> More places in {selectedState}
+                  </p>
+                  <div className="max-h-64 overflow-y-auto custom-scrollbar rounded-2xl border border-line bg-surface-2 p-1">
+                    {newPlaces.map((place) => (
+                      <button
+                        key={`${place.type}-${place.code}`}
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => handleAddPlace(place)}
+                        disabled={isAdding}
+                        className="w-full flex items-center gap-3 text-left px-3.5 py-2.5 rounded-xl hover:bg-surface-3 transition-colors disabled:opacity-60"
+                      >
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-[15px] text-ink truncate">{place.name}</span>
+                          <span className="block text-xs text-ink-3 truncate">
+                            {[place.type !== 'district' && place.subdistrict, place.type !== 'district' && place.district]
+                              .filter(Boolean)
+                              .join(', ') || selectedState}
+                          </span>
+                        </span>
+                        <span className="pill !text-[11px] shrink-0">{PLACE_TYPE[place.type]}</span>
+                        <Plus className="w-4 h-4 text-accent shrink-0" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {effectiveQuery.trim() && !exactMatch && !placesLoading && newPlaces.length === 0 && (
                 <button
                   type="button"
                   onMouseDown={(e) => e.preventDefault()}

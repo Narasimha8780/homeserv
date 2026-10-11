@@ -9,6 +9,7 @@ import type {
   Captain,
   Review,
   Customer,
+  LgdRef,
 } from '../types';
 import { api } from '../utils/api';
 import { translations } from '../i18n/translations';
@@ -51,7 +52,7 @@ interface AppContextType {
   selectedCity: City;
   setSelectedCity: (city: City) => void;
   allCities: City[];
-  addCity: (name: string, state: string) => Promise<City>;
+  addCity: (name: string, state: string, lgd?: LgdRef) => Promise<City>;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
 
@@ -103,6 +104,7 @@ interface SavedPrefs {
   theme?: AppTheme;
   activeCaptainId?: string | null;
   currentCustomer?: Customer | null;
+  selectedCityId?: string | null;
 }
 
 // Read once, synchronously, so the first render already has the saved values — loading them
@@ -127,7 +129,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [adminTab, setAdminTab] = useState<'overview' | 'kyc' | 'categories' | 'cities'>('overview');
 
   const [allCities, setAllCities] = useState<City[]>([]);
-  const [selectedCityId, setSelectedCityId] = useState<string | null>(null);
+  const [selectedCityId, setSelectedCityId] = useState<string | null>(initialPrefs.selectedCityId || null);
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   const [categories, setCategories] = useState<ServiceCategory[]>([]);
@@ -147,11 +149,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   useEffect(() => {
     try {
-      localStorage.setItem(PREFS_KEY, JSON.stringify({ favorites, language, theme, activeCaptainId, currentCustomer }));
+      localStorage.setItem(
+        PREFS_KEY,
+        JSON.stringify({ favorites, language, theme, activeCaptainId, currentCustomer, selectedCityId })
+      );
     } catch {
       // ignore
     }
-  }, [favorites, language, theme, activeCaptainId, currentCustomer]);
+  }, [favorites, language, theme, activeCaptainId, currentCustomer, selectedCityId]);
 
   // Apply the theme, and keep following the OS setting while on "system".
   useEffect(() => {
@@ -186,7 +191,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setCategories(categoriesRes);
       setCaptains(captainsRes);
       setReviews(reviewsRes);
-      setSelectedCityId((prev) => prev || citiesRes.find((c) => c.isActive)?.id || citiesRes[0]?.id || null);
+      setSelectedCityId(
+        (prev) =>
+          (prev && citiesRes.some((c) => c.id === prev) ? prev : null) ||
+          citiesRes.find((c) => c.isActive)?.id ||
+          citiesRes[0]?.id ||
+          null
+      );
     } catch (err) {
       setLoadError(err instanceof Error ? err.message : 'Failed to load data');
     } finally {
@@ -203,10 +214,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     () => allCities.find((c) => c.id === selectedCityId) || allCities[0],
     [allCities, selectedCityId]
   );
-  const setSelectedCity = (city: City) => setSelectedCityId(city.id);
+  // Cities can come from outside the startup list (GPS lookup, a place someone just added),
+  // so make sure the chosen one is in allCities before selecting it.
+  const setSelectedCity = (city: City) => {
+    setAllCities((prev) => (prev.some((c) => c.id === city.id) ? prev : [...prev, city]));
+    setSelectedCityId(city.id);
+  };
 
-  const addCity = async (name: string, state: string): Promise<City> => {
-    const city = await api.post<City>('/cities', { name, state });
+  const addCity = async (name: string, state: string, lgd?: LgdRef): Promise<City> => {
+    const city = await api.post<City>('/cities', lgd ? { lgd } : { name, state });
     setAllCities((prev) => (prev.some((c) => c.id === city.id) ? prev : [...prev, city]));
     return city;
   };
@@ -356,6 +372,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setFavorites([]);
     setLanguage('en');
     setTheme('dark');
+    setSelectedCityId(null);
     setActiveCaptainId(null);
     setCurrentCustomer(null);
     loadAll();

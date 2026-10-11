@@ -35,6 +35,10 @@ const HelpSheet: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onC
           <ShieldCheck className="w-3.5 h-3.5" />
           HomeServ is a directory only — we don't handle bookings or payments.
         </p>
+        <p className="text-center text-[11px] text-ink-3 leading-relaxed">
+          Place names: Local Government Directory, Govt. of India. Map locations derived from DataMeet (CC BY 2.5 IN)
+          and GeoNames (CC BY) data.
+        </p>
       </SheetBody>
     </Sheet>
   );

@@ -4,6 +4,7 @@ export interface City {
   id: CityId;
   name: string;
   state: string;
+  district?: string;
   population: string;
   tier: string;
   isActive: boolean;
@@ -71,4 +72,32 @@ export interface Customer {
   id: string;
   name: string;
   phone: string;
+}
+
+// Official LGD (Local Government Directory) places, used by the city picker and GPS lookup.
+export type LgdPlaceType = 'district' | 'subdistrict' | 'village';
+
+export interface LgdRef {
+  type: LgdPlaceType;
+  code: number;
+}
+
+export interface LgdPlace extends LgdRef {
+  name: string;
+  state: string;
+  district?: string;
+  subdistrict?: string;
+}
+
+export interface NearestResult {
+  area: {
+    subdistrict: string;
+    district: string;
+    state: string;
+    subdistrictCode: number;
+    districtCode: number;
+    approx: boolean;
+    distanceKm: number;
+  } | null;
+  cities: { city: City; distanceKm: number }[];
 }

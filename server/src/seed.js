@@ -6,6 +6,7 @@ import { Captain } from './models/Captain.js';
 import { Review } from './models/Review.js';
 import { INDIA_CITIES } from './data/indiaCities.js';
 import { normalizePhone } from './utils/phone.js';
+import { seededCityGeo, toPoint } from './utils/lgd.js';
 import mongoose from 'mongoose';
 
 function slugify(str) {
@@ -29,15 +30,19 @@ function buildCities() {
     if (aIsJaipur === bIsJaipur) return 0;
     return aIsJaipur ? -1 : 1;
   });
-  return sorted.map((c, idx) => ({
-    id: `${slugify(c.name)}-${slugify(c.state)}`,
-    name: c.name,
-    state: c.state,
-    population: c.population || POPULATION_BY_TIER[c.tier] || 'N/A',
-    tier: c.tier,
-    isActive: true,
-    order: idx + 1,
-  }));
+  return sorted.map((c, idx) => {
+    const geo = seededCityGeo(c.name, c.state);
+    return {
+      id: `${slugify(c.name)}-${slugify(c.state)}`,
+      name: c.name,
+      state: c.state,
+      population: c.population || POPULATION_BY_TIER[c.tier] || 'N/A',
+      tier: c.tier,
+      isActive: true,
+      order: idx + 1,
+      ...(geo ? { location: toPoint(geo) } : {}),
+    };
+  });
 }
 
 const CITIES = buildCities();
