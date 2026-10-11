@@ -96,8 +96,29 @@ export interface NearestResult {
     state: string;
     subdistrictCode: number;
     districtCode: number;
+    stateCode: number;
     approx: boolean;
     distanceKm: number;
   } | null;
-  cities: { city: City; distanceKm: number }[];
+  cities: NearbyCity[];
+}
+
+export interface NearbyCity {
+  city: City;
+  distanceKm: number;
+  sameDistrict: boolean;
+}
+
+export interface CodeName {
+  code: number;
+  name: string;
+}
+
+// The customer's own place, picked step by step (or from GPS), and the city whose pros we show.
+export interface PickedPlace {
+  state: CodeName;
+  district: CodeName;
+  subdistrict: CodeName;
+  village?: CodeName;
+  servedBy?: { cityId: string; cityName: string; distanceKm: number; sameDistrict: boolean };
 }

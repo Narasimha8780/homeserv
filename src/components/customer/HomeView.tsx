@@ -9,7 +9,8 @@ import { EmptyState } from '../ui/EmptyState';
 import { Avatar } from '../ui/Avatar';
 import { ALL_CATEGORIES_ICON_URL } from '../../utils/categoryIcons';
 import { firstName } from '../../utils/format';
-import { Search, X, BadgeCheck, Phone, Star, ChevronRight, Briefcase, SearchX, MapPinOff, IndianRupee } from 'lucide-react';
+import { distanceLabel, NEARBY_RADIUS_KM } from '../../utils/nearby';
+import { MapPin, Search, X, BadgeCheck, Phone, Star, ChevronRight, Briefcase, SearchX, MapPinOff, IndianRupee } from 'lucide-react';
 
 export const SectionHeader: React.FC<{ title: React.ReactNode; meta?: React.ReactNode }> = ({ title, meta }) => (
   <div className="flex items-end justify-between gap-3 mb-4">
@@ -34,7 +35,9 @@ export const HomeView: React.FC<{
   onOpenProfile: (captain: Captain) => void;
   onOpenCity: () => void;
 }> = ({ onOpenCategory, onOpenProfile, onOpenCity }) => {
-  const { categories, captains, searchQuery, setSearchQuery, selectedCity, setSelectedCity, currentCustomer, setRole, t } = useApp();
+  const { categories, captains, searchQuery, setSearchQuery, selectedCity, setSelectedCity, selectedPlace, currentCustomer, setRole, t } = useApp();
+  const placeName = selectedPlace ? selectedPlace.village?.name || selectedPlace.subdistrict.name : selectedCity.name;
+  const servedBy = selectedPlace?.servedBy?.cityId === selectedCity.id ? selectedPlace.servedBy : null;
   const popularCities = usePopularCities();
 
   const activeCategories = categories.filter((c) => c.isActive);
@@ -82,10 +85,21 @@ export const HomeView: React.FC<{
             onClick={onOpenCity}
             className="text-gradient underline decoration-dotted decoration-2 underline-offset-[0.18em] decoration-orange-400/60 hover:decoration-orange-400"
           >
-            {selectedCity.name}
+            {placeName}
           </button>
           {titleAfter}
         </h1>
+        {selectedPlace && (
+          <p className="mt-2 text-[13px] text-ink-3 leading-relaxed">
+            <MapPin className="inline w-3.5 h-3.5 text-accent -mt-0.5 mr-1" />
+            {[selectedPlace.village?.name, selectedPlace.subdistrict.name, selectedPlace.district.name].filter(Boolean).join(', ')}
+            {servedBy && servedBy.cityName !== placeName && (
+              <>
+                {' '}· showing pros from <span className="font-semibold text-ink-2">{servedBy.cityName}</span> ({servedBy.sameDistrict && servedBy.distanceKm > NEARBY_RADIUS_KM ? 'in your district' : distanceLabel(servedBy.distanceKm)})
+              </>
+            )}
+          </p>
+        )}
         <p className="mt-3 text-[15px] sm:text-lg text-ink-2 max-w-2xl leading-relaxed">{t('heroSubtitle')}</p>
 
         <div className="mt-5 sm:mt-7 relative max-w-2xl" role="search">

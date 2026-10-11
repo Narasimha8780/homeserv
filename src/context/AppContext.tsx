@@ -10,6 +10,7 @@ import type {
   Review,
   Customer,
   LgdRef,
+  PickedPlace,
 } from '../types';
 import { api } from '../utils/api';
 import { translations } from '../i18n/translations';
@@ -51,6 +52,8 @@ interface AppContextType {
 
   selectedCity: City;
   setSelectedCity: (city: City) => void;
+  selectedPlace: PickedPlace | null;
+  setSelectedPlace: (place: PickedPlace | null) => void;
   allCities: City[];
   addCity: (name: string, state: string, lgd?: LgdRef) => Promise<City>;
   searchQuery: string;
@@ -105,6 +108,7 @@ interface SavedPrefs {
   activeCaptainId?: string | null;
   currentCustomer?: Customer | null;
   selectedCityId?: string | null;
+  selectedPlace?: PickedPlace | null;
 }
 
 // Read once, synchronously, so the first render already has the saved values — loading them
@@ -130,6 +134,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const [allCities, setAllCities] = useState<City[]>([]);
   const [selectedCityId, setSelectedCityId] = useState<string | null>(initialPrefs.selectedCityId || null);
+  const [selectedPlace, setSelectedPlace] = useState<PickedPlace | null>(initialPrefs.selectedPlace || null);
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   const [categories, setCategories] = useState<ServiceCategory[]>([]);
@@ -151,12 +156,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     try {
       localStorage.setItem(
         PREFS_KEY,
-        JSON.stringify({ favorites, language, theme, activeCaptainId, currentCustomer, selectedCityId })
+        JSON.stringify({ favorites, language, theme, activeCaptainId, currentCustomer, selectedCityId, selectedPlace })
       );
     } catch {
       // ignore
     }
-  }, [favorites, language, theme, activeCaptainId, currentCustomer, selectedCityId]);
+  }, [favorites, language, theme, activeCaptainId, currentCustomer, selectedCityId, selectedPlace]);
 
   // Apply the theme, and keep following the OS setting while on "system".
   useEffect(() => {
@@ -373,6 +378,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setLanguage('en');
     setTheme('dark');
     setSelectedCityId(null);
+    setSelectedPlace(null);
     setActiveCaptainId(null);
     setCurrentCustomer(null);
     loadAll();
@@ -399,6 +405,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setAdminTab,
         selectedCity,
         setSelectedCity,
+        selectedPlace,
+        setSelectedPlace,
         allCities,
         addCity,
         searchQuery,

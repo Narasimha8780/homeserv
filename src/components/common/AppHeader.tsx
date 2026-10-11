@@ -12,7 +12,7 @@ import { MapPin, ChevronDown, Globe, Sun, Moon, Briefcase, Search, Menu } from '
 export const AppHeader: React.FC<{ onOpenCity: () => void; onOpenAccount: () => void }> = ({ onOpenCity, onOpenAccount }) => {
   const {
     role, setRole, customerTab, setCustomerTab, selectedCategoryId, setSelectedCategoryId, setSearchQuery,
-    selectedCity, language, setLanguage, resolvedTheme, setTheme, currentCustomer, currentCaptain, favorites, t,
+    selectedCity, selectedPlace, language, setLanguage, resolvedTheme, setTheme, currentCustomer, currentCaptain, favorites, t,
   } = useApp();
 
   const goHome = () => {
@@ -27,6 +27,7 @@ export const AppHeader: React.FC<{ onOpenCity: () => void; onOpenAccount: () => 
     { id: 'favorites' as const, label: t('myFavorites'), count: favorites.length },
   ];
 
+  const placeName = selectedPlace ? selectedPlace.village?.name || selectedPlace.subdistrict.name : selectedCity.name;
   const accountName = role === 'captain' ? currentCaptain?.name : currentCustomer?.name;
 
   return (
@@ -38,11 +39,11 @@ export const AppHeader: React.FC<{ onOpenCity: () => void; onOpenAccount: () => 
 
         <button
           onClick={onOpenCity}
-          aria-label={`${t('selectCity')}: ${selectedCity.name}`}
+          aria-label={`${t('selectCity')}: ${placeName}`}
           className="flex items-center gap-1.5 min-w-0 h-9 pl-2.5 pr-2 rounded-full bg-surface-2 border border-line text-[13px] font-semibold text-ink hover:bg-surface-3 transition-colors"
         >
           <MapPin className="w-4 h-4 text-accent shrink-0" />
-          <span className="truncate max-w-[7.5rem] sm:max-w-[11rem]">{selectedCity.name}</span>
+          <span className="truncate max-w-[7.5rem] sm:max-w-[11rem]">{placeName}</span>
           <ChevronDown className="w-3.5 h-3.5 text-ink-3 shrink-0" />
         </button>
 

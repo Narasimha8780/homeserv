@@ -1,145 +1,173 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import type { City, NearestResult } from '../../types';
+import type { City, NearbyCity, NearestResult, PickedPlace } from '../../types';
 import { Sheet, SheetBody, SheetHeader } from '../ui/Sheet';
-import { StateCitySelect } from '../common/StateCitySelect';
+import { LocationPicker } from './LocationPicker';
 import { usePopularCities } from '../../hooks/usePopularCities';
 import { api } from '../../utils/api';
 import { getCurrentPosition, GeoError } from '../../utils/geolocation';
+import { chooseNearbyCity, distanceLabel, NEARBY_RADIUS_KM } from '../../utils/nearby';
 import { MapPin, LocateFixed, Flame, Navigation, Plus, RotateCw, TriangleAlert } from 'lucide-react';
 
-// Closer than this, the nearest city is picked automatically.
-const AUTO_SELECT_KM = 40;
-// A city with listed pros wins over an empty one that is only slightly closer.
-const PREFER_WITH_PROS_KM = 30;
-
-type Detect =
-  | { status: 'idle' }
-  | { status: 'locating' }
-  | { status: 'error'; message: string }
-  | { status: 'result'; result: NearestResult; pick: { city: City; distanceKm: number } | null };
+type Notice =
+  | { kind: 'error'; message: string }
+  | { kind: 'none-nearby'; placeName: string; result: NearestResult; place: PickedPlace | null };
 
 export const CitySheet: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
-  const { captains, selectedCity, setSelectedCity, addCity, t } = useApp();
+  const { captains, selectedCity, setSelectedCity, selectedPlace, setSelectedPlace, addCity, t } = useApp();
   const popular = usePopularCities();
-  const [detect, setDetect] = useState<Detect>({ status: 'idle' });
-  const [isAdding, setIsAdding] = useState(false);
+  const [locating, setLocating] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [notice, setNotice] = useState<Notice | null>(null);
+  const [gpsPlace, setGpsPlace] = useState<Partial<PickedPlace> | null>(null);
 
   const close = () => {
-    setDetect({ status: 'idle' });
+    setNotice(null);
+    setGpsPlace(null);
     onClose();
-  };
-
-  const handleSelect = (city: City) => {
-    setSelectedCity(city);
-    close();
   };
 
   const prosIn = (cityId: string) => captains.filter((c) => c.kycStatus === 'verified' && c.cityId === cityId).length;
 
+  // Show pros from `nearby.city`, remembering the customer's own place (if any).
+  const chooseCity = (nearby: NearbyCity | { city: City }, place: PickedPlace | null) => {
+    setSelectedCity(nearby.city);
+    setSelectedPlace(
+      place && 'distanceKm' in nearby
+        ? {
+            ...place,
+            servedBy: { cityId: nearby.city.id, cityName: nearby.city.name, distanceKm: nearby.distanceKm, sameDistrict: nearby.sameDistrict },
+          }
+        : null
+    );
+    close();
+  };
+
+  // Plain city choice (popular chips): no specific village/mandal.
+  const pickCity = (city: City) => chooseCity({ city }, null);
+
+  const resolve = (result: NearestResult, place: PickedPlace | null, placeName: string) => {
+    const pick = chooseNearbyCity(result.cities, prosIn);
+    if (pick) chooseCity(pick, place);
+    else setNotice({ kind: 'none-nearby', placeName, result, place });
+  };
+
+  const handlePicked = async (place: PickedPlace) => {
+    setBusy(true);
+    setNotice(null);
+    try {
+      const result = await api.get<NearestResult>(`/locations/nearest?subdistrict=${place.subdistrict.code}`);
+      resolve(result, place, place.village?.name || place.subdistrict.name);
+    } catch {
+      setNotice({ kind: 'error', message: "Couldn't look up pros near this place. Check your connection and try again." });
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const handleDetect = async () => {
-    setDetect({ status: 'locating' });
+    setLocating(true);
+    setNotice(null);
     try {
       const { lat, lng } = await getCurrentPosition();
       const result = await api.get<NearestResult>(`/locations/nearest?lat=${lat}&lng=${lng}`);
-      const nearest = result.cities[0] ?? null;
-      const withPros = result.cities.find((c) => prosIn(c.city.id) > 0);
-      const pick =
-        withPros && nearest && withPros.distanceKm <= nearest.distanceKm + PREFER_WITH_PROS_KM ? withPros : nearest;
-
-      if (pick && pick.distanceKm <= AUTO_SELECT_KM) {
-        handleSelect(pick.city);
-        return;
+      const area = result.area;
+      // Only trust the mandal when it was located precisely and is close; otherwise prefill the
+      // district and let the user choose their mandal/village below.
+      const precise = area && !area.approx && area.distanceKm <= 5;
+      const place: PickedPlace | null =
+        area && precise
+          ? {
+              state: { code: area.stateCode, name: area.state },
+              district: { code: area.districtCode, name: area.district },
+              subdistrict: { code: area.subdistrictCode, name: area.subdistrict },
+            }
+          : null;
+      if (area) {
+        setGpsPlace({
+          state: { code: area.stateCode, name: area.state },
+          district: { code: area.districtCode, name: area.district },
+          ...(precise ? { subdistrict: { code: area.subdistrictCode, name: area.subdistrict } } : {}),
+        });
       }
-      setDetect({ status: 'result', result, pick });
+      resolve(result, place, place?.subdistrict.name || (area ? `${area.district} district` : 'you'));
     } catch (err) {
       const code = err instanceof GeoError ? err.code : null;
-      setDetect({
-        status: 'error',
+      setNotice({
+        kind: 'error',
         message:
           code === 'denied'
-            ? 'Location permission is off. Allow location for HomeServ, or pick your city below.'
+            ? 'Location permission is off. Allow location for HomeServ, or choose your place below.'
             : code === 'unsupported'
-            ? "This device can't share its location. Pick your city below."
+            ? "This device can't share its location. Choose your place below."
             : code === 'timeout' || code === 'unavailable'
-            ? "Couldn't get a GPS fix. Turn on location and try again, or pick your city below."
-            : "Couldn't look up your location right now. Pick your city below.",
+            ? "Couldn't get a GPS fix. Turn on location and try again, or choose your place below."
+            : "Couldn't look up your location right now. Choose your place below.",
       });
-    }
-  };
-
-  const addDetectedPlace = async (result: NearestResult) => {
-    if (!result.area || isAdding) return;
-    setIsAdding(true);
-    try {
-      const ref = result.area.approx
-        ? { type: 'district' as const, code: result.area.districtCode }
-        : { type: 'subdistrict' as const, code: result.area.subdistrictCode };
-      const city = await addCity('', result.area.state, ref);
-      handleSelect(city);
-    } catch {
-      setDetect({ status: 'error', message: "Couldn't add your place. Pick it from the list below." });
     } finally {
-      setIsAdding(false);
+      setLocating(false);
     }
   };
 
-  const area = detect.status === 'result' ? detect.result.area : null;
-  // Sub-district names are only shown when they were located precisely and are close by.
-  const areaLabel = area
-    ? !area.approx && area.distanceKm <= 10
-      ? `${area.subdistrict}, ${area.district}`
-      : `${area.district} district`
-    : null;
-  const addLabel = area ? (area.approx ? area.district : area.subdistrict) : null;
+  const addOwnPlace = async (n: Extract<Notice, { kind: 'none-nearby' }>) => {
+    const area = n.result.area;
+    if (!area) return;
+    setBusy(true);
+    try {
+      const city = await addCity('', area.state, area.approx ? { type: 'district', code: area.districtCode } : { type: 'subdistrict', code: area.subdistrictCode });
+      chooseCity({ city, distanceKm: 0, sameDistrict: true }, n.place);
+    } catch {
+      setNotice({ kind: 'error', message: "Couldn't add your place. Try again." });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const nearest = notice?.kind === 'none-nearby' ? notice.result.cities[0] : null;
 
   return (
     <Sheet open={open} onClose={close} label={t('selectCity')}>
       <SheetHeader
-        title={t('selectCity')}
-        subtitle="All states covered — can't find yours? Just add it"
+        title="Choose your location"
+        subtitle={`We'll show pros within ${NEARBY_RADIUS_KM} km of your village or mandal`}
         icon={<MapPin className="w-5 h-5" />}
         onClose={close}
       />
       <SheetBody className="px-5 pb-[calc(1.5rem+var(--sa-bottom))] space-y-6">
         <div className="space-y-3">
-          <button onClick={handleDetect} disabled={detect.status === 'locating'} className="btn btn-secondary w-full h-12">
-            <LocateFixed className={`w-[18px] h-[18px] text-accent ${detect.status === 'locating' ? 'animate-spin' : ''}`} />
-            {detect.status === 'locating' ? 'Finding your location…' : t('detectLocation')}
+          <button onClick={handleDetect} disabled={locating || busy} className="btn btn-secondary w-full h-12">
+            <LocateFixed className={`w-[18px] h-[18px] text-accent ${locating ? 'animate-spin' : ''}`} />
+            {locating ? 'Finding your location…' : t('detectLocation')}
           </button>
 
-          {detect.status === 'error' && (
+          {notice?.kind === 'error' && (
             <div className="flex items-start gap-2.5 rounded-2xl bg-warn-soft text-warn-ink p-3.5 text-[13px]" role="alert">
               <TriangleAlert className="w-4 h-4 shrink-0 mt-px" />
-              <p className="flex-1">{detect.message}</p>
-              <button onClick={handleDetect} className="flex items-center gap-1 font-bold shrink-0" aria-label="Try again">
+              <p className="flex-1">{notice.message}</p>
+              <button onClick={handleDetect} className="flex items-center gap-1 font-bold shrink-0">
                 <RotateCw className="w-3.5 h-3.5" /> Retry
               </button>
             </div>
           )}
 
-          {detect.status === 'result' && (
-            <div className="rounded-2xl border border-line bg-surface-2 p-4 space-y-3 animate-page-enter">
-              {areaLabel && (
-                <p className="flex items-start gap-2 text-sm text-ink">
-                  <Navigation className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-                  <span>
-                    You're in <span className="font-bold">{areaLabel}</span>, {area!.state}
-                  </span>
-                </p>
-              )}
-              {detect.pick ? (
-                <button onClick={() => handleSelect(detect.pick!.city)} className="btn btn-primary w-full h-11">
+          {notice?.kind === 'none-nearby' && (
+            <div className="rounded-2xl border border-line bg-surface-2 p-4 space-y-3 animate-page-enter" role="status">
+              <p className="flex items-start gap-2 text-sm text-ink">
+                <Navigation className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+                <span>
+                  No HomeServ city within {NEARBY_RADIUS_KM} km of <span className="font-bold">{notice.placeName}</span> yet.
+                </span>
+              </p>
+              {nearest && (
+                <button onClick={() => chooseCity(nearest, notice.place)} className="btn btn-primary w-full h-11">
                   <MapPin className="w-4 h-4" />
-                  Use {detect.pick.city.name} · {Math.round(detect.pick.distanceKm)} km away
+                  Show {nearest.city.name} · {distanceLabel(nearest.distanceKm)}
                 </button>
-              ) : (
-                <p className="text-[13px] text-ink-3">No HomeServ city near you yet.</p>
               )}
-              {area && addLabel && (
-                <button onClick={() => addDetectedPlace(detect.result)} disabled={isAdding} className="btn btn-ghost w-full h-10 text-[13px]">
+              {notice.result.area && (
+                <button onClick={() => addOwnPlace(notice)} disabled={busy} className="btn btn-ghost w-full h-10 text-[13px]">
                   <Plus className="w-4 h-4 text-accent" />
-                  {isAdding ? 'Adding…' : `Add "${addLabel}" as my city`}
+                  {busy ? 'Adding…' : `Add "${notice.result.area.approx ? notice.result.area.district : notice.result.area.subdistrict}" as a new city`}
                 </button>
               )}
             </div>
@@ -153,7 +181,7 @@ export const CitySheet: React.FC<{ open: boolean; onClose: () => void }> = ({ op
             </h3>
             <div className="flex flex-wrap gap-2">
               {popular.map(({ city, count }) => (
-                <button key={city.id} onClick={() => handleSelect(city)} aria-pressed={city.id === selectedCity.id} className="chip">
+                <button key={city.id} onClick={() => pickCity(city)} aria-pressed={!selectedPlace && city.id === selectedCity.id} className="chip">
                   {city.name}
                   <span className="opacity-60 font-medium">{count}</span>
                 </button>
@@ -163,8 +191,14 @@ export const CitySheet: React.FC<{ open: boolean; onClose: () => void }> = ({ op
         )}
 
         <section>
-          <h3 className="text-xs font-bold uppercase tracking-wider text-ink-3 mb-2.5">Browse by state</h3>
-          <StateCitySelect value={selectedCity} onSelect={handleSelect} />
+          <h3 className="text-xs font-bold uppercase tracking-wider text-ink-3 mb-3">Or choose step by step</h3>
+          <LocationPicker
+            key={JSON.stringify(gpsPlace)}
+            initial={gpsPlace || selectedPlace}
+            initialStateName={selectedCity.state}
+            busy={busy}
+            onConfirm={handlePicked}
+          />
         </section>
       </SheetBody>
     </Sheet>
