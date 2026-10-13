@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
+import { PinInput, PIN_LENGTH } from '../common/PinInput';
+import { PhoneEmailButton } from '../common/PhoneEmailButton';
+import { phoneEmailEnabled } from '../../utils/phoneEmailConfig';
 import { useApp } from '../../context/AppContext';
 import type { City, ServiceCategoryId } from '../../types';
 import { StateCitySelect } from '../common/StateCitySelect';
 import { CategoryIcon } from '../common/CategoryIcon';
-import { UserPlus, Check, BadgeCheck, MapPin, Wrench, IndianRupee, User } from 'lucide-react';
+import { UserPlus, Check, MapPin, Wrench, IndianRupee, User, BadgeCheck } from 'lucide-react';
 
 const LANGUAGE_OPTIONS = ['Hindi', 'English', 'Tamil', 'Telugu', 'Marathi', 'Bengali', 'Urdu', 'Marwari'];
 
@@ -18,11 +21,13 @@ const Section: React.FC<{ step: number; icon: React.ElementType; title: string; 
   </section>
 );
 
-export const CaptainRegistrationForm: React.FC<{ verifiedPhone?: string }> = ({ verifiedPhone }) => {
-  const { allCities, categories, registerCaptain, setCaptainTab } = useApp();
+const VERIFY_ENABLED = phoneEmailEnabled();
+
+export const CaptainRegistrationForm: React.FC<{ prefillPhone?: string }> = ({ prefillPhone }) => {
+  const { allCities, categories, registerCaptain, setCaptainTab, verifyPhoneEmail } = useApp();
 
   const [name, setName] = useState('');
-  const [phone, setPhone] = useState(verifiedPhone || '');
+  const [phone, setPhone] = useState(prefillPhone || '');
   const [sameAsPhoneForWhatsapp, setSameAsPhoneForWhatsapp] = useState(true);
   const [whatsapp, setWhatsapp] = useState('');
   const [selectedCity, setSelectedCity] = useState<City | null>(allCities[0] || null);
@@ -32,6 +37,10 @@ export const CaptainRegistrationForm: React.FC<{ verifiedPhone?: string }> = ({ 
   const [bio, setBio] = useState('');
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>(['Hindi']);
   const [startingPrice, setStartingPrice] = useState('');
+  const [verification, setVerification] = useState<{ token: string; phone: string } | null>(null);
+  const [isVerifying, setVerifying] = useState(false);
+  const [pin, setPin] = useState('');
+  const [confirmPin, setConfirmPin] = useState('');
   const [isSubmitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,12 +53,37 @@ export const CaptainRegistrationForm: React.FC<{ verifiedPhone?: string }> = ({ 
   };
 
   const digitsOnly = (v: string) => v.replace(/\D/g, '');
-  const canSubmit = !!name.trim() && !!phone.trim() && !!selectedCity && selectedCategories.length > 0 && !!areasInput.trim();
+  const canSubmit =
+    !!name.trim() && !!phone.trim() && !!selectedCity && selectedCategories.length > 0 && !!areasInput.trim() &&
+    pin.length === PIN_LENGTH && confirmPin.length === PIN_LENGTH &&
+    (!VERIFY_ENABLED || !!verification);
+
+  const handleVerified = async (userJsonUrl: string) => {
+    setVerifying(true);
+    setError(null);
+    try {
+      const result = await verifyPhoneEmail(userJsonUrl);
+      setVerification({ token: result.verificationToken, phone: result.phone });
+      setPhone(`+91 ${result.phone}`);
+      if (!name.trim() && result.name) setName(result.name);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not confirm your number. Try again.');
+    } finally {
+      setVerifying(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!canSubmit || isSubmitting) {
       if (selectedCategories.length === 0) setError('Pick at least one service you offer.');
+      else if (VERIFY_ENABLED && !verification) setError('Verify your mobile number first.');
+      else if (pin.length !== PIN_LENGTH) setError('Choose a 4-digit PIN so you can sign back in.');
+      return;
+    }
+
+    if (pin !== confirmPin) {
+      setError('Both PINs must match.');
       return;
     }
 
@@ -62,6 +96,8 @@ export const CaptainRegistrationForm: React.FC<{ verifiedPhone?: string }> = ({ 
       await registerCaptain({
         name: name.trim(),
         phone: phone.trim(),
+        pin,
+        verificationToken: verification?.token,
         whatsapp: waNumber,
         avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name.trim())}&background=FF7A1A&color=fff&size=200&bold=true`,
         cityId: selectedCity!.id,
@@ -99,19 +135,32 @@ export const CaptainRegistrationForm: React.FC<{ verifiedPhone?: string }> = ({ 
             </div>
             <div>
               <label className="field-label" htmlFor="reg-phone">Phone number</label>
-              <input
-                id="reg-phone"
-                required
-                readOnly={!!verifiedPhone}
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="+91 98XXX XXXXX"
-                className={`input ${verifiedPhone ? '!bg-success-soft !border-transparent !text-success-ink font-semibold' : ''}`}
-              />
-              {verifiedPhone && (
-                <span className="mt-1 flex items-center gap-1 text-xs font-semibold text-success-ink">
-                  <BadgeCheck className="w-3.5 h-3.5" /> Verified via OTP
-                </span>
+              {VERIFY_ENABLED && !verification ? (
+                <div className="space-y-2">
+                  <PhoneEmailButton onVerified={handleVerified} disabled={isVerifying} />
+                  <span className="block text-xs text-ink-3">
+                    {isVerifying ? 'Confirming your number…' : 'Verify the number customers will call you on.'}
+                  </span>
+                </div>
+              ) : (
+                <>
+                  <input
+                    id="reg-phone"
+                    required
+                    readOnly={!!verification}
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="+91 98XXX XXXXX"
+                    className={`input ${verification ? '!bg-success-soft !border-transparent !text-success-ink font-semibold' : ''}`}
+                  />
+                  <span className="mt-1 flex items-center gap-1 text-xs text-ink-3">
+                    {verification ? (
+                      <><BadgeCheck className="w-3.5 h-3.5 text-success-ink" /> Verified — customers will call you here.</>
+                    ) : (
+                      'Customers will call you on this number.'
+                    )}
+                  </span>
+                </>
               )}
             </div>
           </div>
@@ -127,6 +176,11 @@ export const CaptainRegistrationForm: React.FC<{ verifiedPhone?: string }> = ({ 
           {!sameAsPhoneForWhatsapp && (
             <input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="91XXXXXXXXXX (with country code)" inputMode="numeric" className="input" />
           )}
+          <div className="grid sm:grid-cols-2 gap-4 pt-1">
+            <PinInput id="reg-pin" label="Choose a 4-digit PIN" value={pin} onChange={setPin} />
+            <PinInput id="reg-pin-confirm" label="Re-enter PIN" value={confirmPin} onChange={setConfirmPin} />
+          </div>
+          <p className="text-xs text-ink-3">You'll use this PIN with your phone number to sign in. Keep it private.</p>
         </Section>
 
         <Section step={2} icon={Wrench} title="What services do you offer?">

@@ -6,6 +6,10 @@ const captainSchema = new mongoose.Schema(
     name: { type: String, required: true },
     phone: { type: String, required: true },
     phoneNormalized: { type: String, required: true, index: true },
+    pinHash: { type: String },
+    failedAttempts: { type: Number, default: 0 },
+    lockedUntil: { type: Date },
+    pinResetRequestedAt: { type: Date },
     whatsapp: { type: String, required: true },
     avatar: { type: String, required: true },
     cityId: { type: String, required: true },
@@ -33,6 +37,9 @@ captainSchema.set('toJSON', {
     ret.id = ret._id;
     delete ret._id;
     delete ret.phoneNormalized;
+    delete ret.pinHash;
+    delete ret.failedAttempts;
+    delete ret.lockedUntil;
   },
 });
 

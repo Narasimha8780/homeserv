@@ -6,6 +6,10 @@ import { Captain } from './models/Captain.js';
 import { Review } from './models/Review.js';
 import { INDIA_CITIES } from './data/indiaCities.js';
 import { normalizePhone } from './utils/phone.js';
+import { hashPin } from './utils/pin.js';
+
+// Demo captains all share this PIN locally — it never ships to a real deployment.
+const DEMO_PIN = '7391';
 import { seededCityGeo, toPoint } from './utils/lgd.js';
 import mongoose from 'mongoose';
 
@@ -112,12 +116,19 @@ async function seed() {
 
   await City.insertMany(withMongoId(CITIES));
   await Category.insertMany(withMongoId(CATEGORIES));
+  // Every demo captain gets the same PIN so the seeded data is signed in to easily.
+  const demoPinHash = await hashPin(DEMO_PIN);
   await Captain.insertMany(
-    withMongoId(CAPTAINS).map((c) => ({ ...c, phoneNormalized: normalizePhone(c.phone) }))
+    withMongoId(CAPTAINS).map((c) => ({
+      ...c,
+      phoneNormalized: normalizePhone(c.phone),
+      pinHash: demoPinHash,
+    }))
   );
   await Review.insertMany(withMongoId(REVIEWS));
 
   console.log(`Seeded ${CITIES.length} cities, ${CATEGORIES.length} categories, ${CAPTAINS.length} captains, ${REVIEWS.length} reviews.`);
+  console.log(`Demo captain PIN: ${DEMO_PIN} (e.g. sign in as ${CAPTAINS[0].phone})`);
   await mongoose.disconnect();
 }
 

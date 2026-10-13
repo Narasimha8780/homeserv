@@ -16,8 +16,8 @@ export const CaptainApp: React.FC = () => {
   const [newCaptainPhone, setNewCaptainPhone] = useState<string | null>(null);
 
   if (!currentCaptain) {
-    return newCaptainPhone ? (
-      <CaptainRegistrationForm verifiedPhone={newCaptainPhone} />
+    return newCaptainPhone !== null ? (
+      <CaptainRegistrationForm prefillPhone={newCaptainPhone} />
     ) : (
       <CaptainLoginForm onNewCaptain={setNewCaptainPhone} />
     );
