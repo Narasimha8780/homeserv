@@ -3,6 +3,7 @@ import { useApp } from '../../context/AppContext';
 import type { AppLanguage } from '../../types';
 import { LANGUAGES } from '../../i18n/languages';
 import { Logo } from '../ui/Logo';
+import { HomeBrand } from '../ui/HomeBrand';
 import { initials } from '../../utils/format';
 import { MapPin, ChevronDown, Globe, Sun, Moon, Briefcase, Search, Menu } from 'lucide-react';
 
@@ -31,9 +32,9 @@ export const AppHeader: React.FC<{ onOpenCity: () => void; onOpenAccount: () => 
 
   return (
     <header className="sticky top-0 z-40 glass border-b border-line pt-safe">
-      <div className="max-w-6xl mx-auto h-14 sm:h-16 px-4 sm:px-6 flex items-center gap-2 sm:gap-3">
+      <div className="max-w-6xl mx-auto h-[4.5rem] sm:h-20 px-4 sm:px-6 flex items-center gap-2 sm:gap-3">
         <button onClick={goHome} aria-label="HomeServ home" className="shrink-0 rounded-xl">
-          <Logo markClassName="w-9 h-9" textClassName="text-[1.35rem]" hideTextOnTiny />
+          {role === 'customer' ? <HomeBrand /> : <Logo markClassName="w-9 h-9" textClassName="text-[1.35rem]" hideTextOnTiny />}
         </button>
 
         <button
@@ -41,13 +42,13 @@ export const AppHeader: React.FC<{ onOpenCity: () => void; onOpenAccount: () => 
           aria-label={`${t('selectCity')}: ${selectedCity.name}`}
           className="flex items-center gap-1.5 min-w-0 h-9 pl-2.5 pr-2 rounded-full bg-surface-2 border border-line text-[13px] font-semibold text-ink hover:bg-surface-3 transition-colors"
         >
-          <MapPin className="w-4 h-4 text-accent shrink-0" />
-          <span className="truncate max-w-[7.5rem] sm:max-w-[11rem]">{selectedCity.name}</span>
+          <MapPin className="w-4 h-4 text-info-ink shrink-0" />
+          <span className="truncate max-w-[4.25rem] min-[390px]:max-w-[6rem] sm:max-w-[9rem]">{selectedCity.name}</span>
           <ChevronDown className="w-3.5 h-3.5 text-ink-3 shrink-0" />
         </button>
 
         {role === 'customer' && currentCustomer && (
-          <nav className="hidden md:flex items-center gap-1 ml-2" aria-label="Main">
+          <nav className="hidden xl:flex items-center gap-1 ml-2" aria-label="Main">
             {NAV.map((item) => {
               const active = customerTab === item.id && !(item.id === 'home' && selectedCategoryId);
               return (
@@ -65,7 +66,7 @@ export const AppHeader: React.FC<{ onOpenCity: () => void; onOpenAccount: () => 
                 >
                   {item.label}
                   {!!item.count && (
-                    <span className="min-w-5 h-5 px-1.5 rounded-full bg-accent-soft text-accent-ink text-[11px] font-bold flex items-center justify-center">
+                    <span className="min-w-5 h-5 px-1.5 rounded-full bg-accent-soft text-info-ink text-[11px] font-bold flex items-center justify-center">
                       {item.count}
                     </span>
                   )}
@@ -103,19 +104,19 @@ export const AppHeader: React.FC<{ onOpenCity: () => void; onOpenAccount: () => 
 
           {role === 'customer' ? (
             <button onClick={() => setRole('captain')} className="btn btn-secondary hidden md:inline-flex h-9 px-3.5 text-[13px]">
-              <Briefcase className="w-4 h-4 text-accent" />
+              <Briefcase className="w-4 h-4 text-info-ink" />
               {t('forPros')}
             </button>
           ) : (
             <button onClick={goHome} className="btn btn-secondary h-9 px-3 text-[13px]" aria-label={t('findServices')}>
-              <Search className="w-4 h-4 text-accent" />
+              <Search className="w-4 h-4 text-info-ink" />
               <span className="hidden sm:inline">{t('findServices')}</span>
             </button>
           )}
 
           <button onClick={onOpenAccount} aria-label={t('account')} className="rounded-full shrink-0">
             {accountName ? (
-              <span className="w-9 h-9 rounded-full bg-gradient-to-br from-orange-400 to-rose-500 text-white font-display font-bold text-[13px] flex items-center justify-center ring-2 ring-line-strong">
+              <span className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-blue-800 text-white font-display font-bold text-[13px] flex items-center justify-center ring-2 ring-line-strong">
                 {initials(accountName)}
               </span>
             ) : (

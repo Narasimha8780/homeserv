@@ -57,7 +57,7 @@ function AppShell() {
   if (allCities.length === 0) return <EmptyScreen onRetry={resetToDefault} />;
 
   return (
-    <div className="min-h-dvh flex flex-col">
+    <div className={`min-h-dvh flex flex-col ${role === 'customer' ? 'customer-shell' : ''}`}>
       <AppHeader onOpenCity={() => setCityOpen(true)} onOpenAccount={() => setAccountOpen(true)} />
 
       <div className="flex-1">

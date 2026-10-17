@@ -16,7 +16,7 @@ HomeServ does not handle bookings or payments. Customers browse verified local p
 
 ## UI & design system
 
-- **Themes** — dark ("midnight glass", the default) and light, plus "Auto" (follows the device). Users switch in the account menu; the choice is saved per device.
+- **Themes** — light (the default) and dark ("midnight glass"), plus "Auto" (follows the device). Users switch in the account menu; the choice is saved per device.
 - **Tokens, not raw colours** — every colour comes from semantic tokens in `src/index.css` (`bg-surface`, `bg-surface-2`, `text-ink`, `text-ink-2`, `border-line`, `bg-accent-soft`, `text-accent-ink`, `text-success-ink`, …). Use these instead of `bg-white` / `text-slate-*` so both themes keep working.
 - **Building blocks** — `.card`, `.btn` + `.btn-primary` / `.btn-whatsapp` / `.btn-secondary`, `.input`, `.chip`, `.pill`, `.icon-btn` (in `src/index.css`), and React primitives in `src/components/ui/` (`Sheet` = bottom sheet on phones / dialog on desktop, `BottomNav`, `Avatar`, `Switch`, `Rating`, `EmptyState`, `Logo`).
 - **Android** — the app draws edge-to-edge and pads itself with safe-area insets; status/nav bar icon colours follow the in-app theme (`src/utils/theme.ts`). Launcher icons and splash screens in `android/app/src/main/res` use the HomeServ mark.

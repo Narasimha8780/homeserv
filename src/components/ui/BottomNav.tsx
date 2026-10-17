@@ -13,14 +13,16 @@ export function BottomNav<T extends string>({
   items,
   active,
   onSelect,
+  className = 'sm:hidden',
 }: {
   items: BottomNavItem<T>[];
   active: T | null;
   onSelect: (id: T) => void;
+  className?: string;
 }) {
   return (
     <nav
-      className="sm:hidden fixed inset-x-3 z-40 glass border border-line-strong rounded-[1.6rem] shadow-pop"
+      className={`bottom-nav ${className} fixed inset-x-3 z-40 glass border border-line-strong rounded-[1.6rem] shadow-pop`}
       style={{ bottom: 'calc(0.75rem + var(--sa-bottom))' }}
     >
       <ul className="flex items-stretch justify-around px-1">
