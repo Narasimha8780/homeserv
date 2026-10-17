@@ -139,7 +139,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [initialPrefs] = useState(readPrefs);
   const [role, setRole] = useState<AppRole>('customer');
   const [language, setLanguage] = useState<AppLanguage>(initialPrefs.language || 'en');
-  const [theme, setTheme] = useState<AppTheme>(initialPrefs.theme || 'dark');
+  const [theme, setTheme] = useState<AppTheme>(initialPrefs.theme || 'light');
   const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(() => resolveTheme(theme));
   const [customerTab, setCustomerTab] = useState<'home' | 'favorites'>('home');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);

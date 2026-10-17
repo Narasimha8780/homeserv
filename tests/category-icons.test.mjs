@@ -10,7 +10,7 @@ try {
     ['driver', 'Driver'], ['plumber', 'Plumber'], ['electrician', 'Electrician'],
     ['insta-help', 'Insta Help'], ['saree-draping', 'Saree Draping'],
     ['mehendi-service', 'Mehendi Service'], ['pest-control', 'Pest Control'],
-    ['carpenter', 'Carpenter'], ['spa', 'Women Spa'], ['interior', 'Interior'],
+    ['carpenter', 'Carpenter'], ['spa', 'Beauty & Personal Care'], ['interior', 'Interior'],
     ['painter', 'Painters'], ['home-cleaning', 'Home Cleaning'],
     ['bridal-makeup', 'Bridal Makeup'], ['photography', 'Photography'], ['events', 'Events'],
   ];
@@ -21,7 +21,8 @@ try {
     assert.equal(getCategoryIconUrl('custom-category', title), url, `${title} should resolve by title`);
   }
   for (const [title, id] of [
-    ["Women's Spa", 'spa'], ['Mehndi Artist', 'mehendi-service'],
+    ["Women's Spa", 'spa'], ['women_spa', 'spa'],
+    ['Beauty and Personal Care', 'spa'], ["Men's Saloon", 'barber'], ['men_spa', 'barber'], ['Mehndi Artist', 'mehendi-service'],
     ['Sari Draping', 'saree-draping'], ["Women's Bridal Makeup", 'bridal-makeup'],
     ['Men’s Haircut', 'barber'], ['Housekeeping', 'home-cleaning'],
   ]) {

@@ -32,7 +32,7 @@ const KEYWORD_ICONS: { words: string[]; icon: string }[] = [
   { words: ['carpenter', 'carpenters', 'carpentry', 'corpenter'], icon: 'carpenter' },
   { words: ['painter', 'painters', 'painting'], icon: 'painter' },
   { words: ['women', 'womens', 'woman', 'ladies', 'lady', 'female', 'girls'], icon: 'spa' },
-  { words: ['men', 'mens', 'man', 'gents', 'gent', 'male', 'boys', 'barber', 'haircut'], icon: 'barber' },
+  { words: ['men', 'mens', 'man', 'gents', 'gent', 'male', 'boys', 'barber', 'haircut', 'saloon'], icon: 'barber' },
   { words: ['spa', 'massage', 'salon', 'beauty'], icon: 'spa' },
 ];
 

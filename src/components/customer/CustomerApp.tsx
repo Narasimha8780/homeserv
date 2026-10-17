@@ -29,12 +29,13 @@ export const CustomerApp: React.FC<{ onOpenCity: () => void; onOpenAccount: () =
 
   return (
     <>
-      <main className="pb-[calc(7.5rem+var(--sa-bottom))] sm:pb-16">
+      <main className="pb-[calc(7.5rem+var(--sa-bottom))] xl:pb-16">
         {customerTab === 'home' && <CaptainDirectory onOpenProfile={openProfile} onOpenCity={onOpenCity} />}
         {customerTab === 'favorites' && <CustomerFavoritesTab onOpenProfile={openProfile} />}
       </main>
 
       <BottomNav<NavId>
+        className="xl:hidden"
         items={[
           { id: 'home', label: t('home'), icon: House },
           { id: 'favorites', label: t('myFavorites'), icon: Heart, badge: favorites.length },

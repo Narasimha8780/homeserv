@@ -16,7 +16,7 @@ HomeServ does not handle bookings or payments. Customers browse verified local p
 
 ## UI & design system
 
-- **Themes** — dark ("midnight glass", the default) and light, plus "Auto" (follows the device). Users switch in the account menu; the choice is saved per device.
+- **Themes** — light (the default) and dark ("midnight glass"), plus "Auto" (follows the device). Users switch in the account menu; the choice is saved per device.
 - **Tokens, not raw colours** — every colour comes from semantic tokens in `src/index.css` (`bg-surface`, `bg-surface-2`, `text-ink`, `text-ink-2`, `border-line`, `bg-accent-soft`, `text-accent-ink`, `text-success-ink`, …). Use these instead of `bg-white` / `text-slate-*` so both themes keep working.
 - **Building blocks** — `.card`, `.btn` + `.btn-primary` / `.btn-whatsapp` / `.btn-secondary`, `.input`, `.chip`, `.pill`, `.icon-btn` (in `src/index.css`), and React primitives in `src/components/ui/` (`Sheet` = bottom sheet on phones / dialog on desktop, `BottomNav`, `Avatar`, `Switch`, `Rating`, `EmptyState`, `Logo`).
 - **Android** — the app draws edge-to-edge and pads itself with safe-area insets; status/nav bar icon colours follow the in-app theme (`src/utils/theme.ts`). Launcher icons and splash screens in `android/app/src/main/res` use the HomeServ mark.
@@ -80,10 +80,12 @@ Note for Android: the Android app runs inside a device/emulator, where `localhos
 
 The API checks the service catalogue after connecting to MongoDB and before it
 starts listening. Deploy/restart the updated backend to add any missing services
-from the 15-service icon reference. Existing category IDs, names, active settings,
-and professional listings are preserved; common names such as “Women's Spa”,
+from the 15-service icon reference. Existing category IDs, active settings, and professional listings are preserved;
+common names such as “Women's Spa”,
 “Mehndi Service”, and “Painters” are recognized. AC Repair and Appliance Repair
-remain available alongside the 15 reference services. New demo databases use the
+remain available alongside the 15 reference services and Men’s Saloon.
+Women’s spa categories are renamed to Beauty & Personal Care, and men’s spa/salon
+categories are renamed to Men’s Saloon; other category names stay unchanged. New demo databases use the
 same catalogue. Do not run the destructive demo seed to update an existing database.
 
 The home screen, registration form, and admin screen read the categories from the

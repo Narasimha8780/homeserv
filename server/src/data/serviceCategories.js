@@ -11,10 +11,11 @@ export const SERVICE_CATEGORIES = [
   { id: 'insta-help', title: 'Insta Help', iconName: 'Headset', tagline: 'Quick assistance for everyday home needs', color: 'from-pink-500 to-pink-700', isActive: true },
   { id: 'saree-draping', title: 'Saree Draping', iconName: 'Sparkles', tagline: 'Professional saree draping for occasions and celebrations', color: 'from-purple-500 to-purple-700', isActive: true },
   { id: 'mehendi-service', title: 'Mehendi Service', iconName: 'Hand', tagline: 'Mehendi and henna designs for weddings and celebrations', color: 'from-green-500 to-green-700', isActive: true },
-  { id: 'spa', title: 'Women Spa', iconName: 'Flower2', tagline: 'At-home spa, relaxation and beauty services for women', color: 'from-pink-300 to-pink-500', isActive: true },
+  { id: 'spa', title: 'Beauty & Personal Care', iconName: 'Flower2', tagline: 'At-home beauty and personal care services', color: 'from-pink-500 to-pink-700', isActive: true },
   { id: 'interior', title: 'Interior', iconName: 'Sofa', tagline: 'Interior design, room styling and home decor', color: 'from-cyan-500 to-teal-700', isActive: true },
   { id: 'home-cleaning', title: 'Home Cleaning', iconName: 'BrushCleaning', tagline: 'Deep cleaning for rooms, kitchens and bathrooms', color: 'from-cyan-400 to-teal-600', isActive: true },
   { id: 'bridal-makeup', title: 'Bridal Makeup', iconName: 'Sparkles', tagline: 'Bridal makeup and styling for your special day', color: 'from-pink-500 to-rose-700', isActive: true },
   { id: 'photography', title: 'Photography', iconName: 'Camera', tagline: 'Photography for portraits, occasions and celebrations', color: 'from-indigo-500 to-indigo-700', isActive: true },
   { id: 'events', title: 'Events', iconName: 'PartyPopper', tagline: 'Event planning, decoration and celebration services', color: 'from-amber-400 to-orange-600', isActive: true },
+  { id: 'men-spa', title: "Men's Saloon", iconName: 'Scissors', tagline: 'Haircuts, styling and grooming for men', color: 'from-slate-600 to-slate-800', isActive: true },
 ];

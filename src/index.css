@@ -456,3 +456,103 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Customer dashboard: the horizontal brand lockup and blue/white service board. */
+.customer-shell {
+  --bg: #0c1527;
+  --surface: #14223a;
+  --surface-solid: #14223a;
+  --surface-2: #1b2c48;
+  --surface-3: #263b5c;
+  --glass: rgba(12, 21, 39, .94);
+  --line: rgba(160, 188, 229, .14);
+  --line-strong: rgba(160, 188, 229, .25);
+  --ink: #f2f6ff;
+  --ink-2: #b7c9e2;
+  --ink-3: #91a9c9;
+  --accent-ink: #86c6ff;
+  --accent-soft: rgba(29, 155, 240, .16);
+  --info-ink: #86c6ff;
+  --info-soft: rgba(29, 155, 240, .13);
+  --dashboard-wash: #142a49;
+  background: var(--bg);
+  color: var(--ink);
+}
+[data-theme="light"] .customer-shell {
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-solid: #ffffff;
+  --surface-2: #f2f7fd;
+  --surface-3: #e6f0fc;
+  --glass: rgba(255, 255, 255, .96);
+  --line: #e5edf7;
+  --line-strong: #cdddf0;
+  --ink: #0b2c62;
+  --ink-2: #526c90;
+  --ink-3: #60799b;
+  --accent-ink: #0869ce;
+  --accent-soft: #e8f3ff;
+  --info-ink: #0869ce;
+  --info-soft: #eaf4ff;
+  --dashboard-wash: #eaf4ff;
+}
+.customer-shell :focus-visible { outline-color: var(--info-ink); }
+.customer-shell .btn-primary:not(:disabled) {
+  color: white;
+  background-image: linear-gradient(120deg, #178cf0, #0755ba);
+  box-shadow: 0 5px 16px -7px #0871d4;
+}
+.customer-shell .text-gradient {
+  background-image: linear-gradient(110deg, #0871d4, #21a9f6);
+}
+.home-brand { display: inline-flex; align-items: center; gap: 0; text-align: left; }
+.home-brand-mark { width: 36px; height: 42px; object-fit: contain; flex-shrink: 0; }
+.home-brand-copy { display: flex; flex-direction: column; gap: 3px; }
+.home-brand-name { font-family: var(--font-display); font-size: 20px; font-weight: 800; letter-spacing: -.055em; line-height: 1; color: var(--ink); }
+.home-brand-name > span { color: #1199ef; }
+.home-brand-tagline { font-size: 6.5px; letter-spacing: .045em; font-weight: 600; color: var(--ink-2); white-space: nowrap; }
+.home-hero { display: grid; gap: 2rem; padding: 1.5rem 0; }
+.home-eyebrow { font-size: 10px; font-weight: 750; line-height: 1.5; letter-spacing: .16em; text-transform: uppercase; color: var(--info-ink); }
+.home-headline { margin-top: .7rem; font-size: clamp(2.5rem, 6vw, 4.2rem); font-weight: 750; letter-spacing: -.045em; line-height: 1.06; color: var(--ink); }
+.home-headline > span { color: #148fe5; }
+.home-search { display: flex; align-items: center; gap: .75rem; padding: 0 .9rem; border-radius: 1rem; background: var(--surface-solid); border: 1px solid var(--line-strong); box-shadow: 0 8px 28px -18px #3976b8; }
+.home-search:focus-within { outline: 2px solid var(--info-ink); outline-offset: 3px; }
+.home-spotlight { display: none; position: relative; overflow: hidden; border-radius: 2rem; border: 1px solid var(--line); padding: 2rem; background: linear-gradient(130deg, var(--dashboard-wash), var(--surface-solid)); }
+.home-spotlight-house { position: absolute; width: 230px; height: 230px; right: -50px; top: 30px; color: var(--info-ink); opacity: .09; transform: rotate(-12deg); }
+.home-spotlight-icon { border: 5px solid var(--surface-solid); border-radius: 28%; box-shadow: 0 8px 20px -12px #2c5f98; }
+.home-services { border-top: 1px solid var(--line); padding-top: 1.75rem; }
+.home-service-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .65rem .5rem; }
+.home-service-tile { display: flex; flex-direction: column; align-items: center; text-align: center; padding: .7rem .2rem .9rem; border-radius: 1rem; transition: background .18s, transform .18s; min-width: 0; }
+.home-service-tile:hover { background: var(--surface-2); transform: translateY(-3px); }
+.home-service-tile:active { transform: scale(.97); }
+.home-service-art { display: block; border-radius: 24%; box-shadow: 0 5px 14px -10px #0b3d91; }
+.home-service-title { margin-top: .75rem; color: var(--ink); font-size: 12px; font-weight: 700; line-height: 1.35; min-height: 2.7em; display: flex; align-items: center; justify-content: center; overflow-wrap: anywhere; }
+.home-service-tagline { margin-top: .25rem; color: var(--ink-2); font-size: 11px; line-height: 1.45; max-width: 10rem; }
+.home-how { margin-top: 2rem; padding: 1.5rem; background: var(--surface-2); border: 1px solid var(--line); border-radius: 1.5rem; }
+.home-step-icon { width: 40px; height: 40px; border-radius: 12px; background: var(--info-soft); color: var(--info-ink); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.home-pro-banner { display: flex; flex-direction: column; align-items: flex-start; gap: 1rem; padding: 1.5rem; border-radius: 1.5rem; border: 1px solid var(--line); background: linear-gradient(115deg, var(--dashboard-wash), var(--surface-solid)); }
+.home-signoff { text-align: center; font-family: var(--font-display); font-size: 1.4rem; font-style: italic; font-weight: 600; color: var(--info-ink); padding: 2.5rem 0 1rem; }
+.customer-shell .bottom-nav { bottom: 0 !important; left: 0; right: 0; border-radius: 1.25rem 1.25rem 0 0; border-width: 1px 0 0; box-shadow: 0 -8px 24px -20px #0b3d91; padding-bottom: var(--sa-bottom); }
+@media (prefers-reduced-motion: reduce) { .home-service-tile { transition: none; } }
+@media (min-width: 640px) {
+  .home-brand-mark { width: 52px; height: 56px; }
+  .home-brand-name { font-size: 30px; }
+  .home-brand-tagline { font-size: 8.5px; }
+  .home-service-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; }
+  .home-service-title { font-size: 14px; }
+  .home-service-tagline { font-size: 12px; }
+  .home-pro-banner { flex-direction: row; align-items: center; }
+  .home-hero { padding: 3rem 0; }
+  .home-how { padding: 2rem; }
+  .home-eyebrow { font-size: 11px; }
+}
+@media (min-width: 1024px) {
+  .home-hero { grid-template-columns: minmax(0, 1fr) 22rem; align-items: center; gap: 4rem; }
+  .home-spotlight { display: block; }
+  .home-service-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 1rem 1.25rem; }
+  .home-service-tile { padding: 1rem .5rem; }
+}
+
+@media (min-width: 640px) and (max-width: 1279px) {
+  .customer-shell > footer { padding-bottom: calc(5rem + var(--sa-bottom)); }
+}

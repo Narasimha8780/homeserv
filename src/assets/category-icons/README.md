@@ -15,13 +15,14 @@ accessible text in the UI.
 | Mehendi Service | `mehendi-service.png` |
 | Pest Control | `pest-control.png` |
 | Carpenter | `carpenter.png` |
-| Women Spa | `spa.png` |
+| Beauty & Personal Care | `spa.png` |
 | Interior | `interior.png` |
 | Painters | `painter.png` |
 | Home Cleaning | `home-cleaning.png` |
 | Bridal Makeup | `bridal-makeup.png` |
 | Photography | `photography.png` |
 | Events | `events.png` |
+| Men’s Saloon | `barber.png` |
 
 `src/utils/categoryIcons.ts` bundles assets by filename and matches common title
 variants for admin-created categories. Existing All, Barber, AC Repair, and
@@ -29,8 +30,10 @@ Appliance Repair artwork is retained. Unknown categories use the existing Lucide
 fallback.
 
 Categories are supplied by the database. API startup adds missing default services
-without changing existing categories, including their IDs and active settings.
-Common existing name variants are recognized to avoid duplicate services. Fresh
+while preserving existing IDs, active settings, and professional references.
+Common existing name variants are recognized to avoid duplicate services.
+Existing women’s spa categories are renamed to Beauty & Personal Care; men’s spa
+and salon categories are renamed to Men’s Saloon, keeping their existing IDs. Fresh
 demo seeds use the same catalogue. AC Repair and Appliance Repair are retained.
 Custom categories can still be added through Admin → Categories.
 
