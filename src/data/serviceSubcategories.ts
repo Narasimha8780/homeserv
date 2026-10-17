@@ -35,9 +35,8 @@ export const SERVICE_SUBCATEGORIES: Record<string, ServiceSubcategory[]> = {
     { id: 'painter-waterproofing', title: "Waterproofing" },
   ],
   'insta-help': [
-    { id: 'insta-help-home-errands', title: "Home Errands" },
-    { id: 'insta-help-grocery-help', title: "Grocery Assistance" },
-    { id: 'insta-help-moving-help', title: "Moving Assistance" },
+    { id: 'insta-help-kitchen-utensil-cleaning', title: "Kitchen & Utensil Cleaning" },
+    { id: 'insta-help-mopping-dusting-wiping', title: "Mopping & Dusting/Wiping" },
   ],
   'interior': [
     { id: 'interior-room-design', title: "Room Design" },

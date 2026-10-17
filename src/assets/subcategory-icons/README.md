@@ -1,8 +1,9 @@
 # Sub-service artwork
 
-58 individual 192 × 192 PNG assets. Filenames match the stable service IDs in
+57 individual 192 × 192 PNG assets. Filenames match the stable service IDs in
 `src/data/serviceSubcategories.ts`; no contact details, labels, prices or timing
-claims are embedded in the artwork. The UI supplies accessible text labels and
+claims are embedded in the artwork. Beauty, men’s salon, plumbing, appliance, electrician, driver, carpenter, painter, interior, home cleaning and Insta Help tiles use individual background colours and softly shaded
+illustrations matching the supplied reference. The UI supplies accessible text labels and
 rounded corners. Original main category and launcher icons are retained.
 
 | Parent category | Service examples |
@@ -11,7 +12,8 @@ rounded corners. Original main category and launcher icons are retained.
 | Beauty & Personal Care | 10 |
 | Men's Salon | 5 |
 | Pest Control | 2 |
-| Each of the other 10 main categories | 3 |
+| Insta Help | 2 |
+| Each of the other 9 main categories | 3 |
 
 The appliance section follows the reference's Large appliances / Other appliances
 groups. Beauty uses Facials and Saree Draping / Pre-pleating, with Saree Draping,

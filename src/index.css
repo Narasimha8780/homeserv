@@ -600,3 +600,18 @@
   .subcategory-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.75rem; max-width: 52rem; }
   .subcategory-art { width: 96px; height: 96px; }
 }
+
+/* Featured category artwork uses larger, individually colored reference tiles. */
+.subcategory-featured .subcategory-grid { max-width: none; row-gap: 1.75rem; }
+.subcategory-featured .subcategory-art { width: 80px; height: 80px; border-radius: 20%; }
+@media (min-width: 360px) {
+  .subcategory-featured .subcategory-art { width: 96px; height: 96px; }
+}
+@media (min-width: 640px) {
+  .subcategory-featured .subcategory-grid { row-gap: 2rem; }
+  .subcategory-featured .subcategory-art { width: 112px; height: 112px; }
+  .subcategory-featured .subcategory-label { font-size: .9375rem; font-weight: 600; }
+}
+@media (min-width: 1024px) {
+  .subcategory-featured .subcategory-art { width: 144px; height: 144px; }
+}
