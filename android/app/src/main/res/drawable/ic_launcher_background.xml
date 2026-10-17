@@ -1,10 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- HomeServ brand gradient behind the adaptive launcher icon -->
+<!-- White keeps the four-color HomeServ house clear under any launcher mask. -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-    <gradient
-        android:type="linear"
-        android:angle="315"
-        android:startColor="#FFC046"
-        android:centerColor="#FF7A1A"
-        android:endColor="#FF5A36" />
+    <solid android:color="@color/ic_launcher_background" />
 </shape>
