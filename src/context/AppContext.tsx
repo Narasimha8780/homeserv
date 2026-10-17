@@ -115,8 +115,10 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const PREFS_KEY = 'homeserv_prefs_v1';
+const APPEARANCE_VERSION = 1;
 
 interface SavedPrefs {
+  appearanceVersion?: number;
   favorites?: string[];
   language?: AppLanguage;
   theme?: AppTheme;
@@ -139,7 +141,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [initialPrefs] = useState(readPrefs);
   const [role, setRole] = useState<AppRole>('customer');
   const [language, setLanguage] = useState<AppLanguage>(initialPrefs.language || 'en');
-  const [theme, setTheme] = useState<AppTheme>(initialPrefs.theme || 'light');
+  // Move older installations to the white dashboard once, keeping their other
+  // preferences. Theme choices made after this update remain saved.
+  const [theme, setTheme] = useState<AppTheme>(
+    initialPrefs.appearanceVersion === APPEARANCE_VERSION ? initialPrefs.theme || 'light' : 'light'
+  );
   const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(() => resolveTheme(theme));
   const [customerTab, setCustomerTab] = useState<'home' | 'favorites'>('home');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
@@ -169,7 +175,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     try {
       localStorage.setItem(
         PREFS_KEY,
-        JSON.stringify({ favorites, language, theme, activeCaptainId, currentCustomer, selectedCityId })
+        JSON.stringify({ appearanceVersion: APPEARANCE_VERSION, favorites, language, theme, activeCaptainId, currentCustomer, selectedCityId })
       );
     } catch {
       // ignore
