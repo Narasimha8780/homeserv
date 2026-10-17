@@ -10,7 +10,7 @@ try {
   const { getSubcategoryIconUrl } = await server.ssrLoadModule('/src/utils/subcategoryIcons.ts');
   const { getRootCategories, getCategoryGroupIds } = await server.ssrLoadModule('/src/utils/categoryHierarchy.ts');
   const all = Object.values(SERVICE_SUBCATEGORIES).flat();
-  assert.equal(all.length, 56);
+  assert.equal(all.length, 55);
   assert.equal(new Set(all.map(({ id }) => id)).size, all.length);
   const urls = new Set();
   const fingerprints = new Set();
@@ -29,6 +29,9 @@ try {
   assert.equal(getServiceSubcategories('ac-repair').length, 11);
   assert.equal(getServiceSubcategories('men_spa').length, 5);
   assert.equal(getServiceSubcategories('pest-control').length, 2);
+  assert.deepEqual(getServiceSubcategories('photography').map(({ title }) => title), [
+    'Wedding/Event Photography', 'Mobile Shoot & Insta Delivery',
+  ]);
   assert.deepEqual(getServiceSubcategories('events').map(({ title }) => title), [
     'Wedding/Event Decor', 'Surprise Celebrations',
   ]);
@@ -58,7 +61,7 @@ try {
   assert.equal(getRootCategories(withoutParents).length, 14, 'Old API responses also hide nested root tiles');
   const disabled = SERVICE_CATEGORIES.map((category) => category.id === 'saree-draping' ? { ...category, isActive: false } : category);
   assert.ok(!getCategoryGroupIds(beauty, disabled).has('saree-draping'));
-  console.log('Passed: 56 distinct icons, reference service counts/names, aliases, 14 root groups, parent aggregation and legacy/inactive handling.');
+  console.log('Passed: 55 distinct icons, reference service counts/names, aliases, 14 root groups, parent aggregation and legacy/inactive handling.');
 } finally {
   await server.close();
 }
