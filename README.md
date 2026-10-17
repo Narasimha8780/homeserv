@@ -80,10 +80,12 @@ Note for Android: the Android app runs inside a device/emulator, where `localhos
 
 The API checks the service catalogue after connecting to MongoDB and before it
 starts listening. Deploy/restart the updated backend to add any missing services
-from the 15-service icon reference. Existing category IDs, names, active settings,
-and professional listings are preserved; common names such as “Women's Spa”,
+from the 15-service icon reference. Existing category IDs, active settings, and professional listings are preserved;
+common names such as “Women's Spa”,
 “Mehndi Service”, and “Painters” are recognized. AC Repair and Appliance Repair
-remain available alongside the 15 reference services. New demo databases use the
+remain available alongside the 15 reference services and Men’s Saloon.
+Women’s spa categories are renamed to Beauty & Personal Care, and men’s spa/salon
+categories are renamed to Men’s Saloon; other category names stay unchanged. New demo databases use the
 same catalogue. Do not run the destructive demo seed to update an existing database.
 
 The home screen, registration form, and admin screen read the categories from the

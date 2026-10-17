@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Fan, Zap, Wrench, Car, Hammer, Paintbrush, Tv, ShieldAlert, Sofa, Truck, Briefcase, Headset, Sparkles, Hand, Flower2, BrushCleaning, Camera, PartyPopper } from 'lucide-react';
+import { Fan, Zap, Wrench, Car, Hammer, Paintbrush, Tv, ShieldAlert, Sofa, Truck, Briefcase, Headset, Sparkles, Hand, Flower2, BrushCleaning, Camera, PartyPopper, Scissors } from 'lucide-react';
 import { getCategoryIconUrl } from '../../utils/categoryIcons';
 
 const FALLBACK_ICONS: Record<string, React.ElementType> = {
-  Fan, Zap, Wrench, Car, Hammer, Paintbrush, Tv, ShieldAlert, Sofa, Truck, Briefcase, Headset, Sparkles, Hand, Flower2, BrushCleaning, Camera, PartyPopper,
+  Fan, Zap, Wrench, Car, Hammer, Paintbrush, Tv, ShieldAlert, Sofa, Truck, Briefcase, Headset, Sparkles, Hand, Flower2, BrushCleaning, Camera, PartyPopper, Scissors,
 };
 
 // Uses the generated icon image when one exists for this category id; categories an

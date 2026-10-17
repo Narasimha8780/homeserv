@@ -27,7 +27,8 @@ export type ServiceCategoryId =
   | 'home-cleaning'
   | 'bridal-makeup'
   | 'photography'
-  | 'events';
+  | 'events'
+  | 'men-spa';
 
 export interface ServiceCategory {
   id: ServiceCategoryId;
