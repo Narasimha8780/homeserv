@@ -2,6 +2,8 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import { connectDB } from './db.js';
+import { Category } from './models/Category.js';
+import { ensureServiceCategories } from './utils/ensureServiceCategories.js';
 import { citiesRouter } from './routes/cities.js';
 import { categoriesRouter } from './routes/categories.js';
 import { captainsRouter } from './routes/captains.js';
@@ -45,10 +47,11 @@ app.use((err, _req, res, _next) => {
 const PORT = process.env.PORT || 4000;
 
 connectDB()
-  .then(() => {
+  .then(async () => {
+    await ensureServiceCategories(Category);
     app.listen(PORT, () => console.log(`HomeServ API listening on http://localhost:${PORT}`));
   })
   .catch((err) => {
-    console.error('Failed to connect to MongoDB:', err.message);
+    console.error('Failed to initialize API:', err.message);
     process.exit(1);
   });

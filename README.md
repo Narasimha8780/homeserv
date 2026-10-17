@@ -76,6 +76,29 @@ Runs on `http://localhost:5173` and talks to the API at the URL in `.env` (`VITE
 
 Note for Android: the Android app runs inside a device/emulator, where `localhost` refers to the device itself, not your computer. To test API calls from the Android app, point `VITE_API_URL` at your machine's LAN IP (or `10.0.2.2` for the Android emulator specifically) before running `npm run android:build`.
 
+## Adding the complete service catalogue
+
+The API checks the service catalogue after connecting to MongoDB and before it
+starts listening. Deploy/restart the updated backend to add any missing services
+from the 15-service icon reference. Existing category IDs, names, active settings,
+and professional listings are preserved; common names such as “Women's Spa”,
+“Mehndi Service”, and “Painters” are recognized. AC Repair and Appliance Repair
+remain available alongside the 15 reference services. New demo databases use the
+same catalogue. Do not run the destructive demo seed to update an existing database.
+
+The home screen, registration form, and admin screen read the categories from the
+API, so the new services appear after the backend update and app refresh.
+
+To run the catalogue integration tests against a local MongoDB server:
+
+```sh
+MONGODB_TEST_URI=mongodb://127.0.0.1:27017 node --test server/test/serviceCategories.test.js
+node tests/category-icons.test.mjs
+```
+
+The integration tests create and remove a uniquely named test database and use
+port 4091 for the API startup check. They skip when `MONGODB_TEST_URI` is absent.
+
 ## Building the Android app
 
 The Android app is a Capacitor wrapper around this same web app (`android/` directory) — one codebase, one UI, packaged as a native APK.

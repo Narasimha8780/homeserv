@@ -18,7 +18,16 @@ export type ServiceCategoryId =
   | 'painter'
   | 'ac-repair'
   | 'appliance-repair'
-  | 'pest-control';
+  | 'pest-control'
+  | 'insta-help'
+  | 'saree-draping'
+  | 'mehendi-service'
+  | 'spa'
+  | 'interior'
+  | 'home-cleaning'
+  | 'bridal-makeup'
+  | 'photography'
+  | 'events';
 
 export interface ServiceCategory {
   id: ServiceCategoryId;

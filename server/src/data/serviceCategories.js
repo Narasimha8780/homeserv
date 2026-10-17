@@ -1,0 +1,20 @@
+// Canonical services, including all 15 reference services and retained repair services.
+export const SERVICE_CATEGORIES = [
+  { id: 'electrician', title: 'Electrician', iconName: 'Zap', tagline: 'Wiring, switches, MCB, fan & inverter fitting', color: 'from-amber-500 to-orange-600', isActive: true },
+  { id: 'plumber', title: 'Plumber', iconName: 'Wrench', tagline: 'Tap leaks, pipe fitting, tank & bathroom work', color: 'from-cyan-500 to-blue-600', isActive: true },
+  { id: 'driver', title: 'Driver', iconName: 'Car', tagline: 'Daily commute, outstation trips, events', color: 'from-slate-600 to-slate-800', isActive: true },
+  { id: 'carpenter', title: 'Carpenter', iconName: 'Hammer', tagline: 'Furniture repair, doors, locks, custom woodwork', color: 'from-amber-700 to-amber-900', isActive: true },
+  { id: 'painter', title: 'Painter', iconName: 'Paintbrush', tagline: 'Room painting, texture work, waterproofing', color: 'from-rose-500 to-pink-600', isActive: true },
+  { id: 'ac-repair', title: 'AC Repair', iconName: 'Fan', tagline: 'Cooling checks, gas refill, installation', color: 'from-blue-500 to-indigo-600', isActive: true },
+  { id: 'appliance-repair', title: 'Appliance Repair', iconName: 'Tv', tagline: 'Washing machines, fridges, microwaves', color: 'from-purple-500 to-indigo-600', isActive: true },
+  { id: 'pest-control', title: 'Pest Control', iconName: 'ShieldAlert', tagline: 'Cockroach, termite & bedbug treatment', color: 'from-teal-600 to-cyan-700', isActive: true },
+  { id: 'insta-help', title: 'Insta Help', iconName: 'Headset', tagline: 'Quick assistance for everyday home needs', color: 'from-pink-500 to-pink-700', isActive: true },
+  { id: 'saree-draping', title: 'Saree Draping', iconName: 'Sparkles', tagline: 'Professional saree draping for occasions and celebrations', color: 'from-purple-500 to-purple-700', isActive: true },
+  { id: 'mehendi-service', title: 'Mehendi Service', iconName: 'Hand', tagline: 'Mehendi and henna designs for weddings and celebrations', color: 'from-green-500 to-green-700', isActive: true },
+  { id: 'spa', title: 'Women Spa', iconName: 'Flower2', tagline: 'At-home spa, relaxation and beauty services for women', color: 'from-pink-300 to-pink-500', isActive: true },
+  { id: 'interior', title: 'Interior', iconName: 'Sofa', tagline: 'Interior design, room styling and home decor', color: 'from-cyan-500 to-teal-700', isActive: true },
+  { id: 'home-cleaning', title: 'Home Cleaning', iconName: 'BrushCleaning', tagline: 'Deep cleaning for rooms, kitchens and bathrooms', color: 'from-cyan-400 to-teal-600', isActive: true },
+  { id: 'bridal-makeup', title: 'Bridal Makeup', iconName: 'Sparkles', tagline: 'Bridal makeup and styling for your special day', color: 'from-pink-500 to-rose-700', isActive: true },
+  { id: 'photography', title: 'Photography', iconName: 'Camera', tagline: 'Photography for portraits, occasions and celebrations', color: 'from-indigo-500 to-indigo-700', isActive: true },
+  { id: 'events', title: 'Events', iconName: 'PartyPopper', tagline: 'Event planning, decoration and celebration services', color: 'from-amber-400 to-orange-600', isActive: true },
+];

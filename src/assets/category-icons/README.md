@@ -28,9 +28,11 @@ variants for admin-created categories. Existing All, Barber, AC Repair, and
 Appliance Repair artwork is retained. Unknown categories use the existing Lucide
 fallback.
 
-Categories are supplied by the database. Add missing categories through Admin →
-Categories using the names above; their artwork is selected automatically. This
-artwork change does not seed, reset, or modify existing category records.
+Categories are supplied by the database. API startup adds missing default services
+without changing existing categories, including their IDs and active settings.
+Common existing name variants are recognized to avoid duplicate services. Fresh
+demo seeds use the same catalogue. AC Repair and Appliance Repair are retained.
+Custom categories can still be added through Admin → Categories.
 
 Run `node tests/category-icons.test.mjs` from the repository root to check asset
 resolution, aliases, and fallback behavior, and `npm run build` to verify bundling.
