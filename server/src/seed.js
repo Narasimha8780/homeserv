@@ -1,3 +1,4 @@
+import { SERVICE_CATEGORIES as CATEGORIES } from './data/serviceCategories.js';
 import 'dotenv/config';
 import { connectDB } from './db.js';
 import { City } from './models/City.js';
@@ -50,17 +51,6 @@ function buildCities() {
 }
 
 const CITIES = buildCities();
-
-const CATEGORIES = [
-  { id: 'electrician', title: 'Electrician', iconName: 'Zap', tagline: 'Wiring, switches, MCB, fan & inverter fitting', color: 'from-amber-500 to-orange-600', isActive: true },
-  { id: 'plumber', title: 'Plumber', iconName: 'Wrench', tagline: 'Tap leaks, pipe fitting, tank & bathroom work', color: 'from-cyan-500 to-blue-600', isActive: true },
-  { id: 'driver', title: 'Driver', iconName: 'Car', tagline: 'Daily commute, outstation trips, events', color: 'from-slate-600 to-slate-800', isActive: true },
-  { id: 'carpenter', title: 'Carpenter', iconName: 'Hammer', tagline: 'Furniture repair, doors, locks, custom woodwork', color: 'from-amber-700 to-amber-900', isActive: true },
-  { id: 'painter', title: 'Painter', iconName: 'Paintbrush', tagline: 'Room painting, texture work, waterproofing', color: 'from-rose-500 to-pink-600', isActive: true },
-  { id: 'ac-repair', title: 'AC Repair', iconName: 'Fan', tagline: 'Cooling checks, gas refill, installation', color: 'from-blue-500 to-indigo-600', isActive: true },
-  { id: 'appliance-repair', title: 'Appliance Repair', iconName: 'Tv', tagline: 'Washing machines, fridges, microwaves', color: 'from-purple-500 to-indigo-600', isActive: true },
-  { id: 'pest-control', title: 'Pest Control', iconName: 'ShieldAlert', tagline: 'Cockroach, termite & bedbug treatment', color: 'from-teal-600 to-cyan-700', isActive: true },
-];
 
 const CAPTAINS = [
   { id: 'cap-ravi', name: 'Ravi Kumar', phone: '+91 98290 12345', whatsapp: '919829012345', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80', cityId: 'jaipur-rajasthan', areas: ['Vaishali Nagar', 'Malviya Nagar'], categories: ['electrician'], experienceYears: 5, bio: 'House wiring, MCB tripping, fan & inverter installation. Same-day visits in Vaishali Nagar.', languages: ['Hindi', 'English'], startingPrice: 149, rating: 4.9, reviewCount: 3, isAvailable: true, kycStatus: 'verified', aadhaarMasked: 'XXXX-XXXX-8921', aadhaarDocUrl: 'https://images.unsplash.com/photo-1633409302455-58e18bb43c44?w=600&auto=format&fit=crop&q=80', skillCertUrl: 'https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?w=600&auto=format&fit=crop&q=80', profileViews: 482, contactClicks: 61 },
