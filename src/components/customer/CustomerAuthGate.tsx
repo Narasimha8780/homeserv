@@ -4,12 +4,15 @@ import { AuthLayout, PhoneField } from '../common/AuthLayout';
 import { PinInput, PIN_LENGTH } from '../common/PinInput';
 import { PhoneOtpVerifier } from '../common/PhoneOtpVerifier';
 import { NewPinSheet } from '../common/NewPinSheet';
+import { AlreadyRegisteredPanel } from '../common/AlreadyRegisteredPanel';
+import { isApiError } from '../../utils/api';
 import { formatIndianPhone } from '../../utils/format';
 import { ArrowLeft, BadgeCheck, Star, Phone, ShieldCheck, Users } from 'lucide-react';
 
 type Mode = 'signup' | 'signin';
-// signup: verify → details.  signin: form, or forgot → (verify) → new-PIN pop-up.
-type Step = 'verify' | 'details' | 'signin' | 'forgot';
+// signup: verify → details (or registered, if the number already has an account).
+// signin: form, or forgot → (verify) → new-PIN pop-up.
+type Step = 'verify' | 'details' | 'registered' | 'signin' | 'forgot';
 
 export const CustomerAuthGate: React.FC = () => {
   const { signUpCustomer, signInCustomer, resetPinWithVerification, categories, allCities, t } = useApp();
@@ -37,6 +40,27 @@ export const CustomerAuthGate: React.FC = () => {
     setVerifierKey((k) => k + 1);
   };
 
+  const showAlreadyRegistered = (registeredPhone: string) => {
+    setPhone(registeredPhone);
+    setVerification(null);
+    setError(null);
+    setStep('registered');
+  };
+
+  const goToSignIn = () => {
+    setMode('signin');
+    setStep('signin');
+    setPin('');
+    setError(null);
+  };
+
+  const goToResetPin = () => {
+    setMode('signin');
+    setStep('forgot');
+    setError(null);
+    setVerifierKey((k) => k + 1);
+  };
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isBusy || !verification) return;
@@ -49,6 +73,10 @@ export const CustomerAuthGate: React.FC = () => {
     try {
       await signUpCustomer(name.trim(), pin, verification.verificationToken);
     } catch (err) {
+      if (isApiError(err, 409)) {
+        showAlreadyRegistered(verification.phone);
+        return;
+      }
       const message = err instanceof Error ? err.message : 'Could not create your account. Try again.';
       setError(message);
       setPin('');
@@ -140,6 +168,7 @@ export const CustomerAuthGate: React.FC = () => {
             purpose="signup"
             role="customer"
             idPrefix="signup"
+            onAlreadyRegistered={showAlreadyRegistered}
             onVerified={(v) => {
               setVerification(v);
               setError(null);
@@ -147,6 +176,20 @@ export const CustomerAuthGate: React.FC = () => {
             }}
           />
         </div>
+      )}
+
+      {/* Sign up: the number already has an account */}
+      {step === 'registered' && (
+        <AlreadyRegisteredPanel
+          phone={phone}
+          onEnterPin={goToSignIn}
+          onResetPin={goToResetPin}
+          onUseDifferentNumber={() => {
+            setPhone('');
+            setStep('verify');
+            setVerifierKey((k) => k + 1);
+          }}
+        />
       )}
 
       {/* Sign up, step 2: name + PIN for the verified number */}
@@ -196,8 +239,8 @@ export const CustomerAuthGate: React.FC = () => {
             <h2 className="text-2xl font-bold text-ink">Welcome back</h2>
             <p className="text-sm text-ink-3 mt-1">Sign in with your mobile number and PIN.</p>
           </div>
-          <PhoneField id="customer-phone" value={phone} onChange={setPhone} autoFocus />
-          <PinInput id="customer-pin" label="Your PIN" value={pin} onChange={setPin} />
+          <PhoneField id="customer-phone" value={phone} onChange={setPhone} autoFocus={phone.length !== 10} />
+          <PinInput id="customer-pin" label="Your PIN" value={pin} onChange={setPin} autoFocus={phone.length === 10} />
           {errorText}
           <button
             type="submit"

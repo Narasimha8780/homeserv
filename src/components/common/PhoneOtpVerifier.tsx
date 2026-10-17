@@ -4,6 +4,7 @@ import { OtpInput } from './OtpInput';
 import { PhoneField, DemoOtpNotice } from './AuthLayout';
 import { WhatsAppIcon } from '../ui/WhatsAppIcon';
 import { formatIndianPhone } from '../../utils/format';
+import { isApiError } from '../../utils/api';
 import { ArrowLeft } from 'lucide-react';
 
 const CODE_LENGTH = 6;
@@ -17,7 +18,9 @@ export const PhoneOtpVerifier: React.FC<{
   onVerified: (verification: PhoneVerification) => void;
   initialPhone?: string;
   idPrefix?: string;
-}> = ({ purpose, role, onVerified, initialPhone = '', idPrefix = 'otp' }) => {
+  /** Sign-up only: the number already has an account. Called instead of showing an error. */
+  onAlreadyRegistered?: (phone: string) => void;
+}> = ({ purpose, role, onVerified, initialPhone = '', idPrefix = 'otp', onAlreadyRegistered }) => {
   const { sendOtp, verifyOtpCode } = useApp();
   const [step, setStep] = useState<'phone' | 'code'>('phone');
   const [phone, setPhone] = useState(initialPhone.replace(/\D/g, '').slice(-10));
@@ -49,6 +52,11 @@ export const PhoneOtpVerifier: React.FC<{
       setCode('');
       setStep('code');
     } catch (err) {
+      // The server refuses before sending, so no message is paid for here.
+      if (isApiError(err, 409) && onAlreadyRegistered) {
+        onAlreadyRegistered(phone);
+        return;
+      }
       setError(err instanceof Error ? err.message : 'Could not send the code. Please try again.');
     } finally {
       setIsBusy(false);

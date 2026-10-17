@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { PinInput, PIN_LENGTH } from '../common/PinInput';
 import { PhoneOtpVerifier } from '../common/PhoneOtpVerifier';
+import { AlreadyRegisteredPanel } from '../common/AlreadyRegisteredPanel';
+import { isApiError } from '../../utils/api';
 import { useApp, type PhoneVerification } from '../../context/AppContext';
 import type { City, ServiceCategoryId } from '../../types';
 import { StateCitySelect } from '../common/StateCitySelect';
@@ -21,7 +23,10 @@ const Section: React.FC<{ step: number; icon: React.ElementType; title: string; 
   </section>
 );
 
-export const CaptainRegistrationForm: React.FC<{ onBack: () => void }> = ({ onBack }) => {
+export const CaptainRegistrationForm: React.FC<{
+  /** Back to captain login, optionally with a number to sign in or reset. */
+  onBack: (prefill?: { phone: string; reset: boolean }) => void;
+}> = ({ onBack }) => {
   const { allCities, categories, registerCaptain, setCaptainTab } = useApp();
 
   const [name, setName] = useState('');
@@ -37,6 +42,8 @@ export const CaptainRegistrationForm: React.FC<{ onBack: () => void }> = ({ onBa
   // The number is verified on WhatsApp before the rest of the form appears.
   const [verification, setVerification] = useState<PhoneVerification | null>(null);
   const [verifierKey, setVerifierKey] = useState(0);
+  // Set when the number turns out to already have a captain account.
+  const [registeredPhone, setRegisteredPhone] = useState<string | null>(null);
   const [pin, setPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
   const [isSubmitting, setSubmitting] = useState(false);
@@ -90,6 +97,11 @@ export const CaptainRegistrationForm: React.FC<{ onBack: () => void }> = ({ onBa
       });
       setCaptainTab('kyc');
     } catch (err) {
+      if (isApiError(err, 409)) {
+        setRegisteredPhone(verification.phone);
+        setVerification(null);
+        return;
+      }
       const message = err instanceof Error ? err.message : 'Failed to register. Please try again.';
       setError(message);
       // The token is spent once the server has used it, so verify again.
@@ -114,23 +126,38 @@ export const CaptainRegistrationForm: React.FC<{ onBack: () => void }> = ({ onBa
 
       {!verification ? (
         <div className="card !bg-surface-solid p-5 sm:p-8 max-w-md space-y-4">
-          <button type="button" onClick={onBack} className="btn btn-ghost h-9 pl-1.5 pr-3 -ml-1.5 text-[13px]">
+          <button type="button" onClick={() => onBack()} className="btn btn-ghost h-9 pl-1.5 pr-3 -ml-1.5 text-[13px]">
             <ArrowLeft className="w-4 h-4" /> Back to captain login
           </button>
-          <div>
-            <h2 className="text-xl font-bold text-ink">Verify your mobile number</h2>
-            <p className="text-sm text-ink-3 mt-1">This is the number customers will call. We'll confirm it on WhatsApp.</p>
-          </div>
-          <PhoneOtpVerifier
-            key={verifierKey}
-            purpose="signup"
-            role="captain"
-            idPrefix="reg"
-            onVerified={(v) => {
-              setVerification(v);
-              setError(null);
-            }}
-          />
+          {registeredPhone ? (
+            <AlreadyRegisteredPanel
+              phone={registeredPhone}
+              onEnterPin={() => onBack({ phone: registeredPhone, reset: false })}
+              onResetPin={() => onBack({ phone: registeredPhone, reset: true })}
+              onUseDifferentNumber={() => {
+                setRegisteredPhone(null);
+                setVerifierKey((k) => k + 1);
+              }}
+            />
+          ) : (
+            <>
+              <div>
+                <h2 className="text-xl font-bold text-ink">Verify your mobile number</h2>
+                <p className="text-sm text-ink-3 mt-1">This is the number customers will call. We'll confirm it on WhatsApp.</p>
+              </div>
+              <PhoneOtpVerifier
+                key={verifierKey}
+                purpose="signup"
+                role="captain"
+                idPrefix="reg"
+                onAlreadyRegistered={setRegisteredPhone}
+                onVerified={(v) => {
+                  setVerification(v);
+                  setError(null);
+                }}
+              />
+            </>
+          )}
           {error && <p className="text-sm text-danger-ink font-semibold text-center">{error}</p>}
         </div>
       ) : (

@@ -7,10 +7,14 @@ import { NewPinSheet } from '../common/NewPinSheet';
 import { formatIndianPhone } from '../../utils/format';
 import { ArrowLeft, IndianRupee, Phone, BadgeCheck, Wrench } from 'lucide-react';
 
-export const CaptainLoginForm: React.FC<{ onNewCaptain: () => void }> = ({ onNewCaptain }) => {
+export const CaptainLoginForm: React.FC<{
+  onNewCaptain: () => void;
+  initialPhone?: string;
+  startWithReset?: boolean;
+}> = ({ onNewCaptain, initialPhone = '', startWithReset = false }) => {
   const { signInCaptain, resetPinWithVerification } = useApp();
-  const [step, setStep] = useState<'signin' | 'forgot'>('signin');
-  const [phone, setPhone] = useState('');
+  const [step, setStep] = useState<'signin' | 'forgot'>(startWithReset ? 'forgot' : 'signin');
+  const [phone, setPhone] = useState(initialPhone);
   const [pin, setPin] = useState('');
   const [resetVerification, setResetVerification] = useState<PhoneVerification | null>(null);
   const [verifierKey, setVerifierKey] = useState(0);
@@ -67,8 +71,8 @@ export const CaptainLoginForm: React.FC<{ onNewCaptain: () => void }> = ({ onNew
           <p className="text-sm text-ink-3 -mt-2">
             Sign in with your mobile number and the 4-digit PIN you chose when you listed your service.
           </p>
-          <PhoneField id="captain-phone" value={phone} onChange={setPhone} autoFocus />
-          <PinInput id="captain-pin" label="Your PIN" value={pin} onChange={setPin} />
+          <PhoneField id="captain-phone" value={phone} onChange={setPhone} autoFocus={phone.length !== 10} />
+          <PinInput id="captain-pin" label="Your PIN" value={pin} onChange={setPin} autoFocus={phone.length === 10} />
           {error && <p className="text-sm text-danger-ink font-semibold text-center">{error}</p>}
           <button type="submit" disabled={isBusy || !ready} className="btn btn-primary w-full h-[3.25rem] text-[15px]">
             {isBusy ? 'Signing in…' : 'Sign in'}

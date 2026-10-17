@@ -14,12 +14,24 @@ type CaptainTab = 'dashboard' | 'reviews' | 'kyc';
 export const CaptainApp: React.FC = () => {
   const { captainTab, setCaptainTab, currentCaptain, t } = useApp();
   const [isRegistering, setRegistering] = useState(false);
+  // Set when registration finds the number already has an account.
+  const [loginPrefill, setLoginPrefill] = useState<{ phone: string; reset: boolean } | null>(null);
 
   if (!currentCaptain) {
     return isRegistering ? (
-      <CaptainRegistrationForm onBack={() => setRegistering(false)} />
+      <CaptainRegistrationForm
+        onBack={(prefill) => {
+          setLoginPrefill(prefill ?? null);
+          setRegistering(false);
+        }}
+      />
     ) : (
-      <CaptainLoginForm onNewCaptain={() => setRegistering(true)} />
+      <CaptainLoginForm
+        key={loginPrefill ? `${loginPrefill.phone}-${loginPrefill.reset}` : 'login'}
+        initialPhone={loginPrefill?.phone}
+        startWithReset={loginPrefill?.reset}
+        onNewCaptain={() => setRegistering(true)}
+      />
     );
   }
 
