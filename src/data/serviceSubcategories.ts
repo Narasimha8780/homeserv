@@ -54,9 +54,8 @@ export const SERVICE_SUBCATEGORIES: Record<string, ServiceSubcategory[]> = {
     { id: 'photography-event-photography', title: "Event Photography" },
   ],
   'events': [
-    { id: 'events-wedding-decoration', title: "Wedding Decoration" },
-    { id: 'events-birthday-decoration', title: "Birthday Decoration" },
-    { id: 'events-event-planning', title: "Event Planning" },
+    { id: 'events-wedding-decoration', title: "Wedding/Event Decor" },
+    { id: 'events-surprise-celebrations', title: "Surprise Celebrations" },
   ],
   'ac-repair': [
     { id: 'ac-repair-ac', title: "AC", section: 'Large appliances' },
