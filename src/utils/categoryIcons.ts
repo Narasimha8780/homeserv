@@ -14,9 +14,23 @@ for (const [path, url] of Object.entries(icons)) {
   iconById[id] = url;
 }
 
-// Admin-created categories get an id from their title, so fall back to matching on the
-// name: "Women's Spa" -> spa artwork, "Men's Spa" / "Barber" -> barber artwork.
+// Match specific services before general beauty/gender keywords. Admin category
+// IDs are derived from their titles, which may differ from the artwork filename.
 const KEYWORD_ICONS: { words: string[]; icon: string }[] = [
+  { words: ['bridal', 'bride', 'makeup'], icon: 'bridal-makeup' },
+  { words: ['saree', 'sari', 'draping'], icon: 'saree-draping' },
+  { words: ['mehendi', 'mehndi', 'henna'], icon: 'mehendi-service' },
+  { words: ['insta', 'help', 'support'], icon: 'insta-help' },
+  { words: ['cleaning', 'housekeeping'], icon: 'home-cleaning' },
+  { words: ['photography', 'photographer'], icon: 'photography' },
+  { words: ['event', 'events'], icon: 'events' },
+  { words: ['interior', 'interiors'], icon: 'interior' },
+  { words: ['driver', 'drivers'], icon: 'driver' },
+  { words: ['plumber', 'plumbers', 'plumbing'], icon: 'plumber' },
+  { words: ['electrician', 'electricians', 'electrition'], icon: 'electrician' },
+  { words: ['pest'], icon: 'pest-control' },
+  { words: ['carpenter', 'carpenters', 'carpentry', 'corpenter'], icon: 'carpenter' },
+  { words: ['painter', 'painters', 'painting'], icon: 'painter' },
   { words: ['women', 'womens', 'woman', 'ladies', 'lady', 'female', 'girls'], icon: 'spa' },
   { words: ['men', 'mens', 'man', 'gents', 'gent', 'male', 'boys', 'barber', 'haircut'], icon: 'barber' },
   { words: ['spa', 'massage', 'salon', 'beauty'], icon: 'spa' },
