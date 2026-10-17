@@ -601,17 +601,17 @@
   .subcategory-art { width: 96px; height: 96px; }
 }
 
-/* Beauty artwork follows the larger, individually colored reference tiles. */
-.subcategory-beauty .subcategory-grid { max-width: none; row-gap: 1.75rem; }
-.subcategory-beauty .subcategory-art { width: 80px; height: 80px; border-radius: 20%; }
+/* Beauty and men’s salon artwork use larger, individually colored reference tiles. */
+.subcategory-featured .subcategory-grid { max-width: none; row-gap: 1.75rem; }
+.subcategory-featured .subcategory-art { width: 80px; height: 80px; border-radius: 20%; }
 @media (min-width: 360px) {
-  .subcategory-beauty .subcategory-art { width: 96px; height: 96px; }
+  .subcategory-featured .subcategory-art { width: 96px; height: 96px; }
 }
 @media (min-width: 640px) {
-  .subcategory-beauty .subcategory-grid { row-gap: 2rem; }
-  .subcategory-beauty .subcategory-art { width: 112px; height: 112px; }
-  .subcategory-beauty .subcategory-label { font-size: .9375rem; font-weight: 600; }
+  .subcategory-featured .subcategory-grid { row-gap: 2rem; }
+  .subcategory-featured .subcategory-art { width: 112px; height: 112px; }
+  .subcategory-featured .subcategory-label { font-size: .9375rem; font-weight: 600; }
 }
 @media (min-width: 1024px) {
-  .subcategory-beauty .subcategory-art { width: 144px; height: 144px; }
+  .subcategory-featured .subcategory-art { width: 144px; height: 144px; }
 }

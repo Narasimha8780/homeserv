@@ -15,10 +15,10 @@ const ServiceArtwork: React.FC<{ id: string }> = ({ id }) => {
 export const SubcategoryServices: React.FC<{ categoryId: string; title: string }> = ({ categoryId, title }) => {
   const services = getServiceSubcategories(categoryId, title);
   if (!services.length) return null;
-  const isBeauty = getRootCategoryKey(categoryId, title) === 'spa';
+  const hasFeaturedArtwork = ['spa', 'barber'].includes(getRootCategoryKey(categoryId, title));
   const sections = Array.from(new Set(services.map(({ section }) => section || '')));
   return (
-    <section className={`subcategory-services mt-7 ${isBeauty ? 'subcategory-beauty' : ''}`} aria-labelledby="subcategory-heading">
+    <section className={`subcategory-services mt-7 ${hasFeaturedArtwork ? 'subcategory-featured' : ''}`} aria-labelledby="subcategory-heading">
       <h2 id="subcategory-heading" className="text-xl font-bold text-ink">Services in this category</h2>
       <p className="mt-1 text-sm text-ink-2">Confirm your required service with the professional you contact.</p>
       {sections.map((section) => (
