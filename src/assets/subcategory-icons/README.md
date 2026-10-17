@@ -2,7 +2,7 @@
 
 58 individual 192 × 192 PNG assets. Filenames match the stable service IDs in
 `src/data/serviceSubcategories.ts`; no contact details, labels, prices or timing
-claims are embedded in the artwork. Beauty, men’s salon, plumbing, appliance, electrician, driver, carpenter and painter tiles use individual background colours and softly shaded
+claims are embedded in the artwork. Beauty, men’s salon, plumbing, appliance, electrician, driver, carpenter, painter and interior tiles use individual background colours and softly shaded
 illustrations matching the supplied reference. The UI supplies accessible text labels and
 rounded corners. Original main category and launcher icons are retained.
 
