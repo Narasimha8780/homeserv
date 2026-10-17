@@ -38,7 +38,7 @@ export const CaptainDashboard: React.FC<{ onOpenTab: (tab: CaptainTab) => void }
 
   // Profile strength — nudges captains toward the details that win customer calls.
   const CHECKS = [
-    { done: !cap.avatar.includes('ui-avatars.com'), label: 'Add a real profile photo', hint: 'Profiles with a photo get noticeably more calls' },
+    { done: !!cap.avatar && !cap.avatar.includes('ui-avatars.com'), label: 'Add a real profile photo', hint: 'Profiles with a photo get noticeably more calls' },
     { done: cap.bio.trim().length >= 60, label: 'Write a detailed bio', hint: 'Mention your specialities and how fast you can visit' },
     { done: cap.startingPrice != null, label: 'Set a starting price', hint: 'Customers prefer pros who show prices upfront' },
     { done: cap.areas.length >= 2, label: 'Serve 2+ areas', hint: 'Add nearby localities to appear for more customers' },
@@ -59,6 +59,30 @@ export const CaptainDashboard: React.FC<{ onOpenTab: (tab: CaptainTab) => void }
   return (
     <div className="grid lg:grid-cols-[minmax(0,1fr)_20rem] gap-4 sm:gap-5 items-start">
       <div className="space-y-4 sm:space-y-5 min-w-0">
+        <div className="flex items-center justify-between gap-2 px-1">
+          <h2 className="text-lg font-bold text-ink">Your listing at a glance</h2>
+          <span className="text-xs text-ink-3">All-time activity</span>
+        </div>
+        <section className="grid grid-cols-3 gap-2.5 sm:gap-4">
+          {STATS.map((s) => (
+            <div key={s.label} className="card p-3.5 sm:p-5">
+              <span className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center ${s.cls}`}>
+                <s.icon className="w-[18px] h-[18px]" />
+              </span>
+              <div className="mt-3 font-display text-2xl sm:text-3xl font-bold text-ink">{s.value}</div>
+              <div className="text-[11px] sm:text-[13px] text-ink-3 font-medium leading-tight mt-0.5">{s.label}</div>
+            </div>
+          ))}
+        </section>
+        {cap.profileViews > 0 && (
+          <p className="flex items-center gap-2 text-[13px] text-ink-2 -mt-1 px-1">
+            <TrendingUp className="w-4 h-4 text-success-ink shrink-0" />
+            <span>
+              <span className="font-bold text-ink">{conversion}%</span> of people who viewed your profile called or messaged you.
+            </span>
+          </p>
+        )}
+
         {kycBanner && (
           <button
             onClick={() => onOpenTab('kyc')}
@@ -74,10 +98,10 @@ export const CaptainDashboard: React.FC<{ onOpenTab: (tab: CaptainTab) => void }
         )}
 
         {/* Identity + availability */}
-        <section className="card p-5 relative overflow-hidden">
-          <div className="absolute -right-12 -top-16 w-48 h-48 rounded-full bg-orange-500/15 blur-3xl pointer-events-none" />
+        <section className="card captain-listing-card p-5 relative overflow-hidden">
+          <div className="absolute -right-12 -top-16 w-48 h-48 rounded-full bg-info-soft blur-3xl pointer-events-none" />
           <div className="relative flex items-center gap-4">
-            <Avatar src={cap.avatar} name={cap.name} className="w-[4.5rem] h-[4.5rem] rounded-2xl ring-2 ring-orange-400/50" textClassName="text-2xl" />
+            <Avatar src={cap.avatar} name={cap.name} className="w-[4.5rem] h-[4.5rem] rounded-2xl ring-2 ring-line-strong" textClassName="text-2xl" />
             <div className="min-w-0">
               <h2 className="flex items-center gap-1.5 text-xl font-bold text-ink">
                 <span className="truncate">{cap.name}</span>
@@ -108,27 +132,6 @@ export const CaptainDashboard: React.FC<{ onOpenTab: (tab: CaptainTab) => void }
             <Switch checked={cap.isAvailable} onChange={() => toggleAvailability(cap.id)} label={t('availableNow')} />
           </div>
         </section>
-
-        {/* Stats */}
-        <section className="grid grid-cols-3 gap-2.5 sm:gap-4">
-          {STATS.map((s) => (
-            <div key={s.label} className="card p-3.5 sm:p-5">
-              <span className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center ${s.cls}`}>
-                <s.icon className="w-[18px] h-[18px]" />
-              </span>
-              <div className="mt-3 font-display text-2xl sm:text-3xl font-bold text-ink">{s.value}</div>
-              <div className="text-[11px] sm:text-[13px] text-ink-3 font-medium leading-tight mt-0.5">{s.label}</div>
-            </div>
-          ))}
-        </section>
-        {cap.profileViews > 0 && (
-          <p className="flex items-center gap-2 text-[13px] text-ink-2 -mt-1 px-1">
-            <TrendingUp className="w-4 h-4 text-success-ink shrink-0" />
-            <span>
-              <span className="font-bold text-ink">{conversion}%</span> of people who viewed your profile called or messaged you.
-            </span>
-          </p>
-        )}
 
         {/* Profile details */}
         <section className="card p-5">
@@ -189,13 +192,13 @@ export const CaptainDashboard: React.FC<{ onOpenTab: (tab: CaptainTab) => void }
       </div>
 
       {/* Profile strength */}
-      <aside className="card p-5 lg:sticky lg:top-24">
+      <aside className="card captain-strength-card p-5 lg:sticky lg:top-24">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-bold text-ink">Profile strength</h3>
-          <span className="font-display text-2xl font-bold text-gradient">{strength}%</span>
+          <span className="font-display text-2xl font-bold text-info-ink">{strength}%</span>
         </div>
-        <div className="mt-3 h-2.5 rounded-full bg-surface-3 overflow-hidden">
-          <div className="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-500 transition-all duration-500" style={{ width: `${strength}%` }} />
+        <div className="mt-3 h-2.5 rounded-full bg-surface-3 overflow-hidden" role="progressbar" aria-label="Profile strength" aria-valuemin={0} aria-valuemax={100} aria-valuenow={strength}>
+          <div className="h-full rounded-full bg-gradient-to-r from-blue-500 to-sky-400 transition-all duration-500" style={{ width: `${strength}%` }} />
         </div>
         <ul className="mt-4 space-y-1">
           {CHECKS.map((c) => (

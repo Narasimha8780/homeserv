@@ -27,7 +27,7 @@ export const CaptainRegistrationForm: React.FC<{
   /** Back to captain login, optionally with a number to sign in or reset. */
   onBack: (prefill?: { phone: string; reset: boolean }) => void;
 }> = ({ onBack }) => {
-  const { allCities, categories, registerCaptain, setCaptainTab } = useApp();
+  const { allCities, categories, registerCaptain, setCaptainTab, t } = useApp();
 
   const [name, setName] = useState('');
   const [sameAsPhoneForWhatsapp, setSameAsPhoneForWhatsapp] = useState(true);
@@ -120,7 +120,7 @@ export const CaptainRegistrationForm: React.FC<{
         <span className="pill bg-accent-soft text-accent-ink !px-2.5">
           <UserPlus className="w-3.5 h-3.5" /> New captain
         </span>
-        <h1 className="mt-2.5 text-[1.75rem] sm:text-4xl font-bold text-ink">List your service — free</h1>
+        <h1 className="mt-2.5 text-[1.75rem] sm:text-4xl font-bold text-ink">{t('listService')}</h1>
         <p className="text-[15px] text-ink-2 mt-1">Fill this once. Customers in your city will be able to find and call you directly.</p>
       </div>
 

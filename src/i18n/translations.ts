@@ -260,7 +260,7 @@ const additions: Record<AppLanguage, Record<string, string>> = {
     signOut: 'Sign out',
     forPros: 'For Professionals',
     findServices: 'Find Services',
-    listService: 'List your service — free',
+    listService: "Sign up and list your service — it's free",
     listServiceSub: 'Get calls from customers near you. No commission, ever.',
     getStarted: 'Get started',
     available: 'Available',

@@ -1,17 +1,13 @@
 import React from 'react';
-import { Logo } from '../ui/Logo';
 import { HomeBrand } from '../ui/HomeBrand';
-import { useApp } from '../../context/AppContext';
 import { ShieldCheck } from 'lucide-react';
 
 // Desktop/tablet only — phones use the bottom navigation instead.
-export const SiteFooter: React.FC = () => {
-  const { role } = useApp();
-  return (
+export const SiteFooter: React.FC = () => (
   <footer className="hidden sm:block border-t border-line mt-auto">
     <div className="max-w-6xl mx-auto px-6 py-8 flex flex-wrap items-center justify-between gap-4">
       <div>
-        {role === 'customer' ? <HomeBrand /> : <Logo markClassName="w-7 h-7" textClassName="text-lg" />}
+        <HomeBrand />
         <p className="mt-2 text-[13px] text-ink-3">Free local services directory for every Indian city.</p>
       </div>
       <p className="flex items-center gap-1.5 text-[13px] text-ink-3">
@@ -21,5 +17,4 @@ export const SiteFooter: React.FC = () => {
       <p className="text-[13px] text-ink-3">© {new Date().getFullYear()} HomeServ</p>
     </div>
   </footer>
-  );
-};
+);
