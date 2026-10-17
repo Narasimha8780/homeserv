@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import type { Captain } from '../../types';
+import { getCategoryGroupIds } from '../../utils/categoryHierarchy';
+import { SubcategoryServices } from './SubcategoryServices';
 import { CaptainGrid } from './CaptainCard';
 import { CategoryIcon } from '../common/CategoryIcon';
 import { EmptyState } from '../ui/EmptyState';
@@ -24,15 +26,17 @@ export const CategoryView: React.FC<{
   const title = isAll ? 'All Professionals' : category?.title || 'Category';
   const categoryTitle = (id: string) => categories.find((c) => c.id === id)?.title || '';
 
+  const groupIds = useMemo(() => category ? getCategoryGroupIds(category, categories) : new Set([categoryId]), [category, categories, categoryId]);
+
   const inCategory = useMemo(
     () =>
       captains.filter(
         (cap) =>
           cap.kycStatus === 'verified' &&
           cap.cityId === selectedCity.id &&
-          (isAll || cap.categories.includes(categoryId as never))
+          (isAll || cap.categories.some((id) => groupIds.has(id)))
       ),
-    [captains, selectedCity.id, isAll, categoryId]
+    [captains, selectedCity.id, isAll, groupIds]
   );
 
   const q = searchQuery.trim().toLowerCase();
@@ -58,8 +62,8 @@ export const CategoryView: React.FC<{
         {t('back')}
       </button>
 
-      <header className="mt-3 relative overflow-hidden rounded-[1.75rem] border border-line bg-gradient-to-br from-orange-500/18 via-surface to-surface p-5 sm:p-7">
-        <div className="absolute -right-10 -top-14 w-52 h-52 rounded-full bg-orange-500/20 blur-3xl pointer-events-none" />
+      <header className="mt-3 relative overflow-hidden rounded-[1.75rem] border border-line bg-gradient-to-br from-info-soft via-surface to-surface p-5 sm:p-7">
+        <div className="absolute -right-10 -top-14 w-52 h-52 rounded-full bg-info-soft blur-3xl pointer-events-none" />
         <div className="relative flex items-center gap-4 sm:gap-5">
           {isAll ? (
             <img src={ALL_CATEGORIES_ICON_URL} alt="" className="w-[4.5rem] h-[4.5rem] sm:w-20 sm:h-20 rounded-[24%] object-cover shadow-card" />
@@ -82,7 +86,7 @@ export const CategoryView: React.FC<{
             <Users className="w-3.5 h-3.5" /> {inCategory.length} {t('pros')}
           </span>
           <span className="pill bg-surface-solid/60 border border-line">
-            <MapPin className="w-3.5 h-3.5 text-accent" /> {selectedCity.name}
+            <MapPin className="w-3.5 h-3.5 text-info-ink" /> {selectedCity.name}
           </span>
           <span className="pill bg-surface-solid/60 border border-line">
             <BadgeCheck className="w-3.5 h-3.5 text-info-ink" /> {t('verified')}
@@ -90,14 +94,17 @@ export const CategoryView: React.FC<{
         </div>
       </header>
 
-      <div className="mt-5 flex flex-col lg:flex-row lg:items-center gap-3">
+      {!isAll && <SubcategoryServices categoryId={categoryId} title={title} />}
+
+      <div className="mt-7 flex flex-col lg:flex-row lg:items-center gap-3">
         <div className="relative flex-1" role="search">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-ink-3 pointer-events-none" />
           <input
             type="search"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={`Search ${isAll ? 'by name or area' : `${title.toLowerCase()}s by name or area`}…`}
+            placeholder={t('categorySearch')}
+            aria-label={t('categorySearch')}
             className="input !pl-12 !pr-11 [&::-webkit-search-cancel-button]:hidden"
           />
           {searchQuery && (
@@ -130,7 +137,7 @@ export const CategoryView: React.FC<{
             body={
               q || availableOnly
                 ? t('noMatchBody')
-                : `No ${isAll ? 'professionals' : title.toLowerCase() + 's'} listed in ${selectedCity.name} yet — try another city or check back soon.`
+                : t('emptyCategoryBody', { category: title, city: selectedCity.name })
             }
             action={
               <button onClick={onBack} className="btn btn-secondary h-11 px-5">

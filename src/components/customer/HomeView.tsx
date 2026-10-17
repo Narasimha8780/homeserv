@@ -7,6 +7,8 @@ import { CaptainGrid } from './CaptainCard';
 import { CategoryIcon } from '../common/CategoryIcon';
 import { EmptyState } from '../ui/EmptyState';
 import { ALL_CATEGORIES_ICON_URL } from '../../utils/categoryIcons';
+import { getRootCategories } from '../../utils/categoryHierarchy';
+import { getServiceSubcategories } from '../../data/serviceSubcategories';
 import { getServiceTagline } from '../../utils/serviceTaglines';
 import { firstName } from '../../utils/format';
 import { Search, X, BadgeCheck, Phone, Star, ChevronRight, ArrowUpRight, Briefcase, SearchX, MapPin, MapPinOff, House, Check, ArrowRight } from 'lucide-react';
@@ -25,7 +27,7 @@ export const HomeView: React.FC<{
 }> = ({ onOpenCategory, onOpenProfile, onOpenCity }) => {
   const { categories, captains, searchQuery, setSearchQuery, selectedCity, setSelectedCity, currentCustomer, setRole, t } = useApp();
   const popularCities = usePopularCities();
-  const activeCategories = categories.filter((c) => c.isActive);
+  const activeCategories = getRootCategories(categories).filter((c) => c.isActive);
   const categoryTitle = (id: string) => categories.find((c) => c.id === id)?.title || '';
   const inCity = useMemo(
     () => captains.filter((cap) => cap.kycStatus === 'verified' && cap.cityId === selectedCity.id),
@@ -33,7 +35,7 @@ export const HomeView: React.FC<{
   );
   const q = searchQuery.trim().toLowerCase();
   const results = q ? inCity.filter((cap) => matchesQuery(cap, q, categoryTitle)).sort((a, b) => b.rating - a.rating) : [];
-  const matchingCategories = q ? activeCategories.filter((c) => c.title.toLowerCase().includes(q)) : [];
+  const matchingCategories = q ? activeCategories.filter((c) => c.title.toLowerCase().includes(q) || getServiceSubcategories(c.id, c.title).some((service) => service.title.toLowerCase().includes(q))) : [];
   const topRated = [...inCity].sort((a, b) => b.rating - a.rating);
   const availableCount = inCity.filter((c) => c.isAvailable).length;
 

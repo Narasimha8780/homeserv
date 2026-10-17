@@ -17,6 +17,8 @@ for (const [path, url] of Object.entries(icons)) {
 // Match specific services before general beauty/gender keywords. Admin category
 // IDs are derived from their titles, which may differ from the artwork filename.
 const KEYWORD_ICONS: { words: string[]; icon: string }[] = [
+  { words: ['ac', 'airconditioner'], icon: 'ac-repair' },
+  { words: ['appliance', 'appliances'], icon: 'appliance-repair' },
   { words: ['bridal', 'bride', 'makeup'], icon: 'bridal-makeup' },
   { words: ['saree', 'sari', 'draping'], icon: 'saree-draping' },
   { words: ['mehendi', 'mehndi', 'henna'], icon: 'mehendi-service' },

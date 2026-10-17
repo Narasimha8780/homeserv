@@ -62,7 +62,7 @@ export const AdminCategoriesTab: React.FC = () => {
               </span>
               <div className={`min-w-0 flex-1 ${cat.isActive ? '' : 'opacity-50'}`}>
                 <h3 className="text-sm font-semibold text-ink">{cat.title}</h3>
-                <p className="text-xs text-ink-3 truncate">{cat.tagline}</p>
+                <p className="text-xs text-ink-3 truncate">{cat.parentId ? `Under ${categories.find((parent) => parent.id === cat.parentId)?.title || cat.parentId} · ` : ''}{cat.tagline}</p>
               </div>
               <span className="hidden sm:flex items-center gap-1 text-xs text-ink-3">
                 <Users className="w-3.5 h-3.5" /> {captainCount}

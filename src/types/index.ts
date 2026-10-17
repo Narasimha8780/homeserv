@@ -31,6 +31,7 @@ export type ServiceCategoryId =
   | 'men-spa';
 
 export interface ServiceCategory {
+  parentId?: string | null;
   id: ServiceCategoryId;
   title: string;
   iconName: string;

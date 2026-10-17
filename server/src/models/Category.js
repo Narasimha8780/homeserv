@@ -4,6 +4,7 @@ const categorySchema = new mongoose.Schema(
   {
     _id: { type: String },
     title: { type: String, required: true },
+    parentId: { type: String, default: null },
     iconName: { type: String, required: true },
     tagline: { type: String, default: '' },
     color: { type: String, default: 'from-slate-500 to-slate-700' },

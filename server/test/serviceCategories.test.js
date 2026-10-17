@@ -57,7 +57,7 @@ test('complete services without losing existing data', { skip: !process.env.MONG
       await captains.insertOne({ _id: 'existing-captain', categories: ['women_spa', 'men_spa'] });
       await ensureServiceCategories(Model);
       assert.equal((await Model.findById('women_spa')).title, 'Beauty & Personal Care');
-      assert.equal((await Model.findById('men_spa')).title, "Men's Saloon");
+      assert.equal((await Model.findById('men_spa')).title, "Men's Salon");
       for (const id of ['women_spa', 'men_spa']) assert.equal((await Model.findById(id)).isActive, false);
       assert.equal((await Model.findById('women_spa')).tagline, 'Keep women details');
       assert.equal((await Model.findById('men_spa')).tagline, 'Keep men details');
@@ -76,10 +76,33 @@ test('complete services without losing existing data', { skip: !process.env.MONG
       ]);
       await ensureServiceCategories(Model);
       assert.equal((await Model.findById('custom-women')).title, 'Beauty & Personal Care');
-      assert.equal((await Model.findById('custom-men')).title, "Men's Saloon");
+      assert.equal((await Model.findById('custom-men')).title, "Men's Salon");
       assert.equal(await Model.countDocuments(), SERVICE_CATEGORIES.length);
       await ensureServiceCategories(Model);
       assert.equal(await Model.countDocuments(), SERVICE_CATEGORIES.length);
+    });
+    await t.test('nests existing specialist categories under the actual parent IDs', async () => {
+      await Model.deleteMany({});
+      await Model.insertMany([
+        { _id: 'women_spa', title: 'Women Spa', iconName: 'Flower2', isActive: true },
+        { _id: 'ac_repair', title: 'AC Repair', iconName: 'Fan', isActive: true },
+        { _id: 'legacy-saree', title: 'Saree Draping', iconName: 'Sparkles', isActive: false },
+        { _id: 'legacy-mehendi', title: 'Mehendi Service', iconName: 'Hand', isActive: true },
+        { _id: 'legacy-bridal', title: 'Bridal Makeup', iconName: 'Sparkles', isActive: true },
+        { _id: 'appliance-repair', title: 'Appliance Repair', iconName: 'Tv', isActive: true },
+      ]);
+      await ensureServiceCategories(Model);
+      for (const id of ['legacy-saree', 'legacy-mehendi', 'legacy-bridal']) {
+        assert.equal((await Model.findById(id)).parentId, 'women_spa');
+      }
+      assert.equal((await Model.findById('appliance-repair')).parentId, 'ac_repair');
+      assert.equal((await Model.findById('ac_repair')).title, 'AC & Appliance Repair');
+      assert.equal((await Model.findById('legacy-saree')).title, 'Saree Draping / Pre-pleating');
+      assert.equal((await Model.findById('legacy-saree')).isActive, false);
+      assert.equal(await Model.countDocuments({ _id: { $in: ['spa', 'ac-repair', 'saree-draping', 'mehendi-service', 'bridal-makeup'] } }), 0);
+      const before = await Model.find().sort({ _id: 1 }).lean();
+      await ensureServiceCategories(Model);
+      assert.deepEqual(await Model.find().sort({ _id: 1 }).lean(), before);
     });
     await t.test('initializes all services in an empty database', async () => {
       await Model.deleteMany({});
@@ -120,7 +143,7 @@ test('complete services without losing existing data', { skip: !process.env.MONG
         for (const id of referenceIds) assert.ok(categories.some((category) => category.id === id), id);
         assert.equal(categories.length, SERVICE_CATEGORIES.length);
         assert.equal(categories.find(({ id }) => id === 'spa').title, 'Beauty & Personal Care');
-        assert.equal(categories.find(({ id }) => id === 'men-spa').title, "Men's Saloon");
+        assert.equal(categories.find(({ id }) => id === 'men-spa').title, "Men's Salon");
       } finally {
         child.kill('SIGTERM');
         await exited;
