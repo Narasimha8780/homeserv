@@ -601,7 +601,7 @@
   .subcategory-art { width: 96px; height: 96px; }
 }
 
-/* Beauty and men’s salon artwork use larger, individually colored reference tiles. */
+/* Featured category artwork uses larger, individually colored reference tiles. */
 .subcategory-featured .subcategory-grid { max-width: none; row-gap: 1.75rem; }
 .subcategory-featured .subcategory-art { width: 80px; height: 80px; border-radius: 20%; }
 @media (min-width: 360px) {
