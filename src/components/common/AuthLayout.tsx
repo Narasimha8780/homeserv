@@ -1,5 +1,6 @@
 import React, { type ReactNode } from 'react';
 import { LogoMark } from '../ui/Logo';
+import { HomeBrand } from '../ui/HomeBrand';
 import { Sparkles } from 'lucide-react';
 
 export interface AuthBenefit {
@@ -11,6 +12,7 @@ export interface AuthBenefit {
 // Split marketing + form layout shared by the customer and captain sign-in screens.
 // Phones get a compact brand header above the form card.
 export const AuthLayout: React.FC<{
+  variant?: 'default' | 'captain';
   eyebrow: string;
   headline: ReactNode;
   sub: string;
@@ -18,8 +20,8 @@ export const AuthLayout: React.FC<{
   stats?: { value: string; label: string }[];
   children: ReactNode;
   footer?: ReactNode;
-}> = ({ eyebrow, headline, sub, benefits, stats, children, footer }) => (
-  <div className="relative min-h-[calc(100dvh-3.5rem)] sm:min-h-[calc(100dvh-4rem)] grid lg:grid-cols-[1.1fr_1fr] max-w-7xl mx-auto">
+}> = ({ variant = 'default', eyebrow, headline, sub, benefits, stats, children, footer }) => (
+  <div className={`auth-layout ${variant === 'captain' ? 'captain-auth' : ''} relative min-h-[calc(100dvh-3.5rem)] sm:min-h-[calc(100dvh-4rem)] grid lg:grid-cols-[1.1fr_1fr] max-w-7xl mx-auto`}>
     <aside className="hidden lg:flex flex-col justify-center px-12 xl:px-16 py-16">
       <span className="inline-flex items-center gap-1.5 self-start pill bg-accent-soft text-accent-ink !py-1 !px-3">
         <Sparkles className="w-3.5 h-3.5" /> {eyebrow}
@@ -51,10 +53,10 @@ export const AuthLayout: React.FC<{
       )}
     </aside>
 
-    <main className="flex items-center justify-center px-4 py-8 sm:py-14">
-      <div className="w-full max-w-md animate-page-enter">
+    <main className="min-w-0 flex items-center justify-center px-4 py-8 sm:py-14">
+      <div className="w-full min-w-0 max-w-md animate-page-enter">
         <div className="lg:hidden text-center mb-7">
-          <LogoMark className="w-14 h-14 mx-auto" />
+          {variant === 'captain' ? <HomeBrand /> : <LogoMark className="w-14 h-14 mx-auto" />}
           <h1 className="mt-5 text-[1.85rem] sm:text-4xl font-bold text-ink leading-tight">{headline}</h1>
           <p className="mt-2 text-[15px] text-ink-2">{sub}</p>
         </div>

@@ -16,7 +16,7 @@ const TAGLINES: Record<string, string> = {
   'bridal-makeup': 'Your day. Your beautiful glow.',
   photography: 'Your moments, beautifully kept',
   events: 'Big days. Beautiful memories.',
-  'ac-repair': 'Stay cool. Stay comfortable.',
+  'ac-repair': 'Everyday appliances, expertly cared for',
   'appliance-repair': 'Get everyday life running again',
   barber: 'Fresh cuts. Everyday confidence.',
 };

@@ -458,7 +458,7 @@
 }
 
 /* Customer dashboard: the horizontal brand lockup and blue/white service board. */
-.customer-shell {
+:is(.customer-shell, .captain-shell) {
   --bg: #0c1527;
   --surface: #14223a;
   --surface-solid: #14223a;
@@ -478,7 +478,7 @@
   background: var(--bg);
   color: var(--ink);
 }
-[data-theme="light"] .customer-shell {
+[data-theme="light"] :is(.customer-shell, .captain-shell) {
   --bg: #ffffff;
   --surface: #ffffff;
   --surface-solid: #ffffff;
@@ -496,13 +496,13 @@
   --info-soft: #eaf4ff;
   --dashboard-wash: #eaf4ff;
 }
-.customer-shell :focus-visible { outline-color: var(--info-ink); }
-.customer-shell .btn-primary:not(:disabled) {
+:is(.customer-shell, .captain-shell) :focus-visible { outline-color: var(--info-ink); }
+:is(.customer-shell, .captain-shell) .btn-primary:not(:disabled) {
   color: white;
   background-image: linear-gradient(120deg, #178cf0, #0755ba);
   box-shadow: 0 5px 16px -7px #0871d4;
 }
-.customer-shell .text-gradient {
+:is(.customer-shell, .captain-shell) .text-gradient {
   background-image: linear-gradient(110deg, #0871d4, #21a9f6);
 }
 .home-brand { display: inline-flex; align-items: center; gap: 0; text-align: left; }
@@ -532,7 +532,7 @@
 .home-step-icon { width: 40px; height: 40px; border-radius: 12px; background: var(--info-soft); color: var(--info-ink); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .home-pro-banner { display: flex; flex-direction: column; align-items: flex-start; gap: 1rem; padding: 1.5rem; border-radius: 1.5rem; border: 1px solid var(--line); background: linear-gradient(115deg, var(--dashboard-wash), var(--surface-solid)); }
 .home-signoff { text-align: center; font-family: var(--font-display); font-size: 1.4rem; font-style: italic; font-weight: 600; color: var(--info-ink); padding: 2.5rem 0 1rem; }
-.customer-shell .bottom-nav { bottom: 0 !important; left: 0; right: 0; border-radius: 1.25rem 1.25rem 0 0; border-width: 1px 0 0; box-shadow: 0 -8px 24px -20px #0b3d91; padding-bottom: var(--sa-bottom); }
+:is(.customer-shell, .captain-shell) .bottom-nav { bottom: 0 !important; left: 0; right: 0; border-radius: 1.25rem 1.25rem 0 0; border-width: 1px 0 0; box-shadow: 0 -8px 24px -20px #0b3d91; padding-bottom: var(--sa-bottom); }
 @media (prefers-reduced-motion: reduce) { .home-service-tile { transition: none; } }
 @media (min-width: 640px) {
   .home-brand-mark { width: 52px; height: 56px; }
@@ -554,5 +554,49 @@
 }
 
 @media (min-width: 640px) and (max-width: 1279px) {
-  .customer-shell > footer { padding-bottom: calc(5rem + var(--sa-bottom)); }
+  :is(.customer-shell, .captain-shell) > footer { padding-bottom: calc(5rem + var(--sa-bottom)); }
+}
+
+/* Captain portal: the same white/blue brand with a distinct, enabled signup CTA. */
+.captain-shell .btn-captain-signup {
+  color: #fff;
+  background: #087f5b;
+  border: 1px solid #087f5b;
+  box-shadow: 0 5px 14px -8px rgba(8, 127, 91, .6);
+  white-space: normal;
+  line-height: 1.4;
+}
+.captain-shell .btn-captain-signup:hover { background: #066449; border-color: #066449; }
+.captain-shell .input:focus,
+.captain-shell input:focus,
+.captain-shell textarea:focus { border-color: var(--info-ink); }
+.captain-shell :has(> input[type="tel"]):focus-within { border-color: var(--info-ink); }
+.captain-shell .card { box-shadow: 0 5px 22px -16px rgba(11, 61, 145, .3); }
+.captain-auth { max-width: 72rem; min-height: auto; padding: 1.5rem 1rem 3rem; gap: 2rem; align-items: center; }
+.captain-auth > aside { padding: 2rem 0; }
+.captain-auth > aside > h1 { font-size: clamp(2.5rem, 4vw, 3.5rem); }
+.captain-auth > aside > ul { margin-top: 2rem; }
+.captain-auth > main { padding: 0; }
+.captain-auth input { min-width: 0; }
+.captain-auth > main > div > .card { border-radius: 1.5rem; border-color: var(--line-strong); box-shadow: 0 18px 50px -32px rgba(11, 61, 145, .4); }
+.captain-workspace-header { display: flex; flex-wrap: wrap; align-items: center; gap: 1.25rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--line); }
+.captain-workspace-header > div:first-child { flex: 1 1 22rem; }
+.captain-listing-status { display: inline-flex; align-items: center; gap: .5rem; font-size: 12px; font-weight: 650; padding: .65rem .85rem; border-radius: 100px; }
+.captain-workspace-header > [role="tablist"] { flex-basis: 100%; width: fit-content; flex-grow: 0; }
+.captain-strength-card { background: linear-gradient(160deg, var(--info-soft), var(--surface-solid)); }
+@media (min-width: 640px) {
+  .captain-auth { padding: 2.5rem 1.5rem 4rem; }
+}
+@media (min-width: 1024px) {
+  .captain-auth { gap: 4rem; padding-top: 4rem; padding-bottom: 5rem; }
+}
+
+/* Individually illustrated services nested under their parent category. */
+.subcategory-services { border-bottom: 1px solid var(--line); padding-bottom: 1.75rem; }
+.subcategory-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem .75rem; }
+.subcategory-tile { display: flex; flex-direction: column; align-items: center; gap: .65rem; text-align: center; min-width: 0; }
+.subcategory-art { width: 72px; height: 72px; object-fit: cover; border-radius: 24%; flex-shrink: 0; }
+@media (min-width: 640px) {
+  .subcategory-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.75rem; max-width: 52rem; }
+  .subcategory-art { width: 96px; height: 96px; }
 }

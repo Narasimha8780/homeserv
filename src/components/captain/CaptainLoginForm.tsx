@@ -12,7 +12,7 @@ export const CaptainLoginForm: React.FC<{
   initialPhone?: string;
   startWithReset?: boolean;
 }> = ({ onNewCaptain, initialPhone = '', startWithReset = false }) => {
-  const { signInCaptain, resetPinWithVerification } = useApp();
+  const { signInCaptain, resetPinWithVerification, t } = useApp();
   const [step, setStep] = useState<'signin' | 'forgot'>(startWithReset ? 'forgot' : 'signin');
   const [phone, setPhone] = useState(initialPhone);
   const [pin, setPin] = useState('');
@@ -41,6 +41,7 @@ export const CaptainLoginForm: React.FC<{
 
   return (
     <AuthLayout
+      variant="captain"
       eyebrow="For electricians, plumbers, drivers & more"
       headline={
         <>
@@ -55,15 +56,15 @@ export const CaptainLoginForm: React.FC<{
       ]}
       stats={[
         { value: '₹0', label: 'Listing fee' },
-        { value: '2 min', label: 'To sign up' },
-        { value: '24h', label: 'Verification' },
+        { value: 'Direct', label: 'Customer calls' },
+        { value: '0%', label: 'Commission' },
       ]}
     >
       <div className="flex items-center gap-2.5 mb-6">
         <span className="w-10 h-10 rounded-xl bg-accent-soft text-accent-ink flex items-center justify-center">
           <Wrench className="w-5 h-5" />
         </span>
-        <span className="font-display text-lg font-bold text-ink">Captain login</span>
+        <h2 className="font-display text-lg font-bold text-ink">Captain login</h2>
       </div>
 
       {step === 'signin' && (
@@ -96,8 +97,8 @@ export const CaptainLoginForm: React.FC<{
             <span className="flex-1 h-px bg-line" />
           </div>
 
-          <button type="button" onClick={onNewCaptain} className="btn btn-ghost w-full h-[3.25rem] text-[15px] border border-line">
-            List your service — it's free
+          <button type="button" onClick={onNewCaptain} className="btn btn-captain-signup w-full min-h-[3.25rem] px-3 py-3 text-[14px]">
+            {t('listService')}
           </button>
         </form>
       )}

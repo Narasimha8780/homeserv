@@ -79,23 +79,33 @@ Note for Android: the Android app runs inside a device/emulator, where `localhos
 ## Adding the complete service catalogue
 
 The API checks the service catalogue after connecting to MongoDB and before it
-starts listening. Deploy/restart the updated backend to add any missing services
-from the 15-service icon reference. Existing category IDs, active settings, and professional listings are preserved;
-common names such as “Women's Spa”,
-“Mehndi Service”, and “Painters” are recognized. AC Repair and Appliance Repair
-remain available alongside the 15 reference services and Men’s Saloon.
-Women’s spa categories are renamed to Beauty & Personal Care, and men’s spa/salon
-categories are renamed to Men’s Saloon; other category names stay unchanged. New demo databases use the
-same catalogue. Do not run the destructive demo seed to update an existing database.
+starts listening. Deploy/restart the updated backend to apply category names and
+parent relationships. Existing category IDs, professional listings, active
+settings, and custom fields are preserved. Do not run the destructive demo seed
+to update an existing database.
 
-The home screen, registration form, and admin screen read the categories from the
-API, so the new services appear after the backend update and app refresh.
+The home page has 14 main categories. AC & Appliance Repair includes Appliance
+Repair. Beauty & Personal Care includes Saree Draping / Pre-pleating, Mehendi
+Services, and Bridal Makeup & Hairstyling; those are no longer standalone home
+page tiles. Their existing category records remain so professional references
+keep working. Parent category pages include professionals from active child
+categories. Captain registration groups specialist categories under their parent.
+Men’s Salon uses the corrected spelling while keeping existing IDs and aliases.
+
+Category pages show 58 individually illustrated service examples, including the
+11 appliances, five men’s salon services, two pest-control services, and 10 beauty
+services from the supplied references. These tiles describe services to discuss
+with a professional; they do not claim that every professional offers each one.
+The catalogue is in `src/data/serviceSubcategories.ts`, with individual PNG files
+in `src/assets/subcategory-icons/`. Existing main-category and Android launcher
+artwork is unchanged.
 
 To run the catalogue integration tests against a local MongoDB server:
 
 ```sh
 MONGODB_TEST_URI=mongodb://127.0.0.1:27017 node --test server/test/serviceCategories.test.js
 node tests/category-icons.test.mjs
+node tests/subcategory-icons.test.mjs
 ```
 
 The integration tests create and remove a uniquely named test database and use

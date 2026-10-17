@@ -6,6 +6,7 @@ import { isApiError } from '../../utils/api';
 import { useApp, type PhoneVerification } from '../../context/AppContext';
 import type { City, ServiceCategoryId } from '../../types';
 import { StateCitySelect } from '../common/StateCitySelect';
+import { getRootCategories, getCategoryChildren } from '../../utils/categoryHierarchy';
 import { CategoryIcon } from '../common/CategoryIcon';
 import { UserPlus, Check, MapPin, Wrench, IndianRupee, User, BadgeCheck, ArrowLeft } from 'lucide-react';
 import { formatIndianPhone } from '../../utils/format';
@@ -27,7 +28,7 @@ export const CaptainRegistrationForm: React.FC<{
   /** Back to captain login, optionally with a number to sign in or reset. */
   onBack: (prefill?: { phone: string; reset: boolean }) => void;
 }> = ({ onBack }) => {
-  const { allCities, categories, registerCaptain, setCaptainTab } = useApp();
+  const { allCities, categories, registerCaptain, setCaptainTab, t } = useApp();
 
   const [name, setName] = useState('');
   const [sameAsPhoneForWhatsapp, setSameAsPhoneForWhatsapp] = useState(true);
@@ -50,7 +51,9 @@ export const CaptainRegistrationForm: React.FC<{
   const [error, setError] = useState<string | null>(null);
 
   const toggleCategory = (id: ServiceCategoryId) => {
-    setSelectedCategories((prev) => (prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]));
+    const parent = categories.find((category) => category.id === id);
+    const children = parent ? getCategoryChildren(parent, categories).map((category) => category.id) : [];
+    setSelectedCategories((prev) => (prev.includes(id) ? prev.filter((value) => value !== id && !children.includes(value)) : [...prev, id]));
   };
 
   const toggleLanguage = (lang: string) => {
@@ -120,7 +123,7 @@ export const CaptainRegistrationForm: React.FC<{
         <span className="pill bg-accent-soft text-accent-ink !px-2.5">
           <UserPlus className="w-3.5 h-3.5" /> New captain
         </span>
-        <h1 className="mt-2.5 text-[1.75rem] sm:text-4xl font-bold text-ink">List your service — free</h1>
+        <h1 className="mt-2.5 text-[1.75rem] sm:text-4xl font-bold text-ink">{t('listService')}</h1>
         <p className="text-[15px] text-ink-2 mt-1">Fill this once. Customers in your city will be able to find and call you directly.</p>
       </div>
 
@@ -202,7 +205,7 @@ export const CaptainRegistrationForm: React.FC<{
 
         <Section step={2} icon={Wrench} title="What services do you offer?">
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-2.5">
-            {categories
+            {getRootCategories(categories)
               .filter((c) => c.isActive)
               .map((cat) => {
                 const selected = selectedCategories.includes(cat.id);
@@ -227,6 +230,18 @@ export const CaptainRegistrationForm: React.FC<{
                 );
               })}
           </div>
+          {getRootCategories(categories).filter((parent) => selectedCategories.includes(parent.id)).map((parent) => {
+            const children = getCategoryChildren(parent, categories).filter((category) => category.isActive);
+            return children.length > 0 && (
+              <fieldset key={parent.id} className="rounded-2xl border border-line bg-surface-2 p-4">
+                <legend className="px-2 text-sm font-bold text-ink">Specialist services within {parent.title}</legend>
+                <p className="text-xs text-ink-2 mb-3">Optional: select the specialist services you offer.</p>
+                <div className="flex flex-wrap gap-3">
+                  {children.map((child) => <label key={child.id} className="flex items-center gap-2 text-sm text-ink"><input type="checkbox" className="w-4 h-4 accent-blue-600" checked={selectedCategories.includes(child.id)} onChange={() => toggleCategory(child.id)} />{child.title}</label>)}
+                </div>
+              </fieldset>
+            );
+          })}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="field-label" htmlFor="reg-exp">Experience (years)</label>

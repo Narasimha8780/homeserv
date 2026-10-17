@@ -22,7 +22,7 @@ accessible text in the UI.
 | Bridal Makeup | `bridal-makeup.png` |
 | Photography | `photography.png` |
 | Events | `events.png` |
-| Men’s Saloon | `barber.png` |
+| Men’s Salon | `barber.png` |
 
 `src/utils/categoryIcons.ts` bundles assets by filename and matches common title
 variants for admin-created categories. Existing All, Barber, AC Repair, and
@@ -33,7 +33,9 @@ Categories are supplied by the database. API startup adds missing default servic
 while preserving existing IDs, active settings, and professional references.
 Common existing name variants are recognized to avoid duplicate services.
 Existing women’s spa categories are renamed to Beauty & Personal Care; men’s spa
-and salon categories are renamed to Men’s Saloon, keeping their existing IDs. Fresh
+and salon categories are renamed to Men’s Salon, keeping their existing IDs.
+AC & Appliance Repair groups the repair categories. Saree, mehendi, and bridal
+makeup categories are nested under Beauty & Personal Care. Fresh
 demo seeds use the same catalogue. AC Repair and Appliance Repair are retained.
 Custom categories can still be added through Admin → Categories.
 

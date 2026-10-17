@@ -2,7 +2,6 @@ import React from 'react';
 import { useApp } from '../../context/AppContext';
 import type { AppLanguage } from '../../types';
 import { LANGUAGES } from '../../i18n/languages';
-import { Logo } from '../ui/Logo';
 import { HomeBrand } from '../ui/HomeBrand';
 import { initials } from '../../utils/format';
 import { MapPin, ChevronDown, Globe, Sun, Moon, Briefcase, Search, Menu } from 'lucide-react';
@@ -34,7 +33,7 @@ export const AppHeader: React.FC<{ onOpenCity: () => void; onOpenAccount: () => 
     <header className="sticky top-0 z-40 glass border-b border-line pt-safe">
       <div className="max-w-6xl mx-auto h-[4.5rem] sm:h-20 px-4 sm:px-6 flex items-center gap-2 sm:gap-3">
         <button onClick={goHome} aria-label="HomeServ home" className="shrink-0 rounded-xl">
-          {role === 'customer' ? <HomeBrand /> : <Logo markClassName="w-9 h-9" textClassName="text-[1.35rem]" hideTextOnTiny />}
+          <HomeBrand />
         </button>
 
         <button

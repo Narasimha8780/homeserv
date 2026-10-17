@@ -3,6 +3,8 @@ import type { AppLanguage } from '../types';
 const base: Record<AppLanguage, Record<string, string>> = {
   en: {
     appName: 'HomeServ',
+    categorySearch: 'Search professionals by name or area…',
+    emptyCategoryBody: 'No professionals listed for {category} in {city} yet — try another city or check back soon.',
     dashboardWelcome: 'A little help, close to home',
     dashboardHeroStart: 'Your home.',
     dashboardHeroEnd: 'Our services.',
@@ -260,7 +262,7 @@ const additions: Record<AppLanguage, Record<string, string>> = {
     signOut: 'Sign out',
     forPros: 'For Professionals',
     findServices: 'Find Services',
-    listService: 'List your service — free',
+    listService: "Sign up and list your service — it's free",
     listServiceSub: 'Get calls from customers near you. No commission, ever.',
     getStarted: 'Get started',
     available: 'Available',
