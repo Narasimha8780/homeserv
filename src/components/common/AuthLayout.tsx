@@ -99,7 +99,7 @@ export const DemoOtpNotice: React.FC<{ code: string }> = ({ code }) => (
   <div className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-warn-soft text-warn-ink text-[13px]">
     <Sparkles className="w-4 h-4 shrink-0 mt-px" />
     <p>
-      <span className="font-bold">Demo mode — no real SMS sent.</span> Your code is{' '}
+      <span className="font-bold">Demo mode — no WhatsApp message sent.</span> Your code is{' '}
       <span className="font-display font-bold tracking-[0.2em] text-[15px]">{code}</span>
     </p>
   </div>

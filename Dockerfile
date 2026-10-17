@@ -18,12 +18,6 @@ ENV VITE_API_URL=$VITE_API_URL
 ARG VITE_APP_MODE
 ENV VITE_APP_MODE=$VITE_APP_MODE
 
-# phone.email client id for "Sign in with Phone". Public (it ships in the page),
-# but still build-time: leaving it out silently drops the verify button and
-# sign-up falls back to PIN only.
-ARG VITE_PHONE_EMAIL_CLIENT_ID
-ENV VITE_PHONE_EMAIL_CLIENT_ID=$VITE_PHONE_EMAIL_CLIENT_ID
-
 RUN npm run build
 
 FROM node:20-alpine

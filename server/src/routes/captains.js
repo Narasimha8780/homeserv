@@ -1,8 +1,7 @@
 import { Router } from 'express';
 import { Captain } from '../models/Captain.js';
-import { normalizePhone } from '../utils/phone.js';
 import { validatePin, hashPin } from '../utils/pin.js';
-import { redeemVerificationToken } from '../utils/phoneEmail.js';
+import { redeemVerificationToken } from '../utils/verificationToken.js';
 
 export const captainsRouter = Router();
 
@@ -13,29 +12,22 @@ captainsRouter.get('/', async (_req, res) => {
 
 captainsRouter.post('/', async (req, res) => {
   const {
-    name, phone, whatsapp, avatar, cityId, areas, categories,
+    name, whatsapp, avatar, cityId, areas, categories,
     experienceYears, bio, languages, startingPrice, pin, verificationToken,
   } = req.body;
 
-  if (!name || !phone || !cityId || !categories?.length || !areas?.length) {
+  if (!name || !cityId || !categories?.length || !areas?.length) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
   const pinError = validatePin(pin);
   if (pinError) return res.status(400).json({ error: pinError });
 
-  // A phone.email verification, when present, decides the number — not the form field.
-  let phoneNormalized;
-  if (verificationToken) {
-    phoneNormalized = await redeemVerificationToken(verificationToken);
-    if (!phoneNormalized) {
-      return res.status(400).json({ error: 'Verification expired. Please verify your number again.' });
-    }
-  } else {
-    phoneNormalized = normalizePhone(phone);
-  }
-  if (phoneNormalized.length !== 10) {
-    return res.status(400).json({ error: 'Enter a valid 10-digit phone number' });
+  // The number comes from the OTP verification token — never the form field — so a
+  // listing can only be created for a number its owner has proven they hold.
+  const phoneNormalized = await redeemVerificationToken(verificationToken);
+  if (!phoneNormalized) {
+    return res.status(400).json({ error: 'Verification expired. Please verify your number again.' });
   }
   if (await Captain.findOne({ phoneNormalized })) {
     return res.status(409).json({ error: 'This number is already registered. Please sign in.' });

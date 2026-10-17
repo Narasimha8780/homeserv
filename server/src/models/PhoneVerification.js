@@ -1,9 +1,9 @@
 import mongoose from 'mongoose';
 
-// A short-lived receipt proving phone.email verified a number. The client gets the
-// token and sends it back when signing up or resetting a PIN, so the phone number
-// always comes from the verification rather than from a form field the client
-// could change.
+// A short-lived receipt proving a number was just verified by OTP. The client gets
+// the token and sends it back when signing up or resetting a PIN, so the phone
+// number always comes from the verification rather than from a form field the
+// client could change.
 const phoneVerificationSchema = new mongoose.Schema(
   {
     _id: { type: String },

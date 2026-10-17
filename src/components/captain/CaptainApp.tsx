@@ -13,13 +13,13 @@ type CaptainTab = 'dashboard' | 'reviews' | 'kyc';
 
 export const CaptainApp: React.FC = () => {
   const { captainTab, setCaptainTab, currentCaptain, t } = useApp();
-  const [newCaptainPhone, setNewCaptainPhone] = useState<string | null>(null);
+  const [isRegistering, setRegistering] = useState(false);
 
   if (!currentCaptain) {
-    return newCaptainPhone !== null ? (
-      <CaptainRegistrationForm prefillPhone={newCaptainPhone} />
+    return isRegistering ? (
+      <CaptainRegistrationForm onBack={() => setRegistering(false)} />
     ) : (
-      <CaptainLoginForm onNewCaptain={setNewCaptainPhone} />
+      <CaptainLoginForm onNewCaptain={() => setRegistering(true)} />
     );
   }
 

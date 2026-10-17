@@ -9,7 +9,6 @@ const customerSchema = new mongoose.Schema(
     pinHash: { type: String },
     failedAttempts: { type: Number, default: 0 },
     lockedUntil: { type: Date },
-    pinResetRequestedAt: { type: Date },
   },
   { timestamps: { createdAt: 'createdAt', updatedAt: false }, versionKey: false }
 );

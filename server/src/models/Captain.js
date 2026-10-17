@@ -9,7 +9,6 @@ const captainSchema = new mongoose.Schema(
     pinHash: { type: String },
     failedAttempts: { type: Number, default: 0 },
     lockedUntil: { type: Date },
-    pinResetRequestedAt: { type: Date },
     whatsapp: { type: String, required: true },
     avatar: { type: String, required: true },
     cityId: { type: String, required: true },

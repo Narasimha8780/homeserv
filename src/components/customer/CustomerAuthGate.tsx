@@ -1,67 +1,45 @@
 import React, { useState } from 'react';
-import { useApp } from '../../context/AppContext';
+import { useApp, type PhoneVerification } from '../../context/AppContext';
 import { AuthLayout, PhoneField } from '../common/AuthLayout';
 import { PinInput, PIN_LENGTH } from '../common/PinInput';
-import { PhoneEmailButton } from '../common/PhoneEmailButton';
-import { phoneEmailEnabled } from '../../utils/phoneEmailConfig';
+import { PhoneOtpVerifier } from '../common/PhoneOtpVerifier';
+import { NewPinSheet } from '../common/NewPinSheet';
 import { formatIndianPhone } from '../../utils/format';
-import { ArrowLeft, BadgeCheck, Star, Phone, ShieldCheck, Users, KeyRound, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, BadgeCheck, Star, Phone, ShieldCheck, Users } from 'lucide-react';
 
 type Mode = 'signup' | 'signin';
-type Step = 'form' | 'verify' | 'details' | 'forgot' | 'forgotNewPin' | 'forgotSent';
-
-const VERIFY_ENABLED = phoneEmailEnabled();
+// signup: verify → details.  signin: form, or forgot → (verify) → new-PIN pop-up.
+type Step = 'verify' | 'details' | 'signin' | 'forgot';
 
 export const CustomerAuthGate: React.FC = () => {
-  const {
-    signUpCustomer, signInCustomer, requestPinReset, verifyPhoneEmail, resetPinWithVerification,
-    categories, allCities, t,
-  } = useApp();
+  const { signUpCustomer, signInCustomer, resetPinWithVerification, categories, allCities, t } = useApp();
 
   const [mode, setMode] = useState<Mode>('signup');
-  const [step, setStep] = useState<Step>(VERIFY_ENABLED ? 'verify' : 'form');
+  const [step, setStep] = useState<Step>('verify');
+  const [verification, setVerification] = useState<PhoneVerification | null>(null);
+  const [resetVerification, setResetVerification] = useState<PhoneVerification | null>(null);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [pin, setPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
-  const [verification, setVerification] = useState<{ token: string; phone: string } | null>(null);
   const [isBusy, setIsBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const typedPhone = formatIndianPhone(phone);
-  const verifiedPhone = verification ? formatIndianPhone(verification.phone) : '';
-  const pinsFilled = pin.length === PIN_LENGTH && confirmPin.length === PIN_LENGTH;
+  // Bumped to remount the verifier so it starts over at the phone step.
+  const [verifierKey, setVerifierKey] = useState(0);
 
   const switchMode = (next: Mode) => {
     setMode(next);
-    setStep(next === 'signup' && VERIFY_ENABLED ? 'verify' : 'form');
+    setStep(next === 'signup' ? 'verify' : 'signin');
+    setVerification(null);
     setPin('');
     setConfirmPin('');
-    setVerification(null);
     setError(null);
-  };
-
-  // Shared by signup and forgot-PIN: turn the widget's URL into a server-issued token.
-  const handleVerified = (nextStep: Step) => async (userJsonUrl: string) => {
-    setIsBusy(true);
-    setError(null);
-    try {
-      const result = await verifyPhoneEmail(userJsonUrl);
-      setVerification({ token: result.verificationToken, phone: result.phone });
-      if (result.name && !name.trim()) setName(result.name);
-      setPin('');
-      setConfirmPin('');
-      setStep(nextStep);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not confirm your number. Try again.');
-    } finally {
-      setIsBusy(false);
-    }
+    setVerifierKey((k) => k + 1);
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isBusy) return;
+    if (isBusy || !verification) return;
     if (pin !== confirmPin) {
       setError('Both PINs must match.');
       return;
@@ -69,11 +47,18 @@ export const CustomerAuthGate: React.FC = () => {
     setIsBusy(true);
     setError(null);
     try {
-      await signUpCustomer(name.trim(), verification?.phone || typedPhone, pin, verification?.token);
+      await signUpCustomer(name.trim(), pin, verification.verificationToken);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not create your account. Try again.');
+      const message = err instanceof Error ? err.message : 'Could not create your account. Try again.';
+      setError(message);
       setPin('');
       setConfirmPin('');
+      // The token is spent once the server has used it, so verify again.
+      if (/verif/i.test(message)) {
+        setVerification(null);
+        setStep('verify');
+        setVerifierKey((k) => k + 1);
+      }
     } finally {
       setIsBusy(false);
     }
@@ -85,7 +70,7 @@ export const CustomerAuthGate: React.FC = () => {
     setIsBusy(true);
     setError(null);
     try {
-      await signInCustomer(typedPhone, pin);
+      await signInCustomer(formatIndianPhone(phone), pin);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not sign you in. Try again.');
       setPin('');
@@ -94,60 +79,8 @@ export const CustomerAuthGate: React.FC = () => {
     }
   };
 
-  const handleSetNewPin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (isBusy || !verification) return;
-    if (pin !== confirmPin) {
-      setError('Both PINs must match.');
-      return;
-    }
-    setIsBusy(true);
-    setError(null);
-    try {
-      await resetPinWithVerification(verification.token, pin);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not set your new PIN. Try again.');
-      setPin('');
-      setConfirmPin('');
-    } finally {
-      setIsBusy(false);
-    }
-  };
-
-  // Fallback when phone.email isn't configured: an admin clears the PIN by hand.
-  const handleRequestReset = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (phone.length !== 10 || isBusy) return;
-    setIsBusy(true);
-    setError(null);
-    try {
-      await requestPinReset(typedPhone);
-      setStep('forgotSent');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not send the request. Try again.');
-    } finally {
-      setIsBusy(false);
-    }
-  };
-
   const errorText = error && <p className="text-sm text-danger-ink font-semibold text-center">{error}</p>;
-
-  const verifiedBadge = (
-    <div className="flex items-center gap-2.5 p-3.5 rounded-2xl bg-success-soft text-success-ink text-[13px]">
-      <BadgeCheck className="w-4 h-4 shrink-0" />
-      <p>
-        <span className="font-bold">{verifiedPhone}</span> verified
-      </p>
-    </div>
-  );
-
-  const backButton = (onClick: () => void, label: string) => (
-    <button type="button" onClick={onClick} className="btn btn-ghost h-9 pl-1.5 pr-3 -ml-1.5 text-[13px]">
-      <ArrowLeft className="w-4 h-4" /> {label}
-    </button>
-  );
-
-  const showTabs = step === 'form' || step === 'verify';
+  const showTabs = step === 'verify' || step === 'signin';
 
   return (
     <AuthLayout
@@ -195,33 +128,40 @@ export const CustomerAuthGate: React.FC = () => {
         </div>
       )}
 
-      {/* Sign up, step 1: verify the number with phone.email */}
+      {/* Sign up, step 1: verify the number on WhatsApp */}
       {step === 'verify' && (
-        <div className="space-y-5">
+        <div className="space-y-4">
           <div>
             <h2 className="text-2xl font-bold text-ink">Create your account</h2>
-            <p className="text-sm text-ink-3 mt-1">
-              Verify your mobile number to begin. We'll send a one-time code.
-            </p>
+            <p className="text-sm text-ink-3 mt-1">Start with your mobile number. We'll verify it on WhatsApp.</p>
           </div>
-          {errorText}
-          <PhoneEmailButton onVerified={handleVerified('details')} disabled={isBusy} />
-          {isBusy && <p className="text-sm text-ink-3 text-center">Confirming your number…</p>}
-          <p className="text-[11px] text-ink-3 text-center">
-            Your number is verified once. After that you sign in with a 4-digit PIN.
-          </p>
+          <PhoneOtpVerifier
+            key={verifierKey}
+            purpose="signup"
+            role="customer"
+            idPrefix="signup"
+            onVerified={(v) => {
+              setVerification(v);
+              setError(null);
+              setStep('details');
+            }}
+          />
         </div>
       )}
 
-      {/* Sign up, step 2: name + PIN against the verified number */}
-      {step === 'details' && (
+      {/* Sign up, step 2: name + PIN for the verified number */}
+      {step === 'details' && verification && (
         <form onSubmit={handleSignUp} className="space-y-4">
-          {backButton(() => { setStep('verify'); setVerification(null); setError(null); }, 'Use another number')}
           <div>
             <h2 className="text-2xl font-bold text-ink">Almost there</h2>
             <p className="text-sm text-ink-3 mt-1">Add your name and choose a 4-digit PIN.</p>
           </div>
-          {verifiedBadge}
+          <div className="flex items-center gap-2.5 p-3.5 rounded-2xl bg-success-soft text-success-ink text-[13px]">
+            <BadgeCheck className="w-4 h-4 shrink-0" />
+            <p>
+              <span className="font-bold">{formatIndianPhone(verification.phone)}</span> verified
+            </p>
+          </div>
           <div>
             <label className="field-label" htmlFor="customer-name">Full name</label>
             <input
@@ -236,135 +176,93 @@ export const CustomerAuthGate: React.FC = () => {
             />
           </div>
           <PinInput id="customer-pin" label="Choose a 4-digit PIN" value={pin} onChange={setPin} />
-          <PinInput id="customer-pin-confirm" label="Re-enter PIN" value={confirmPin} onChange={setConfirmPin} />
-          {errorText}
-          <button type="submit" disabled={isBusy || !name.trim() || !pinsFilled} className="btn btn-primary w-full h-[3.25rem] text-[15px]">
-            {isBusy ? 'Creating account…' : 'Create account'}
-          </button>
-          <p className="text-[11px] text-ink-3 text-center">Remember your PIN — you'll need it every time you sign in.</p>
-        </form>
-      )}
-
-      {/* Sign in, and sign up when verification is switched off */}
-      {step === 'form' && (
-        <form onSubmit={mode === 'signup' ? handleSignUp : handleSignIn} className="space-y-4">
-          <div className="pb-1">
-            <h2 className="text-2xl font-bold text-ink">{mode === 'signup' ? 'Create your account' : 'Welcome back'}</h2>
-            <p className="text-sm text-ink-3 mt-1">
-              {mode === 'signup'
-                ? 'Your name, mobile number and a 4-digit PIN you choose.'
-                : 'Sign in with your mobile number and PIN.'}
-            </p>
-          </div>
-          {mode === 'signup' && (
-            <div>
-              <label className="field-label" htmlFor="customer-name">Full name</label>
-              <input
-                id="customer-name"
-                required
-                autoFocus
-                autoComplete="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Priya Sharma"
-                className="input"
-              />
-            </div>
-          )}
-          <PhoneField id="customer-phone" value={phone} onChange={setPhone} autoFocus={mode === 'signin'} />
-          <PinInput id="customer-pin" label={mode === 'signup' ? 'Choose a 4-digit PIN' : 'Your PIN'} value={pin} onChange={setPin} />
-          {mode === 'signup' && (
-            <PinInput id="customer-pin-confirm" label="Re-enter PIN" value={confirmPin} onChange={setConfirmPin} />
-          )}
+          <PinInput id="customer-pin-confirm" label="Confirm PIN" value={confirmPin} onChange={setConfirmPin} />
           {errorText}
           <button
             type="submit"
-            disabled={
-              isBusy || phone.length !== 10 || pin.length !== PIN_LENGTH ||
-              (mode === 'signup' && (!name.trim() || confirmPin.length !== PIN_LENGTH))
-            }
+            disabled={isBusy || !name.trim() || pin.length !== PIN_LENGTH || confirmPin.length !== PIN_LENGTH}
             className="btn btn-primary w-full h-[3.25rem] text-[15px]"
           >
-            {isBusy ? 'Please wait…' : mode === 'signup' ? 'Create account' : 'Sign in'}
+            {isBusy ? 'Creating account…' : 'Create account'}
           </button>
-          {mode === 'signin' && (
-            <button
-              type="button"
-              onClick={() => { setStep('forgot'); setPin(''); setError(null); }}
-              className="w-full text-[13px] font-semibold text-ink-3 hover:text-ink transition-colors"
-            >
-              Forgot your PIN?
-            </button>
-          )}
+          <p className="text-[11px] text-ink-3 text-center">You'll sign in with your number and this PIN from now on.</p>
         </form>
       )}
 
-      {/* Forgot PIN: verify, then choose a new PIN */}
+      {/* Sign in: phone + PIN */}
+      {step === 'signin' && (
+        <form onSubmit={handleSignIn} className="space-y-4">
+          <div className="pb-1">
+            <h2 className="text-2xl font-bold text-ink">Welcome back</h2>
+            <p className="text-sm text-ink-3 mt-1">Sign in with your mobile number and PIN.</p>
+          </div>
+          <PhoneField id="customer-phone" value={phone} onChange={setPhone} autoFocus />
+          <PinInput id="customer-pin" label="Your PIN" value={pin} onChange={setPin} />
+          {errorText}
+          <button
+            type="submit"
+            disabled={isBusy || phone.length !== 10 || pin.length !== PIN_LENGTH}
+            className="btn btn-primary w-full h-[3.25rem] text-[15px]"
+          >
+            {isBusy ? 'Signing in…' : 'Sign in'}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setStep('forgot');
+              setPin('');
+              setError(null);
+              setVerifierKey((k) => k + 1);
+            }}
+            className="w-full text-[13px] font-semibold text-ink-3 hover:text-ink transition-colors"
+          >
+            Forgot your PIN?
+          </button>
+        </form>
+      )}
+
+      {/* Forgot PIN: verify on WhatsApp, then the new-PIN pop-up opens */}
       {step === 'forgot' && (
-        <div className="space-y-5">
-          {backButton(() => { setStep('form'); setError(null); }, 'Back to sign in')}
+        <div className="space-y-4">
+          <button
+            type="button"
+            onClick={() => {
+              setStep('signin');
+              setError(null);
+            }}
+            className="btn btn-ghost h-9 pl-1.5 pr-3 -ml-1.5 text-[13px]"
+          >
+            <ArrowLeft className="w-4 h-4" /> Back to sign in
+          </button>
           <div>
             <h2 className="text-2xl font-bold text-ink">Forgot your PIN?</h2>
-            <p className="text-sm text-ink-3 mt-1">
-              {VERIFY_ENABLED
-                ? 'Verify your mobile number and choose a new PIN right away.'
-                : "Confirm your number and our team will call you to verify, then reset it."}
-            </p>
+            <p className="text-sm text-ink-3 mt-1">Verify your number on WhatsApp, then choose a new PIN.</p>
           </div>
-          {errorText}
-          {VERIFY_ENABLED ? (
-            <>
-              <PhoneEmailButton onVerified={handleVerified('forgotNewPin')} disabled={isBusy} />
-              {isBusy && <p className="text-sm text-ink-3 text-center">Confirming your number…</p>}
-            </>
-          ) : (
-            <form onSubmit={handleRequestReset} className="space-y-4">
-              <PhoneField id="forgot-phone" value={phone} onChange={setPhone} autoFocus />
-              <button type="submit" disabled={isBusy || phone.length !== 10} className="btn btn-primary w-full h-[3.25rem] text-[15px]">
-                {isBusy ? 'Sending…' : 'Request a PIN reset'}
-              </button>
-            </form>
-          )}
+          <PhoneOtpVerifier
+            key={verifierKey}
+            purpose="reset"
+            role="customer"
+            idPrefix="forgot"
+            initialPhone={phone}
+            onVerified={setResetVerification}
+          />
         </div>
       )}
 
-      {step === 'forgotNewPin' && (
-        <form onSubmit={handleSetNewPin} className="space-y-4">
-          <div>
-            <h2 className="text-2xl font-bold text-ink">Choose a new PIN</h2>
-            <p className="text-sm text-ink-3 mt-1">Pick a new 4-digit PIN for your account.</p>
-          </div>
-          {verifiedBadge}
-          <PinInput id="new-pin" label="New PIN" value={pin} onChange={setPin} autoFocus />
-          <PinInput id="new-pin-confirm" label="Re-enter new PIN" value={confirmPin} onChange={setConfirmPin} />
-          {errorText}
-          <button type="submit" disabled={isBusy || !pinsFilled} className="btn btn-primary w-full h-[3.25rem] text-[15px]">
-            {isBusy ? 'Saving…' : 'Set new PIN'}
-          </button>
-        </form>
-      )}
-
-      {step === 'forgotSent' && (
-        <div className="space-y-5 text-center">
-          <div className="w-14 h-14 rounded-2xl bg-success-soft text-success-ink flex items-center justify-center mx-auto">
-            <CheckCircle2 className="w-7 h-7" />
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold text-ink">Request received</h2>
-            <p className="text-sm text-ink-3 mt-1.5">
-              We'll call <span className="font-semibold text-ink">{typedPhone}</span> to confirm it's you, then clear your
-              PIN so you can set a new one.
-            </p>
-          </div>
-          <div className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-surface-2 border border-line text-[13px] text-ink-2 text-left">
-            <KeyRound className="w-4 h-4 shrink-0 mt-px text-accent-ink" />
-            <p>Once it's cleared, tap <span className="font-bold text-ink">Sign up</span> with the same number to choose a new PIN.</p>
-          </div>
-          <button type="button" onClick={() => switchMode('signin')} className="btn btn-primary w-full h-[3.25rem] text-[15px]">
-            Back to sign in
-          </button>
-        </div>
-      )}
+      <NewPinSheet
+        open={!!resetVerification}
+        verifiedPhone={resetVerification?.phone ?? ''}
+        onSubmit={async (newPin) => {
+          // Signs the customer straight in — they just proved they hold the number.
+          await resetPinWithVerification(resetVerification!.verificationToken, newPin, 'customer');
+          setResetVerification(null);
+        }}
+        onClose={() => {
+          // The token can't be reused, so closing means verifying again.
+          setResetVerification(null);
+          setVerifierKey((k) => k + 1);
+        }}
+      />
     </AuthLayout>
   );
 };

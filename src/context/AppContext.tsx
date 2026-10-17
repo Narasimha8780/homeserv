@@ -16,17 +16,25 @@ import { translations } from '../i18n/translations';
 import { soundFx } from '../utils/audio';
 import { applyTheme, resolveTheme, type ResolvedTheme } from '../utils/theme';
 
+export type OtpPurpose = 'signup' | 'reset';
+export type AccountRole = 'customer' | 'captain';
+
+// Proof that a number was just verified by OTP; sign-up and PIN reset take this
+// token instead of a phone number.
 export interface PhoneVerification {
   verificationToken: string;
   phone: string;
-  name: string;
+}
+
+export interface OtpSendResult {
+  mockOtp?: string;
+  resendAfter?: number;
 }
 
 export interface CaptainRegistrationInput {
   name: string;
-  phone: string;
   pin: string;
-  verificationToken?: string;
+  verificationToken: string;
   whatsapp: string;
   avatar: string;
   cityId: City['id'];
@@ -54,8 +62,8 @@ interface AppContextType {
   setSelectedCategoryId: (id: string | null) => void;
   captainTab: 'dashboard' | 'reviews' | 'kyc';
   setCaptainTab: (tab: 'dashboard' | 'reviews' | 'kyc') => void;
-  adminTab: 'overview' | 'kyc' | 'categories' | 'cities' | 'pinResets';
-  setAdminTab: (tab: 'overview' | 'kyc' | 'categories' | 'cities' | 'pinResets') => void;
+  adminTab: 'overview' | 'kyc' | 'categories' | 'cities';
+  setAdminTab: (tab: 'overview' | 'kyc' | 'categories' | 'cities') => void;
 
   selectedCity: City;
   setSelectedCity: (city: City) => void;
@@ -77,13 +85,9 @@ interface AppContextType {
   currentCaptain: Captain | null;
 
   currentCustomer: Customer | null;
-  verifyCustomerOtp: (phone: string, code: string, name?: string) => Promise<Customer | null>;
-  signUpCustomer: (name: string, phone: string, pin: string, verificationToken?: string) => Promise<Customer>;
+  signUpCustomer: (name: string, pin: string, verificationToken: string) => Promise<Customer>;
   signInCustomer: (phone: string, pin: string) => Promise<Customer>;
-  requestPinReset: (phone: string, role?: 'customer' | 'captain') => Promise<void>;
-  verifyPhoneEmail: (userJsonUrl: string) => Promise<PhoneVerification>;
-  resetPinWithVerification: (verificationToken: string, pin: string, role?: 'customer' | 'captain') => Promise<void>;
-  completeCustomerSignup: (name: string, phone: string) => Promise<Customer>;
+  resetPinWithVerification: (verificationToken: string, pin: string, role?: AccountRole) => Promise<void>;
   signOutCustomer: () => void;
 
   toggleFavorite: (captainId: string) => void;
@@ -93,8 +97,8 @@ interface AppContextType {
   submitReview: (captainId: string, customerName: string, rating: number, comment: string) => Promise<void>;
 
   registerCaptain: (input: CaptainRegistrationInput) => Promise<Captain>;
-  sendOtp: (phone: string) => Promise<{ mockOtp?: string }>;
-  verifyOtp: (phone: string, code: string) => Promise<Captain | null>;
+  sendOtp: (phone: string, purpose: OtpPurpose, role: AccountRole) => Promise<OtpSendResult>;
+  verifyOtpCode: (phone: string, code: string) => Promise<PhoneVerification>;
   signInCaptain: (phone: string, pin: string) => Promise<Captain>;
   updateCaptainProfile: (id: string, updates: Partial<Captain>) => void;
   toggleAvailability: (id: string) => void;
@@ -140,7 +144,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [customerTab, setCustomerTab] = useState<'home' | 'favorites'>('home');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [captainTab, setCaptainTab] = useState<'dashboard' | 'reviews' | 'kyc'>('dashboard');
-  const [adminTab, setAdminTab] = useState<'overview' | 'kyc' | 'categories' | 'cities' | 'pinResets'>('overview');
+  const [adminTab, setAdminTab] = useState<'overview' | 'kyc' | 'categories' | 'cities'>('overview');
 
   const [allCities, setAllCities] = useState<City[]>([]);
   const [selectedCityId, setSelectedCityId] = useState<string | null>(initialPrefs.selectedCityId || null);
@@ -295,45 +299,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return captain;
   };
 
-  const sendOtp = async (phone: string): Promise<{ mockOtp?: string }> => {
-    return api.post<{ success: boolean; mockOtp?: string }>('/auth/send-otp', { phone });
-  };
+  const sendOtp = async (phone: string, purpose: OtpPurpose, role: AccountRole): Promise<OtpSendResult> =>
+    api.post<OtpSendResult>('/auth/send-otp', { phone, purpose, role });
 
-  const verifyOtp = async (phone: string, code: string): Promise<Captain | null> => {
-    const { captain } = await api.post<{ verified: boolean; captain: Captain | null }>('/auth/verify-otp', {
-      phone,
-      code,
-    });
-    if (captain) {
-      soundFx.playSuccess();
-      setCaptains((prev) => (prev.some((c) => c.id === captain.id) ? prev : [captain, ...prev]));
-      setActiveCaptainId(captain.id);
-    }
-    return captain;
-  };
+  const verifyOtpCode = async (phone: string, code: string): Promise<PhoneVerification> =>
+    api.post<PhoneVerification>('/auth/otp/verify', { phone, code });
 
-  const verifyCustomerOtp = async (phone: string, code: string, name?: string): Promise<Customer | null> => {
-    const { customer } = await api.post<{ verified: boolean; customer: Customer | null }>('/customers/verify-otp', {
-      phone,
-      code,
-      name,
-    });
-    if (customer) {
-      soundFx.playSuccess();
-      setCurrentCustomer(customer);
-    }
-    return customer;
-  };
-
-  const signUpCustomer = async (
-    name: string,
-    phone: string,
-    pin: string,
-    verificationToken?: string,
-  ): Promise<Customer> => {
+  const signUpCustomer = async (name: string, pin: string, verificationToken: string): Promise<Customer> => {
     const { customer } = await api.post<{ customer: Customer }>('/customers/signup', {
       name,
-      phone,
       pin,
       verificationToken,
     });
@@ -357,14 +331,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return captain;
   };
 
-  const verifyPhoneEmail = async (userJsonUrl: string): Promise<PhoneVerification> =>
-    api.post<PhoneVerification>('/auth/phone-email/verify', { user_json_url: userJsonUrl });
-
   // They just proved they hold the number, so signing them straight in is safe.
   const resetPinWithVerification = async (
     verificationToken: string,
     pin: string,
-    role: 'customer' | 'captain' = 'customer',
+    role: AccountRole = 'customer',
   ) => {
     if (role === 'captain') {
       const { captain } = await api.post<{ captain: Captain }>('/auth/captain/reset-pin', { verificationToken, pin });
@@ -375,18 +346,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setCurrentCustomer(customer);
     }
     soundFx.playSuccess();
-  };
-
-  const requestPinReset = async (phone: string, role: 'customer' | 'captain' = 'customer') => {
-    const path = role === 'captain' ? '/auth/captain/forgot-pin' : '/customers/forgot-pin';
-    await api.post(path, { phone });
-  };
-
-  const completeCustomerSignup = async (name: string, phone: string): Promise<Customer> => {
-    const customer = await api.post<Customer>('/customers', { name, phone });
-    soundFx.playSuccess();
-    setCurrentCustomer(customer);
-    return customer;
   };
 
   const signOutCustomer = () => {
@@ -484,13 +443,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setActiveCaptainId,
         currentCaptain,
         currentCustomer,
-        verifyCustomerOtp,
         signUpCustomer,
         signInCustomer,
-        requestPinReset,
-        verifyPhoneEmail,
         resetPinWithVerification,
-        completeCustomerSignup,
         signOutCustomer,
         toggleFavorite,
         isFavorite,
@@ -499,7 +454,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         submitReview,
         registerCaptain,
         sendOtp,
-        verifyOtp,
+        verifyOtpCode,
         signInCaptain,
         updateCaptainProfile,
         toggleAvailability,

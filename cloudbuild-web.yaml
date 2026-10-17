@@ -15,7 +15,6 @@ steps:
       '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/narasimha8780/homeserv/web/$BRANCH_NAME:${COMMIT_SHA}',
       '--cache-from', 'us-central1-docker.pkg.dev/$PROJECT_ID/narasimha8780/homeserv/web:latest',
       '--build-arg', 'VITE_API_URL=${_VITE_API_URL}',
-      '--build-arg', 'VITE_PHONE_EMAIL_CLIENT_ID=${_VITE_PHONE_EMAIL_CLIENT_ID}',
       '-f', 'Dockerfile',
       '.'
     ]
@@ -39,8 +38,3 @@ steps:
   - name: 'gcr.io/cloud-builders/gcloud'
     args: ['run', 'deploy', '${_SERVICE_NAME}', '--image', 'us-central1-docker.pkg.dev/$PROJECT_ID/narasimha8780/homeserv/web/$BRANCH_NAME:${COMMIT_SHA}', '--region', 'us-central1', '--platform', 'managed', '--allow-unauthenticated']
 
-substitutions:
-  # phone.email "Sign in with Phone" client id. Public (it ships in the page).
-  # Override in the trigger if it ever changes; leaving it unset would silently
-  # drop the verify button and fall sign-up back to PIN only.
-  _VITE_PHONE_EMAIL_CLIENT_ID: '14389642174489995252'
